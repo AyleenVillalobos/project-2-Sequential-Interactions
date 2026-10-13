@@ -13,16 +13,21 @@
     body {
       min-height: 100vh;
       background-color: #fff;
-      background-image: url("test-image.jpg");
-      background-size: contain;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       color: #4a3520;
     }
 
+    .background {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      z-index: -1;
+    }
+
     h1 {
+      position: relative;
       margin: 0;
       padding: 2rem 1rem;
       text-align: center;
@@ -32,6 +37,7 @@
   </style>
 </head>
 <body>
+  <img class="background" src="test-image.jpg?v=2" alt="">
   <h1>Hello</h1>
 </body>
 </html>
