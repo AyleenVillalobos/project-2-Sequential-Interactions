@@ -1,0 +1,576 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Trace the Sneak Route</title>
+<style>
+/* Layout: full-bleed portrait floor. Hole bottom-left, dog in the middle, cheese top-right, one canvas for ring + trail. */
+:root{
+  --floor:#2b2b2b;
+  --ring:200,200,200;
+  --trail:234,234,234;
+  --btn:#383838;
+  --btn-edge:rgba(255,255,255,.14);
+  --btn-ink:#d2d2d2;
+  color-scheme:dark;
+}
+html,body{height:100%;margin:0;padding:0;background:var(--floor);overflow:hidden;overscroll-behavior:none;touch-action:none}
+#stage{position:relative;width:100%;height:100%;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;--g:0;background:var(--floor)}
+.actor{position:absolute;left:0;top:0;pointer-events:none}
+.actor svg{display:block;width:100%;height:100%;overflow:visible}
+#cv{position:absolute;left:0;top:0;pointer-events:none}
+
+/* cheese */
+#cheese{transform-origin:50% 90%}
+#cheese .pulse{width:100%;height:100%;animation:cpulse 2.6s ease-in-out infinite;transform-origin:50% 90%}
+#cheese.calm .pulse{animation:none}
+#cheese svg{filter:brightness(var(--b,1))}
+#cheese svg.wiggle{animation:wiggle .7s ease-in-out;transform-origin:50% 90%}
+#cheeseGlow{border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.95),rgba(255,255,255,.38) 48%,rgba(255,255,255,0));opacity:calc(.08 + var(--g) * .8)}
+@keyframes cpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+@keyframes wiggle{0%,100%{transform:rotate(0)}18%{transform:rotate(-8deg)}38%{transform:rotate(7deg)}58%{transform:rotate(-5deg)}78%{transform:rotate(3deg)}}
+
+/* dog */
+.breathe{width:100%;height:100%;transform-origin:50% 90%;animation:breathe 5s ease-in-out infinite}
+.flip{width:100%;height:100%;transform-origin:50% 90%}
+#dogsvg #eye-closed{opacity:0}
+#dogsvg #eye-open{opacity:1}
+.snortwrap{width:100%;height:100%;transform-origin:50% 90%}
+.snortwrap.snort{animation:snort .6s ease-out}
+@keyframes breathe{0%,100%{transform:scale(1,1)}50%{transform:scale(1.012,1.035)}}
+@keyframes snort{0%{transform:scale(1)}18%{transform:scale(1.05,1.07) translateY(-2px)}40%{transform:scale(.99,.98)}100%{transform:scale(1)}}
+.dear{transform-origin:154px 54px}
+.twitch .dear,.snort .dear{animation:twitch .55s ease-in-out}
+@keyframes twitch{0%,100%{transform:rotate(0)}20%{transform:rotate(-12deg)}45%{transform:rotate(3deg)}65%{transform:rotate(-8deg)}}
+.puff{opacity:0;transform-origin:center}
+.snort .puff{animation:puff .6s ease-out}
+.snort .puff.p2{animation-delay:.08s}
+@keyframes puff{0%{opacity:.7;transform:translate(0,0) scale(.5)}100%{opacity:0;transform:translate(22px,-6px) scale(2)}}
+
+/* mouse */
+#mbody{width:100%;height:100%;transform-origin:50% 100%}
+#mbody.idle{animation:hop 4.4s ease-in-out infinite}
+@keyframes hop{0%,60%,100%{transform:translateY(0) scale(1)}66%{transform:translateY(2px) scale(1.04,.94)}75%{transform:translateY(-9px) scale(.98,1.04)}86%{transform:translateY(0) scale(1.03,.96)}92%{transform:translateY(0) scale(1)}}
+.ear{transition:transform .18s ease-out}
+.earL{transform-origin:40px 42px}
+.earR{transform-origin:80px 42px}
+.crouch .earL{transform:translate(-3px,9px) rotate(-40deg) scaleY(.55)}
+.crouch .earR{transform:translate(3px,9px) rotate(40deg) scaleY(.55)}
+.nosegrp{transform-origin:60px 24px;animation:twitchnose 2.9s ease-in-out infinite}
+.crouch .nosegrp{animation:none}
+@keyframes twitchnose{0%,40%,100%{transform:scale(1)}44%{transform:scale(1.2,1.1) translateY(-1px)}48%{transform:scale(1)}52%{transform:scale(1.14,1.06) rotate(2deg)}58%{transform:scale(1)}}
+
+/* reset */
+#reset{position:absolute;left:16px;top:16px;width:52px;height:52px;border-radius:50%;border:1px solid var(--btn-edge);background:var(--btn);color:var(--btn-ink);display:grid;place-items:center;padding:0;cursor:pointer;touch-action:manipulation;z-index:10}
+#reset svg{width:24px;height:24px;display:block}
+#reset:active{transform:scale(.94)}
+#reset:focus-visible{outline:2px solid #fff;outline-offset:3px}
+
+@media (prefers-reduced-motion:reduce){
+  .breathe,#cheese .pulse,#mbody.idle,.nosegrp{animation-duration:12s}
+}
+</style>
+
+<div id="stage">
+  <div id="hole" class="actor">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120">
+      <rect x="0" y="92" width="160" height="28" fill="#cfcfcf"/>
+      <line x1="0" y1="92" x2="160" y2="92" stroke="#999" stroke-width="2"/>
+      <path d="M45 120 V72 A35 35 0 0 1 115 72 V120 Z" fill="#2e2e2e" stroke="#888" stroke-width="4" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <canvas id="cv"></canvas>
+
+  <div id="dog" class="actor">
+    <div class="flip" id="flip"><div class="snortwrap" id="snortwrap"><div class="breathe">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 230 145" id="dogsvg">
+        <path d="M30 92 C 10 82, 12 60, 26 62" fill="none" stroke="#6a6a6a" stroke-width="9" stroke-linecap="round"/>
+        <ellipse cx="100" cy="97" rx="75" ry="33" fill="#7a7a7a" stroke="#555" stroke-width="2"/>
+        <ellipse cx="176" cy="124" rx="20" ry="9" fill="#8a8a8a" stroke="#555" stroke-width="2"/>
+        <circle cx="170" cy="76" r="31" fill="#888" stroke="#555" stroke-width="2"/>
+        <ellipse cx="198" cy="87" rx="17" ry="12" fill="#9a9a9a" stroke="#555" stroke-width="2"/>
+        <circle cx="212" cy="82" r="5" fill="#222"/>
+        <g class="dear"><path d="M154 54 C 138 60, 138 97, 152 102 C 161 86, 163 68, 166 54 Z" fill="#5e5e5e"/></g>
+        <path d="M146 96 Q 160 108 178 104" fill="none" stroke="#3a3a3a" stroke-width="6" stroke-linecap="round"/>
+        <path id="eye-closed" d="M168 72 q6 5 12 0" fill="none" stroke="#222" stroke-width="3" stroke-linecap="round"/>
+        <g id="eye-open" opacity="0">
+          <circle cx="174" cy="71" r="6" fill="#f2f2f2"/>
+          <circle cx="176" cy="71" r="3" fill="#222"/>
+        </g>
+        <circle class="puff p1" cx="218" cy="84" r="4" fill="#d6d6d6"/>
+        <circle class="puff p2" cx="216" cy="90" r="3" fill="#d6d6d6"/>
+      </svg>
+    </div></div></div>
+  </div>
+
+  <div id="cheeseGlow" class="actor"></div>
+  <div id="cheese" class="actor">
+    <div class="pulse">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 115" id="cheesesvg">
+        <defs><clipPath id="stampclip"><path d="M0 .9 C-1.2 0 -1 -.9 -.5 -.9 C-.2 -.9 0 -.7 0 -.5 C0 -.7 .2 -.9 .5 -.9 C1 -.9 1.2 0 0 .9Z" transform="translate(124 38) scale(19)"/></clipPath></defs>
+        <rect x="8" y="18" width="144" height="88" rx="4" fill="#e6e6e6" stroke="#666" stroke-width="2"/>
+        <path d="M10 20 L80 66 L150 20" fill="none" stroke="#bdbdbd" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M10 104 L58 60 M150 104 L102 60" fill="none" stroke="#cfcfcf" stroke-width="1.5"/>
+        <path d="M22 66 H78 M22 78 H70 M22 90 H60" stroke="#9e9e9e" stroke-width="3" stroke-linecap="round"/>
+        <path d="M0 .9 C-1.2 0 -1 -.9 -.5 -.9 C-.2 -.9 0 -.7 0 -.5 C0 -.7 .2 -.9 .5 -.9 C1 -.9 1.2 0 0 .9Z" transform="translate(70 90) scale(5)" fill="#8a8a8a"/>
+        <path d="M30 40 q6 -6 12 0 t12 0 t12 0" fill="none" stroke="#b0b0b0" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M0 .9 C-1.2 0 -1 -.9 -.5 -.9 C-.2 -.9 0 -.7 0 -.5 C0 -.7 .2 -.9 .5 -.9 C1 -.9 1.2 0 0 .9Z" transform="translate(124 38) scale(24)" fill="#f4f4f4" stroke="#777" stroke-width=".05" stroke-dasharray=".12 .09"/>
+        <path d="M0 .9 C-1.2 0 -1 -.9 -.5 -.9 C-.2 -.9 0 -.7 0 -.5 C0 -.7 .2 -.9 .5 -.9 C1 -.9 1.2 0 0 .9Z" transform="translate(124 38) scale(21)" fill="#d9d9d9" stroke="#666" stroke-width=".06"/>
+        <g clip-path="url(#stampclip)">
+          <rect x="95" y="15" width="58" height="48" fill="#bdbdbd"/>
+          <g transform="translate(106 29) scale(.2)">
+            <polygon points="20,60 140,60 110,26" fill="#f0f0f0" stroke="#555" stroke-width="5" stroke-linejoin="round"/>
+            <rect x="20" y="60" width="120" height="42" rx="3" fill="#cfcfcf" stroke="#555" stroke-width="5"/>
+            <circle cx="45" cy="82" r="7" fill="#8a8a8a"/><circle cx="84" cy="75" r="5" fill="#8a8a8a"/><circle cx="116" cy="88" r="8" fill="#8a8a8a"/>
+          </g>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div id="mouse" class="actor" style="z-index:5">
+    <div id="mbody" class="idle">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 165">
+        <path d="M60 126 C 62 145, 88 140, 80 160" fill="none" stroke="#777" stroke-width="4" stroke-linecap="round"/>
+        <ellipse cx="60" cy="88" rx="30" ry="42" fill="#9a9a9a" stroke="#666" stroke-width="2"/>
+        <g class="ear earL"><circle cx="40" cy="34" r="13" fill="#8a8a8a" stroke="#666" stroke-width="2"/><circle cx="40" cy="34" r="7" fill="#cfcfcf"/></g>
+        <g class="ear earR"><circle cx="80" cy="34" r="13" fill="#8a8a8a" stroke="#666" stroke-width="2"/><circle cx="80" cy="34" r="7" fill="#cfcfcf"/></g>
+        <ellipse cx="60" cy="46" rx="20" ry="25" fill="#a8a8a8" stroke="#666" stroke-width="2"/>
+        <ellipse cx="60" cy="42" rx="18" ry="6.5" fill="#3a3a3a"/>
+        <circle cx="52" cy="42" r="2.6" fill="#f2f2f2"/>
+        <circle cx="68" cy="42" r="2.6" fill="#f2f2f2"/>
+        <g class="nosegrp">
+          <circle cx="60" cy="21" r="4" fill="#2e2e2e"/>
+          <path d="M56 26 L40 22 M56 28 L40 30 M64 26 L80 22 M64 28 L80 30" stroke="#555" stroke-width="1.2" stroke-linecap="round"/>
+        </g>
+        <ellipse cx="38" cy="70" rx="6" ry="4" fill="#bdbdbd"/>
+        <ellipse cx="82" cy="70" rx="6" ry="4" fill="#bdbdbd"/>
+      </svg>
+    </div>
+  </div>
+
+  <button id="reset" type="button" aria-label="Reset">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4v4.5h4.5"/></svg>
+  </button>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const stage = $('stage'), cv = $('cv'), ctx = cv.getContext('2d');
+  const el = { hole: $('hole'), dog: $('dog'), flip: $('flip'), glow: $('cheeseGlow'), cheese: $('cheese'), mouse: $('mouse'), mbody: $('mbody'), snortwrap: $('snortwrap'), dogsvg: $('dogsvg'), cheesesvg: $('cheesesvg') };
+
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  const easeOut = t => 1 - Math.pow(1 - t, 3);
+  const backOut = t => { const c = 1.7; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+
+  /* ---------- audio + haptics ---------- */
+  let ac = null, master = null, nbuf = null;
+  function audioInit() {
+    try {
+      if (!ac) {
+        const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+        ac = new C(); master = ac.createGain(); master.gain.value = .8; master.connect(ac.destination);
+        const len = ac.sampleRate; nbuf = ac.createBuffer(1, len, ac.sampleRate);
+        const d = nbuf.getChannelData(0); for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      }
+      if (ac.state === 'suspended') ac.resume();
+    } catch (e) {}
+  }
+  const sfx = f => { try { if (ac) f(); } catch (e) {} };
+  const vib = p => { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} };
+  function tone(f0, dur, vol, f1, type, delay) {
+    const t = ac.currentTime + (delay || 0), o = ac.createOscillator(), g = ac.createGain();
+    o.type = type || 'sine'; o.frequency.setValueAtTime(f0, t);
+    if (f1) o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + Math.min(.015, dur / 3)); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + .03);
+  }
+  function puff(dur, vol, type, f0, f1, q, delay) {
+    const t = ac.currentTime + (delay || 0), s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+    s.buffer = nbuf; s.playbackRate.value = .8 + Math.random() * .4;
+    f.type = type; f.Q.value = q || 1; f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(f1 || f0, t + dur);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .008); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    s.connect(f); f.connect(g); g.connect(master); s.start(t, Math.random() * .4, dur + .05);
+  }
+  const S = {
+    squeak: () => sfx(() => { tone(1900, .08, .04, 2700); tone(2300, .06, .025, 3000, 'sine', .07); }),
+    step: () => sfx(() => puff(.05, .05 * (.7 + Math.random() * .6), 'lowpass', 900 + Math.random() * 300, 500, .7)),
+    pat: () => sfx(() => puff(.03, .022, 'bandpass', 2400, 1800, 1.5)),
+    warn: () => sfx(() => tone(120, .16, .04, 90, 'triangle')),
+    snap: () => sfx(() => tone(740, .09, .04, 1100)),
+    crumble: () => sfx(() => puff(.35, .06, 'lowpass', 3200, 250, .8)),
+    scurry: () => sfx(() => { for (let i = 0; i < 7; i++) puff(.03, .045, 'bandpass', 2000, 1500, 1.2, i * .045); }),
+    snort: () => sfx(() => { puff(.24, .08, 'bandpass', 600, 220, .9); tone(95, .2, .025, 70, 'sawtooth'); }),
+    bark: () => sfx(() => { tone(260, .09, .06, 170, 'sawtooth'); tone(240, .1, .05, 150, 'sawtooth', .13); puff(.2, .05, 'lowpass', 900, 300, .8); }),
+    hug: () => sfx(() => tone(300, .2, .03, 260)),
+    chime: () => sfx(() => { tone(659, .35, .035, 0, 'sine', 0); tone(880, .35, .03, 0, 'sine', .1); tone(1318, .4, .022, 0, 'sine', .2); })
+  };
+
+  /* ---------- layout ---------- */
+  let L = {}, dpr = 1, prints = [];
+  const D = { x: 0, y: 0, tx: 0, ty: 0, v: 0, pause: 1, dir: 1, dirS: 1, phase: 0, lastAlert: 0 };
+  function mpos(x, y) { el.mouse.style.transform = `translate(${x - L.mw / 2}px,${y - .545 * L.mh}px)`; }
+  function cheeseT(dx = 0, dy = 0, sx = 1, sy = 1, rot = 0) {
+    el.cheese.style.transform = `translate(${L.cheese.cx - L.cw / 2 + dx}px,${L.cheese.cy - L.ch / 2 + dy}px) rotate(${rot}deg) scale(${sx},${sy})`;
+  }
+  function layout() {
+    const r = stage.getBoundingClientRect(), W = r.width, H = r.height;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); cv.style.width = W + 'px'; cv.style.height = H + 'px';
+    const u = Math.min(W, H * .56), k = u / 390;
+    const holeW = u * .46, holeH = holeW * .75, archW = holeW * 70 / 160;
+    const mw = archW * 1.12, mh = mw * 165 / 120;
+    const dw = u * .46, dh = dw * 145 / 230, cw = u * .36, ch = cw * 115 / 160;
+    L = { W, H, u, k, holeW, holeH, mw, mh, dw, dh, cw, ch, cx0: holeW / 2 };
+    L.peek = { x: L.cx0, y: H - .075 * mh };
+    L.P0 = { x: L.cx0, y: H - .56 * mh };
+    L.rx = dw / 2 + u * .055; L.ry = dh / 2 + u * .055;
+    const cm = Math.max(16, u * .045);
+    L.cheese = { cx: W - cm - cw / 2, cy: Math.max(34, u * .09) + ch / 2 };
+    L.T = { x: L.cheese.cx, y: L.cheese.cy + ch * .5 };
+    L.band = { x0: Math.min(W / 2, L.rx + 4), x1: Math.max(W / 2, W - L.rx - 4), y0: H * .33, y1: H * .62 };
+    const sz = (e, w, h, x, y) => { e.style.width = w + 'px'; e.style.height = h + 'px'; e.style.transform = `translate(${x}px,${y}px)`; };
+    sz(el.hole, holeW, holeH, 0, H - holeH);
+    el.dog.style.width = dw + 'px'; el.dog.style.height = dh + 'px';
+    const gs = cw * 2.2; sz(el.glow, gs, gs, L.cheese.cx - gs / 2, L.cheese.cy - gs / 2);
+    el.cheese.style.width = cw + 'px'; el.cheese.style.height = ch + 'px';
+    el.mouse.style.width = mw + 'px'; el.mouse.style.height = mh + 'px';
+    prints = [];
+    const base = { x: L.cx0 + holeW * .26, y: H - holeH * .98 };
+    const dx = .5, dy = -.866, step = u * .062, side = u * .016;
+    for (let i = 0; i < 5; i++) {
+      const s = i % 2 ? 1 : -1;
+      prints.push({ x: base.x + dx * i * step - dy * s * side, y: base.y + dy * i * step + dx * s * side, a: Math.atan2(dy, dx), r: u * .013, al: 1 - i * .13 });
+    }
+  }
+
+  /* ---------- state ---------- */
+  let st = 'play';               // play | fin | done | home
+  let mode = 'hole';             // hole | out
+  let route = [], sM = 0, walkEnabled = false, final = false;
+  let dots = [], crumbs = [];
+  let pressed = false, strokeActive = false, strokeStart = 0, pressCrouch = false;
+  let warn = false, flare = 0, g = 0, gT = 0, printsA = 1, printsT = 1, crouchAmt = 0;
+  let sp = 0, lastDot = null, lastRaw = null, lastT = 0, dist0 = 1, lastPat = 0, lastWarn = 0;
+  let tw = [], timers = [], fin = null, wk = { phase: 0, step: 0, near: 1 };
+  let emerged = false;
+  const FAIL = .9, CAUGHT = .8;
+  const later = (fn, ms) => { const id = setTimeout(fn, ms); timers.push(id); return id; };
+  const tween = (dur, fn, done) => tw.push({ t0: performance.now(), dur, fn, done });
+  const dogC = () => ({ x: D.x, y: D.y + L.dh * .05 });
+  const dogD = q => { const c = dogC(); return Math.hypot((q.x - c.x) / L.rx, (q.y - c.y) / L.ry); };
+  const inCheese = q => Math.abs(q.x - L.cheese.cx) < L.cw / 2 + 12 && Math.abs(q.y - L.cheese.cy) < L.ch / 2 + 12;
+  const local = e => { const r = stage.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  const restart = (elm, cls) => { elm.classList.remove(cls); void elm.getBoundingClientRect(); elm.classList.add(cls); };
+
+  /* ---------- route helpers ---------- */
+  const total = () => route.length ? route[route.length - 1].s : 0;
+  function pushPt(x, y) {
+    const n = route.length, s = n ? route[n - 1].s + Math.hypot(x - route[n - 1].x, y - route[n - 1].y) : 0;
+    route.push({ x, y, s }); return s;
+  }
+  function posAt(s) {
+    const n = route.length; if (!n) return { ...L.peek }; if (n === 1) return route[0];
+    s = clamp(s, 0, total());
+    let lo = 0, hi = n - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (route[m].s <= s) lo = m; else hi = m; }
+    const a = route[lo], b = route[hi], f = b.s > a.s ? (s - a.s) / (b.s - a.s) : 0;
+    return { x: lerp(a.x, b.x, f), y: lerp(a.y, b.y, f) };
+  }
+  function smoothPos(s) {
+    if (s >= total() - .5) return posAt(total());
+    let x = 0, y = 0; for (const o of [-9, -4.5, 0, 4.5, 9]) { const p = posAt(s + o * L.k); x += p.x; y += p.y; }
+    return { x: x / 5, y: y / 5 };
+  }
+  function addCrumb(d) { crumbs.push({ x: d.x, y: d.y, vx: (Math.random() - .5) * 70, vy: -25 + Math.random() * 30, t0: performance.now() + Math.random() * 280, r: d.r || 2.4 }); }
+  function truncate(sCut, quiet) {
+    sCut = Math.max(sCut, sM);
+    const keep = []; let any = false;
+    for (const d of dots) { if (d.s > sCut) { any = true; if (!quiet) addCrumb(d); } else keep.push(d); }
+    dots = keep;
+    const p = posAt(sCut);
+    while (route.length && route[route.length - 1].s > sCut) route.pop();
+    route.push({ x: p.x, y: p.y, s: sCut });
+    lastDot = { x: p.x, y: p.y }; final = false;
+    if (any && !quiet) S.crumble();
+    // nothing has left the hole yet: go back to the empty start
+    if (!emerged && sM < 1 && total() < L.mh * .6 + 2) { route = []; dots = []; sM = 0; printsT = 1; }
+  }
+  function endPoint() { return route.length ? route[route.length - 1] : L.P0; }
+
+  /* ---------- dog ---------- */
+  function pickTarget() {
+    const b = L.band; let tx, ty;
+    if (Math.random() < .5) { const E = emerged || route.length ? endPoint() : L.P0, f = .25 + Math.random() * .45; tx = lerp(E.x, L.cheese.cx, f); ty = lerp(E.y, L.cheese.cy, f); }
+    else { tx = lerp(b.x0, b.x1, Math.random()); ty = lerp(b.y0, b.y1, Math.random()); }
+    D.tx = clamp(tx, b.x0, b.x1); D.ty = clamp(ty, b.y0, b.y1);
+    if (Math.hypot(D.tx - D.x, D.ty - D.y) < L.u * .18) { D.tx = clamp(L.W - D.x, b.x0, b.x1); D.ty = lerp(b.y0, b.y1, Math.random()); }
+  }
+  function updateDog(dt) {
+    const k = L.k;
+    if (D.pause > 0) { D.pause -= dt; D.v = lerp(D.v, 0, Math.min(1, dt * 6)); }
+    else {
+      const dx = D.tx - D.x, dy = D.ty - D.y, d = Math.hypot(dx, dy);
+      if (d < 6 * k) { D.pause = .4 + Math.random() * .9; pickTarget(); }
+      else {
+        D.v = lerp(D.v, 54 * k, Math.min(1, dt * 3));
+        D.x += dx / d * D.v * dt; D.y += dy / d * D.v * dt;
+        if (Math.abs(dx) > 5) D.dir = dx > 0 ? 1 : -1;
+      }
+    }
+    D.phase += D.v * dt / (24 * k);
+    D.dirS = lerp(D.dirS, D.dir, Math.min(1, dt * 7));
+    const lift = Math.abs(Math.sin(Math.PI * D.phase)) * Math.min(1, D.v / (30 * k)), sway = Math.sin(Math.PI * D.phase) * 1.8 * Math.min(1, D.v / (30 * k));
+    el.dog.style.transform = `translate(${D.x - L.dw / 2}px,${D.y - L.dh / 2}px)`;
+    el.flip.style.transform = `scaleX(${D.dirS}) translateY(${-lift * 2.6 * k}px) rotate(${sway}deg)`;
+  }
+  function dogAlert(bark) {
+    const now = performance.now(); if (now - D.lastAlert < 700) return; D.lastAlert = now;
+    restart(el.snortwrap, 'snort'); bark ? S.bark() : S.snort(); vib(bark ? [20, 40, 20] : 14);
+    D.pause = bark ? 1.3 : .9;
+  }
+
+  /* ---------- input ---------- */
+  stage.addEventListener('pointerdown', e => {
+    if (e.target.closest('#reset')) return;
+    audioInit();
+    if (st !== 'play' || final || pressed) return;
+    const p = local(e);
+    let ok;
+    if (!route.length) ok = p.x < L.holeW + 18 && p.y > L.H - L.holeH - L.mh * .6;
+    else ok = dist(p, endPoint()) < Math.max(L.mw * 1.1, 58 * L.k);
+    if (!ok) return;
+    if (!route.length) {
+      pushPt(L.peek.x, L.peek.y); pushPt(L.P0.x, L.P0.y);
+      dots = [{ x: L.P0.x, y: L.P0.y, s: total(), r: 2.4 }]; lastDot = { ...L.P0 }; printsT = 0; dist0 = Math.max(1, dist(L.P0, L.cheese));
+    }
+    strokeStart = total(); strokeActive = true; pressed = true; sp = 0; lastRaw = p; lastT = e.timeStamp;
+    pressCrouch = mode === 'hole' || total() - sM < 2;
+    if (pressCrouch) { S.squeak(); vib(10); } else S.pat();
+    try { stage.setPointerCapture(e.pointerId); } catch (_) {}
+    addPoint(p); e.preventDefault();
+  });
+  stage.addEventListener('pointermove', e => {
+    if (!pressed) return;
+    const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+    for (const ev of (evs.length ? evs : [e])) {
+      const p = local(ev), dt = Math.max(1, ev.timeStamp - lastT);
+      sp = lerp(sp, dist(p, lastRaw) / dt, .3); lastRaw = p; lastT = ev.timeStamp;
+      addPoint(p);
+    }
+    e.preventDefault();
+  });
+  const up = () => {
+    if (!pressed) return;
+    pressed = false;
+    if (strokeActive) {
+      strokeActive = false;
+      if (total() - strokeStart < 18) truncate(strokeStart, true);
+      else walkEnabled = true;
+    }
+  };
+  stage.addEventListener('pointerup', up);
+  stage.addEventListener('pointercancel', up);
+  $('reset').addEventListener('click', () => reset());
+
+  function addPoint(p) {
+    if (!strokeActive) return;
+    gT = Math.pow(clamp(1 - dist(p, L.cheese) / dist0, 0, 1), 1.6);
+    const last = route[route.length - 1], dx = p.x - last.x, dy = p.y - last.y, dd = Math.hypot(dx, dy);
+    if (dd < 1.5) return;
+    const n = Math.ceil(dd / 4);
+    for (let i = 1; i <= n; i++) {
+      const q = { x: last.x + dx * i / n, y: last.y + dy * i / n };
+      if (dogD(q) < FAIL) { strokeFail(); return; }
+      if (inCheese(q)) { snap(); return; }
+      pushPt(q.x, q.y); maybeDot(q);
+    }
+  }
+  function maybeDot(q) {
+    const jag = dogD(q) < 1;
+    const spacing = jag ? 5 : lerp(5, 17, clamp(sp / .9, 0, 1));
+    if (dist(q, lastDot) < spacing) return;
+    dots.push({ x: q.x, y: q.y, s: total(), r: 2.2 + Math.random() * .5, jx: (Math.random() - .5) * 11, jy: (Math.random() - .5) * 11 });
+    lastDot = q;
+    const now = performance.now(); if (now - lastPat > 110) { lastPat = now; S.pat(); }
+  }
+  function strokeFail() {
+    strokeActive = false; truncate(strokeStart); dogAlert(false); vib([16, 40, 16]);
+  }
+  function snap() {
+    strokeActive = false; gT = 1; walkEnabled = true;
+    const last = route[route.length - 1], T = L.T, n = Math.max(1, Math.ceil(dist(last, T) / 5));
+    for (let i = 1; i <= n; i++) { const x = lerp(last.x, T.x, i / n), y = lerp(last.y, T.y, i / n); pushPt(x, y); dots.push({ x, y, s: total(), r: 2.4, jx: 0, jy: 0 }); }
+    final = true; restart(el.cheesesvg, 'wiggle'); S.snap(); vib([10, 30, 10]);
+  }
+
+  /* ---------- mouse ---------- */
+  function updateMouse(dt, now) {
+    const k = L.k;
+    let moving = walkEnabled && route.length > 1 && total() - sM > .5;
+    let pos;
+    if (moving) {
+      const w = wk;
+      const probe = smoothPos(sM);
+      w.near = lerp(w.near, dogD(probe) < 1.35 ? .55 : 1, Math.min(1, dt * 6));
+      w.phase += dt * 7 * w.near;
+      const pulse = .3 + .7 * (.5 - .5 * Math.cos(2 * Math.PI * w.phase));
+      const edge = Math.min(1, sM / (36 * k) + .25, (total() - sM) / (46 * k) + .25);
+      sM = Math.min(total(), sM + 140 * k * w.near * pulse * edge * dt);
+      const fl = Math.floor(w.phase); if (fl !== w.step) { w.step = fl; S.step(); }
+      mode = 'out'; if (sM > L.mh * .3) emerged = true;
+    }
+    pos = mode === 'hole' ? L.peek : smoothPos(sM);
+    const scared = mode === 'out' && dogD(pos) < 1.25;
+    const target = (pressed && pressCrouch) ? 1 : scared ? .65 : 0;
+    crouchAmt = lerp(crouchAmt, target, Math.min(1, dt * 12));
+    el.mouse.classList.toggle('crouch', target > .4);
+    mpos(pos.x, pos.y);
+    const holeIdle = mode === 'hole' && crouchAmt < .02;
+    if (holeIdle) { if (!el.mbody.classList.contains('idle')) { el.mbody.classList.add('idle'); } el.mbody.style.transform = ''; return pos; }
+    el.mbody.classList.remove('idle');
+    let ty = 0, rot = 0, sx = 1, sy = 1;
+    if (moving) {
+      const w = wk, lift = Math.abs(Math.sin(Math.PI * w.phase)), sway = Math.sin(Math.PI * w.phase) * 2.6;
+      const a = posAt(sM - 8 * k), b = posAt(sM + 8 * k), tx = (b.x - a.x) / (Math.hypot(b.x - a.x, b.y - a.y) || 1);
+      ty = -lift * 2.6 * k; rot = sway + tx * 3; sx = 1.03 - .03 * lift; sy = .93 + .05 * lift;
+    } else { const br = Math.sin(now / 1000 * 2.2); sy = .97 + .012 * br; sx = 1.01 - .006 * br; }
+    ty += crouchAmt * 9; sx *= 1 + .08 * crouchAmt; sy *= 1 - .22 * crouchAmt;
+    el.mbody.style.transform = `translateY(${ty}px) rotate(${rot}deg) scale(${sx},${sy})`;
+    return pos;
+  }
+
+  /* ---------- rules that tie dog and mouse together ---------- */
+  function dogRules() {
+    if (st !== 'play') { warn = false; return; }
+    const mp = mode === 'out' ? smoothPos(sM) : null;
+    if (mp && dogD(mp) < CAUGHT) { caught(mp); return; }
+    // trail ahead of the mouse
+    let minD = 9, cut = -1;
+    for (let i = 0; i < route.length; i++) {
+      const q = route[i]; if (q.s <= sM + 1) continue;
+      const d = dogD(q); if (d < minD) minD = d;
+      if (d < FAIL && cut < 0) { cut = q.s - 6 * L.k; break; }
+    }
+    if (cut >= 0) { strokeActive = false; truncate(cut); dogAlert(false); vib([16, 40, 16]); minD = 1.01; }
+    const w = minD < 1 || (mp && dogD(mp) < 1);
+    if (w && !warn) { const now = performance.now(); if (now - lastWarn > 600) { lastWarn = now; restart(el.dogsvg, 'twitch'); S.warn(); vib(8); } }
+    warn = !!w;
+  }
+  function caught(from) {
+    st = 'home'; warn = false; strokeActive = false; final = false;
+    dots.forEach(addCrumb); dots = []; route = []; walkEnabled = false; S.crumble();
+    dogAlert(true); D.pause = 1.4; gT = 0;
+    el.mouse.classList.add('crouch'); S.scurry();
+    const home = { x: L.peek.x, y: L.peek.y + L.mh * .95 }, from0 = { ...from }, dur = Math.max(380, dist(from0, home) / (520 * L.k) * 1000);
+    tween(dur, p => {
+      const e = p * p; mpos(lerp(from0.x, home.x, e), lerp(from0.y, home.y, e));
+      el.mbody.style.transform = `translateY(${(1 - p) * 6}px) rotate(${Math.sin(p * 40) * 3}deg) scale(1.03,.92)`;
+    }, () => {
+      later(() => {
+        el.mouse.classList.remove('crouch'); sM = 0; mode = 'hole'; emerged = false; wk.phase = 0;
+        tween(650, p => mpos(L.peek.x, L.peek.y + (1 - easeOut(p)) * L.mh * .95), () => { st = 'play'; printsT = 1; });
+      }, 700);
+    });
+  }
+
+  /* ---------- finale ---------- */
+  function finStep(now) {
+    const t = now - fin.t0, k = L.k, T = L.T, lift = L.ch * .5;
+    let msx = 1, msy = 1, my = 0, cdy = 0, cs = 1, csy = 1;
+    if (t < 450) { const e = ease(t / 450); msx = 1 + .16 * e; msy = 1 - .1 * e; cs = 1 + .035 * e; csy = 1 - .05 * e; }
+    else if (t < 1000) {
+      if (!fin.lifted) { fin.lifted = true; S.chime(); vib([12, 40, 12]); el.cheese.classList.add('calm'); }
+      const p = backOut(clamp((t - 450) / 550, 0, 1));
+      cdy = -p * lift; cs = csy = 1 - .16 * p; msx = lerp(1.16, 1.0, p); msy = lerp(.9, 1.05, p);
+    } else {
+      const tb = clamp((t - 1000) / 850, 0, 1), b = Math.abs(Math.sin(Math.PI * 2 * tb)) * (1 - tb) * 20 * k;
+      my = -b; cdy = -lift + my; cs = csy = .84;
+      const near = b < 3; msx = near ? 1.05 : .98; msy = near ? .95 : 1.05;
+      if (tb >= 1) { st = 'done'; msx = 1; msy = 1; my = 0; cdy = -lift; }
+    }
+    el.mouse.classList.remove('crouch');
+    mpos(T.x, T.y + my); el.mbody.style.transform = `scale(${msx},${msy})`;
+    cheeseT(0, cdy, cs, csy, 0);
+  }
+
+  /* ---------- reset ---------- */
+  function reset() {
+    timers.forEach(clearTimeout); timers = []; tw = []; fin = null;
+    route = []; dots = []; crumbs = []; sM = 0; walkEnabled = false; final = false; emerged = false; mode = 'hole';
+    pressed = false; strokeActive = false; warn = false; g = gT = 0; flare = 0; printsT = 1; crouchAmt = 0; wk = { phase: 0, step: 0, near: 1 };
+    el.cheese.classList.remove('calm'); el.cheesesvg.classList.remove('wiggle');
+    el.snortwrap.classList.remove('snort'); el.dogsvg.classList.remove('twitch');
+    el.mouse.classList.remove('crouch'); el.mbody.style.transform = ''; el.mbody.classList.add('idle');
+    mpos(L.peek.x, L.peek.y); cheeseT();
+    D.x = L.W * .5; D.y = L.H * .5; D.pause = 1.2; D.v = 0; D.dir = 1; D.dirS = 1; pickTarget();
+    st = 'play';
+  }
+
+  /* ---------- drawing ---------- */
+  function paw(x, y, r, ang, al) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(ang + Math.PI / 2); ctx.fillStyle = `rgba(200,200,200,${al})`;
+    ctx.beginPath(); ctx.ellipse(0, 0, r * .95, r * .75, 0, 0, 7); ctx.fill();
+    for (const [tx, ty] of [[-.95, -1.1], [0, -1.5], [.95, -1.1]]) { ctx.beginPath(); ctx.arc(tx * r, ty * r, r * .36, 0, 7); ctx.fill(); }
+    ctx.restore();
+  }
+  function draw(now) {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, L.W, L.H);
+    const c = dogC(), br = Math.sin(now / 1000 * 2 * Math.PI / 4), s = 1 + .012 * br;
+    ctx.save();
+    ctx.beginPath(); ctx.ellipse(c.x, c.y, L.rx * s, L.ry * s, 0, 0, 7);
+    ctx.fillStyle = `rgba(255,255,255,${.035 + .07 * flare})`; ctx.fill();
+    ctx.lineWidth = 3; ctx.strokeStyle = `rgba(200,200,200,${.2 + .07 * br + .5 * flare})`;
+    ctx.shadowColor = 'rgba(200,200,200,.5)'; ctx.shadowBlur = 10; ctx.stroke();
+    ctx.restore();
+    if (printsA > .02) prints.forEach(p => paw(p.x, p.y, p.r, p.a, .2 * p.al * printsA));
+    // trail
+    ctx.fillStyle = 'rgb(234,234,234)'; ctx.strokeStyle = 'rgb(255,255,255)'; ctx.lineWidth = 1.8; ctx.lineJoin = 'round';
+    let run = [];
+    const flush = () => {
+      if (run.length > 1) { ctx.beginPath(); run.forEach((d, i) => i ? ctx.lineTo(d.x + d.jx, d.y + d.jy) : ctx.moveTo(d.x + d.jx, d.y + d.jy)); ctx.stroke(); }
+      run = [];
+    };
+    for (const d of dots) {
+      if (d.s < sM + 2 && mode === 'out') { flush(); continue; }
+      const a = mode === 'out' ? clamp((d.s - sM) / 14, 0, 1) : 1;
+      if (dogD(d) < 1) { run.push(d); continue; }
+      flush(); ctx.globalAlpha = a; ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
+    }
+    flush();
+    // crumbs
+    ctx.fillStyle = 'rgb(234,234,234)';
+    crumbs = crumbs.filter(p => {
+      const t = (now - p.t0) / 1000; if (t > .8) return false; if (t < 0) { ctx.globalAlpha = 1; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill(); return true; }
+      const a = 1 - t / .75; if (a <= 0) return false;
+      ctx.globalAlpha = a; ctx.beginPath(); ctx.arc(p.x + p.vx * t, p.y + p.vy * t + 380 * t * t, p.r * (1 - .4 * t), 0, 7); ctx.fill(); ctx.globalAlpha = 1; return true;
+    });
+  }
+
+  let tPrev = performance.now();
+  function frame() {
+    const now = performance.now(), dt = Math.min(.05, (now - tPrev) / 1000); tPrev = now;
+    tw = tw.filter(o => { const p = clamp((now - o.t0) / o.dur, 0, 1); o.fn(p); if (p >= 1) { o.done && o.done(); return false; } return true; });
+    updateDog(dt);
+    if (st === 'play') {
+      updateMouse(dt, now); dogRules();
+      if (final && st === 'play' && sM >= total() - .5 && walkEnabled) { st = 'fin'; fin = { t0: now, lifted: false }; S.hug(); vib(12); gT = 1; }
+      if (!pressed && !strokeActive) gT = Math.pow(clamp(1 - dist(endPoint(), L.cheese) / Math.max(1, dist(L.P0, L.cheese)), 0, 1), 1.6) * (route.length ? 1 : 0);
+    } else if (st === 'fin') finStep(now);
+    g = lerp(g, gT, Math.min(1, dt * 6));
+    stage.style.setProperty('--g', g.toFixed(3)); stage.style.setProperty('--b', (1 + g * .3).toFixed(3));
+    flare = warn ? 1 : Math.max(0, flare - dt * 1.6);
+    printsA = lerp(printsA, printsT, Math.min(1, dt * 4));
+    draw(now);
+    requestAnimationFrame(frame);
+  }
+
+  layout(); reset();
+  let rt = 0;
+  window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { layout(); reset(); }, 80); });
+  requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>
