@@ -1,0 +1,149 @@
+/* One light grey palette shared by every scene. */
+:root {
+  --floor: #e2e2e2;
+  --outside: #cfcfcf;
+  --ink: #2b2b2b;
+  --btn: #4a4a4a;
+  --hole: #2e2e2e;
+  --hole-rim: #8e8e8e;
+  --shadow: rgba(0, 0, 0, 0.11);
+  --dot: #b4b4b4;
+  --dot-on: #3f3f3f;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body {
+  height: 100%;
+  margin: 0;
+  background: var(--outside);
+  color: var(--ink);
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  font: 15px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Portrait column, centred on wide screens (same ratio as Study 02). */
+#stage {
+  position: fixed;
+  top: 0; bottom: 0; left: 0; right: 0;
+  margin: 0 auto;
+  width: min(100vw, 64vh);
+  width: min(100vw, 64dvh);
+  background: var(--floor);
+  overflow: hidden;
+  touch-action: none;
+}
+.scene { position: absolute; inset: 0; overflow: hidden; touch-action: none; }
+
+#iris { position: absolute; inset: 0; z-index: 40; pointer-events: none; }
+#iris.block { pointer-events: auto; }
+
+#title {
+  position: absolute; left: 70px; right: 70px;
+  top: calc(20px + env(safe-area-inset-top, 0px));
+  z-index: 30; text-align: center; pointer-events: none;
+  opacity: 0; transform: translateY(-6px);
+  transition: opacity .45s ease, transform .45s ease;
+}
+#title.on { opacity: 1; transform: none; }
+#title span {
+  display: inline-block; padding: 7px 14px; border-radius: 18px; font-size: 14px; line-height: 1.3;
+  background: rgba(248, 248, 248, .85); border: 1px solid rgba(0, 0, 0, .12);
+  font-weight: 600; letter-spacing: .01em;
+}
+
+#reset {
+  position: absolute; left: 14px; top: calc(14px + env(safe-area-inset-top, 0px));
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 1.5px solid var(--btn); background: rgba(248, 248, 248, .7); color: var(--btn);
+  display: grid; place-items: center; padding: 0; cursor: pointer;
+  opacity: .7; z-index: 35; touch-action: manipulation;
+}
+#reset:active { transform: scale(.94); }
+#reset:focus-visible, #replay:focus-visible { outline: 2px solid var(--btn); outline-offset: 3px; opacity: 1; }
+
+#replay {
+  position: absolute; left: 50%; bottom: calc(36px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%) translateY(10px);
+  padding: 14px 28px; border-radius: 999px;
+  border: 2px solid var(--btn); background: #f8f8f8; color: var(--ink);
+  font: 600 17px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  cursor: pointer; z-index: 35; touch-action: manipulation;
+  opacity: 0; pointer-events: none; transition: opacity .5s ease, transform .5s ease;
+}
+#replay.on { opacity: 1; pointer-events: auto; transform: translateX(-50%); }
+#replay:active { transform: translateX(-50%) scale(.95); }
+
+/* ---------- Step 1: trace the sneak route ---------- */
+.sc-route .actor { position: absolute; left: 0; top: 0; pointer-events: none; }
+.sc-route .actor svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.sc-route canvas { position: absolute; left: 0; top: 0; pointer-events: none; }
+.sc-route .exit .pulse { width: 100%; height: 100%; animation: cpulse 2.6s ease-in-out infinite; transform-origin: 50% 90%; }
+.sc-route .exit.calm .pulse { animation: none; }
+.sc-route .exit svg { filter: brightness(var(--b, 1)); }
+.sc-route .exit svg.wiggle { animation: wiggle .7s ease-in-out; transform-origin: 50% 90%; }
+.sc-route .glow { border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,.95), rgba(255,255,255,.4) 48%, rgba(255,255,255,0)); opacity: calc(.1 + var(--g) * .85); }
+@keyframes cpulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.045); } }
+@keyframes wiggle { 0%, 100% { transform: rotate(0); } 18% { transform: rotate(-8deg); } 38% { transform: rotate(7deg); } 58% { transform: rotate(-5deg); } 78% { transform: rotate(3deg); } }
+.sc-route .breathe { width: 100%; height: 100%; transform-origin: 50% 90%; animation: breathe 5s ease-in-out infinite; }
+.sc-route .flip { width: 100%; height: 100%; transform-origin: 50% 90%; }
+.sc-route .snortwrap { width: 100%; height: 100%; transform-origin: 50% 90%; }
+.sc-route .snortwrap.snort { animation: snort .6s ease-out; }
+@keyframes breathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.012, 1.035); } }
+@keyframes snort { 0% { transform: scale(1); } 18% { transform: scale(1.05, 1.07) translateY(-2px); } 40% { transform: scale(.99, .98); } 100% { transform: scale(1); } }
+.sc-route .dear { transform-origin: 154px 54px; }
+.sc-route .twitch .dear, .sc-route .snort .dear { animation: twitch .55s ease-in-out; }
+@keyframes twitch { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-12deg); } 45% { transform: rotate(3deg); } 65% { transform: rotate(-8deg); } }
+.sc-route .puff { opacity: 0; transform-origin: center; }
+.sc-route .snort .puff { animation: puff .6s ease-out; }
+.sc-route .snort .puff.p2 { animation-delay: .08s; }
+@keyframes puff { 0% { opacity: .7; transform: translate(0, 0) scale(.5); } 100% { opacity: 0; transform: translate(22px, -6px) scale(2); } }
+.sc-route .mbody { width: 100%; height: 100%; transform-origin: 50% 100%; }
+.sc-route .mbody.idle { animation: hop 4.4s ease-in-out infinite; }
+@keyframes hop { 0%, 60%, 100% { transform: translateY(0) scale(1); } 66% { transform: translateY(2px) scale(1.04, .94); } 75% { transform: translateY(-9px) scale(.98, 1.04); } 86% { transform: translateY(0) scale(1.03, .96); } 92% { transform: translateY(0) scale(1); } }
+.sc-route .ear { transition: transform .18s ease-out; }
+.sc-route .earL { transform-origin: 40px 42px; }
+.sc-route .earR { transform-origin: 80px 42px; }
+.sc-route .crouch .earL { transform: translate(-3px, 9px) rotate(-40deg) scaleY(.55); }
+.sc-route .crouch .earR { transform: translate(3px, 9px) rotate(40deg) scaleY(.55); }
+.sc-route .nosegrp { transform-origin: 60px 24px; animation: twitchnose 2.9s ease-in-out infinite; }
+.sc-route .crouch .nosegrp { animation: none; }
+@keyframes twitchnose { 0%, 40%, 100% { transform: scale(1); } 44% { transform: scale(1.2, 1.1) translateY(-1px); } 48% { transform: scale(1); } 52% { transform: scale(1.14, 1.06) rotate(2deg); } 58% { transform: scale(1); } }
+
+/* ---------- Step 2: freeze when the dog looks ---------- */
+.sc-freeze { --cone: #3a3a3a; --cone-a: .22; --ring: #2e2e2e; --dim: brightness(.55); }
+.sc-freeze > * { position: absolute; }
+.sc-freeze svg { overflow: visible; display: block; }
+.sc-freeze .lay { left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.sc-freeze .dog { transform-origin: 50% 100%; pointer-events: none; }
+.sc-freeze .dog svg { width: 100%; height: 100%; }
+.sc-freeze .eye-open { transform-origin: 174px 71px; }
+.sc-freeze .pupil { transform-box: fill-box; transform-origin: center; }
+.sc-freeze .fear { transform-origin: 160px 54px; }
+.sc-freeze .mw { left: 0; top: 0; width: 0; height: 0; transform-origin: 0 0; pointer-events: none; transition: filter .09s; }
+.sc-freeze .mw svg { position: absolute; }
+.sc-freeze .mw.dim { filter: var(--dim); }
+.sc-freeze .head { transform-origin: 60px 62px; }
+.sc-freeze .tail { transform-origin: 60px 126px; }
+.sc-freeze .bang { opacity: 0; pointer-events: none; }
+.sc-freeze .bang.on { animation: pop 1.3s ease-out forwards; }
+@keyframes pop { 0% { transform: scale(0) rotate(-14deg); opacity: 0; } 22% { transform: scale(1.4) rotate(6deg); opacity: 1; } 40% { transform: scale(1) rotate(0); } 80% { opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+.sc-freeze .vig { left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; }
+.sc-freeze .hole { pointer-events: none; }
+.sc-freeze .hide {
+  left: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  width: 76px; height: 76px; border-radius: 50%;
+  border: 2px solid var(--btn); background: transparent; color: var(--btn);
+  display: grid; place-items: center; padding: 0; opacity: .75; z-index: 10;
+  touch-action: none; transition: background .06s, color .06s;
+}
+.sc-freeze .hide.active { background: var(--btn); color: var(--floor); opacity: 1; }
+.sc-freeze .hide:focus-visible { outline: 2px solid var(--btn); outline-offset: 3px; }
+
+/* ---------- Opening + Step 3 (side view) ---------- */
+.sc-side svg.scene-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
