@@ -185,17 +185,20 @@ Seq.scenes.route = (root, done) => {
   let W = 1, H = 1, sf = 1, bw = 20, ft = 100, fb = 700, fl = 20, fr = 370, hw = 175, fh = 600;
   const proj = (X, Z) => ({ x: (fl + fr) / 2 + X * hw, y: ft + (Z - S0) / (1 - S0) * fh });
   const unproj = (x, y) => ({ X: (x - (fl + fr) / 2) / hw, Z: S0 + (y - ft) / fh * (1 - S0) });
-  const zScale = () => 1.05;
+  const zScale = () => .66;
   const pts = a => a.map(p => `${f1(p.x)},${f1(p.y)}`).join(' ');
   const DOOR = { Z: .58, h: .12 }, EXIT = { Z: .85 };                          // the locked door on the right wall, and the mouse hole beside it (the way in)
-  const BOXES = [{ X: -.6, Z: .72 }, { X: .2, Z: .93 }, { X: .76, Z: .6 }];  // cardboard boxes the mouse can jump into
+  const BOXES = [{ X: -.55, Z: .7 }, { X: .22, Z: .93 }, { X: .76, Z: .62 }];  // cardboard boxes the mouse can jump into
   const HOLES = [{ X: -.82 }];                                                // the mouse hole in the top wall (where the mouse came in; also a hiding place)
   // furniture and wall pieces: solid for everybody and they block the dogs' sight
   const OBST = [
     { id: 'sofa', x0: -.55, x1: .22, z0: S0, z1: S0 + .15 },
     { id: 'wall', x0: .43, x1: .5, z0: S0, z1: .74 },
     { id: 'table', x0: -.3, x1: .14, z0: .68, z1: .79 },
-    { id: 'plant', x0: .74, x1: .92, z0: S0, z1: S0 + .09 }
+    { id: 'plant', x0: .74, x1: .92, z0: S0, z1: S0 + .09 },
+    { id: 'shelf', x0: -.92, x1: -.8, z0: .6, z1: .84 },
+    { id: 'stub', x0: .43, x1: .66, z0: .74, z1: .8 },
+    { id: 'chair', x0: -.92, x1: -.7, z0: .91, z1: .985 }
   ];
   const blockedAt = (X, Z, px = .018, pz = .014) => OBST.some(o => X > o.x0 - px && X < o.x1 + px && Z > o.z0 - pz && Z < o.z1 + pz);
   const losFree = (a, b) => { for (let i = 1; i < 14; i++) { const u = i / 14; if (blockedAt(a.X + (b.X - a.X) * u, a.Z + (b.Z - a.Z) * u, 0, 0)) return false; } return true; };
@@ -305,6 +308,13 @@ Seq.scenes.route = (root, done) => {
       <rect x="${f1(wall.x + 4)}" y="${f1(wall.y)}" width="${f1(wall.w)}" height="${f1(wall.h + 5)}" rx="4" fill="rgba(5,2,15,.35)"/>
       <rect x="${f1(wall.x)}" y="${f1(wall.y)}" width="${f1(wall.w)}" height="${f1(wall.h)}" rx="4" fill="#2b2260" stroke="${OL}" stroke-width="2.6"/>
       <rect x="${f1(wall.x + 3)}" y="${f1(wall.y)}" width="${f1(wall.w - 6)}" height="${f1(wall.h - 3)}" fill="#6c63b6"/>
+      <!-- bookshelf, armchair, short wall -->
+      ${(() => { const sh = R_(OBST[4].x0, OBST[4].z0, OBST[4].x1, OBST[4].z1), ch = R_(OBST[6].x0, OBST[6].z0, OBST[6].x1, OBST[6].z1), st_ = R_(OBST[5].x0, OBST[5].z0, OBST[5].x1, OBST[5].z1); let b = '';
+        b += `<rect x="${f1(sh.x + 3)}" y="${f1(sh.y + 4)}" width="${f1(sh.w)}" height="${f1(sh.h)}" rx="3" fill="rgba(5,2,15,.35)"/><rect x="${f1(sh.x)}" y="${f1(sh.y)}" width="${f1(sh.w)}" height="${f1(sh.h)}" rx="3" fill="#6b3a22" stroke="${OL}" stroke-width="2.4"/>`;
+        for (let k = 1; k < 6; k++) b += `<rect x="${f1(sh.x + 3)}" y="${f1(sh.y + sh.h * k / 6 - 4)}" width="${f1(sh.w - 6)}" height="7" fill="${['#e5475c', '#f4d35e', '#8981cd', '#4f9a6a', '#ff9db9'][k - 1]}"/>`;
+        b += `<rect x="${f1(ch.x + 3)}" y="${f1(ch.y + 4)}" width="${f1(ch.w)}" height="${f1(ch.h)}" rx="8" fill="rgba(5,2,15,.35)"/><rect x="${f1(ch.x)}" y="${f1(ch.y)}" width="${f1(ch.w)}" height="${f1(ch.h)}" rx="8" fill="#5638a6" stroke="${OL}" stroke-width="2.4"/><rect x="${f1(ch.x + 5)}" y="${f1(ch.y + 5)}" width="${f1(ch.w - 10)}" height="${f1(ch.h - 10)}" rx="5" fill="#8981cd"/>`;
+        b += `<rect x="${f1(st_.x + 4)}" y="${f1(st_.y + 4)}" width="${f1(st_.w)}" height="${f1(st_.h + 4)}" rx="4" fill="rgba(5,2,15,.35)"/><rect x="${f1(st_.x)}" y="${f1(st_.y)}" width="${f1(st_.w)}" height="${f1(st_.h)}" rx="4" fill="#2b2260" stroke="${OL}" stroke-width="2.6"/><rect x="${f1(st_.x + 3)}" y="${f1(st_.y + 3)}" width="${f1(st_.w - 6)}" height="${f1(st_.h - 6)}" fill="#6c63b6"/>`;
+        return b; })()}
       <!-- plant (from above) -->
       <ellipse cx="${f1(pc.x + 3)}" cy="${f1(pc.y + 5)}" rx="${f1(plant.w * .56)}" ry="${f1(plant.w * .5)}" fill="rgba(5,2,15,.35)"/>
       <circle cx="${f1(pc.x)}" cy="${f1(pc.y)}" r="${f1(plant.w * .52)}" fill="#c46a38" stroke="${OL}" stroke-width="2.4"/>
@@ -367,7 +377,7 @@ Seq.scenes.route = (root, done) => {
   /* ---------- state ---------- */
   const M = { X: 0, Z: 0, x: 0, y: 0, face: 1, phase: 0, sp: 0, walkAmt: 0, sq: 1, hop: 0, stand: 0, look: 0, ear: 0, s: 1, vis: 0, hidden: -1 };
   const target = { X: 0, Z: 0, spot: -1 };
-  const mkDog = (pal, X, Z, pitch) => ({ pal, X, Z, x: 0, y: 0, dir: 1, st: 'patrol', t: 0, tX: X, tZ: Z, pause: 0, v: 0, phase: Math.random() * 6, cool: 0, mouth: 0, bang: -9, woof: -9, q: -9, barked: 0, pitch, ear: 0, spot: -1, ang: 0, stuck: 0, mvX: 0, mvZ: 0 });
+  const mkDog = (pal, X, Z, pitch) => ({ pal, X, Z, x: 0, y: 0, dir: 1, st: 'patrol', t: 0, tX: X, tZ: Z, pause: 0, v: 0, phase: Math.random() * 6, cool: 0, mouth: 0, bang: -9, woof: -9, q: -9, barked: 0, pitch, ear: 0, spot: -1, ang: 0, scan: 0, stuck: 0, mvX: 0, mvZ: 0 });
   const dogs = [mkDog(DOG_A, .6, .86, 1), mkDog(DOG_B, -.4, .88, .9)];
   let st = 'intro1', stT = 0, t = 0, reported = false, hintOn = false, ev = {}, drops = [], lastStep = 0, houseT = 0, pressed = false, wantOut = false;
   const setState = n => { st = n; stT = 0; ev = {}; };
@@ -439,12 +449,12 @@ Seq.scenes.route = (root, done) => {
     const r = root.getBoundingClientRect();
     W = Math.max(1, r.width); H = Math.max(1, r.height); sf = W / 390;
     rm.setAttribute('viewBox', `0 0 ${W} ${H}`); ct.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    bw = 22 * sf; ft = Math.round(H * .19); fb = H - bw; fl = bw; fr = W - bw; hw = (fr - fl) / 2; fh = fb - ft;
+    bw = 28 * sf; ft = Math.round(H * .19); fb = H - bw; fl = bw; fr = W - bw; hw = (fr - fl) / 2; fh = fb - ft;
     rm.innerHTML = roomMarkup();
     ct.innerHTML = `<defs><linearGradient id="rFloor2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b3a22"/><stop offset="1" stop-color="#b06a3c"/></linearGradient></defs>` + cutMarkup();
     spots = [
       ...HOLES.map(h => { const c = proj(h.X, S0); return { type: 'hole', X: h.X, Z: S0 + .05, cx: c.x, cy: c.y - 6 * sf, r: 38 * sf }; }),
-      ...BOXES.map(b => { const p = proj(b.X, b.Z), sc = zScale() * sf * .78; return { type: 'box', X: b.X, Z: b.Z, cx: p.x, cy: p.y - 22 * sc, r: 52 * sf }; })
+      ...BOXES.map(b => { const p = proj(b.X, b.Z), sc = zScale() * sf * .78; return { type: 'box', X: b.X, Z: b.Z, cx: p.x, cy: p.y - 22 * sc, r: 40 * sf }; })
     ];
     grab();
     seedRain(winDrops, WIN, Math.round(12 + WIN.w / 9)); seedRain(ctDrops, CWIN, Math.round(10 + CWIN.w / 14));
@@ -505,15 +515,15 @@ Seq.scenes.route = (root, done) => {
   root.addEventListener('pointerup', onUp); root.addEventListener('pointercancel', onUp);
 
   /* ---------- tuning ---------- */
-  const MOUSE_V = () => W * .62, DOG_V = () => W * .95, CHASE_V = () => W * .8;
-  const SIGHT = () => W * .5, CATCH = () => 28 * sf, CONE = 38 * Math.PI / 180;
+  const MOUSE_V = () => W * .55, DOG_V = () => W * .42, CHASE_V = () => W * .5;
+  const SIGHT = () => W * .42, CATCH = () => 17 * sf, CONE = 38 * Math.PI / 180;
   const exitHit = () => M.X > .84 && Math.abs(M.Z - EXIT.Z) < .05;
   // can dog d see the mouse? it has to be inside the cone it is facing, in range, with no furniture in between
   function sees(d, k = 1) {
     const dx = M.x - d.x, dy = M.y - d.y, dist = Math.hypot(dx, dy);
     if (dist > SIGHT() * k) return false;
-    if (dist < 26 * sf) return true;
-    let da = Math.atan2(dy, dx) - d.ang; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI;
+    if (dist < 15 * sf) return true;
+    let da = Math.atan2(dy, dx) - d.ang - d.scan; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI;
     return Math.abs(da) < CONE && losFree(d, M);
   }
 
@@ -529,6 +539,7 @@ Seq.scenes.route = (root, done) => {
     const hid = M.hidden >= 0, seen = (st === 'play' || st === 'hide' || st === 'unhide') && M.vis > .5 && !hid;
     for (const d of dogs) {
       d.t += dt; d.cool = Math.max(0, d.cool - dt);
+      d.scan = (d.st === 'patrol' || d.st === 'cool' || d.st === 'sniff') ? Math.sin(t * 1.9 + d.phase) * .55 : 0;
       if (d.st === 'patrol' || d.st === 'cool') {
         if (d.pause > 0) { d.pause -= dt; d.v = 0; }
         else {
@@ -536,7 +547,7 @@ Seq.scenes.route = (root, done) => {
           if (Math.abs(d.mvX) > 1e-4) d.dir = d.mvX > 0 ? 1 : -1;
           if (d.v > 4) turnTo(d, Math.atan2(d.mvZ * fh / (1 - S0), d.mvX * hw), Math.min(1, dt * 9));
           d.stuck = d.v < DOG_V() * .2 ? d.stuck + dt : 0;
-          if (left < 6 || d.stuck > .3) { d.pause = left < 6 && Math.random() < .3 ? .15 + Math.random() * .3 : 0; pickWaypoint(d); }
+          if (left < 6 || d.stuck > .3) { d.pause = left < 6 && Math.random() < .4 ? .2 + Math.random() * .5 : 0; pickWaypoint(d); }
         }
         if (d.st === 'cool' && d.cool <= 0) d.st = 'patrol';
         if (seen && d.st === 'patrol' && d.cool <= 0 && sees(d)) alertDog(d);
@@ -551,7 +562,7 @@ Seq.scenes.route = (root, done) => {
         if (Math.abs(tg.X - d.X) > .01) d.dir = tg.X > d.X ? 1 : -1;
         turnTo(d, Math.atan2((tg.Z - d.Z) * fh / (1 - S0), (tg.X - d.X) * hw), Math.min(1, dt * 10));
         d.mouth = d.t % .24 < .12 ? 1 : 0;
-        if (hid) { if (gd(d, tg) < 44 * sf) { d.st = 'sniff'; d.t = 0; d.q = t; d.mouth = 0; d.spot = M.hidden; snd.sniff(); } }
+        if (hid) { if (gd(d, tg) < 26 * sf) { d.st = 'sniff'; d.t = 0; d.q = t; d.mouth = 0; d.spot = M.hidden; snd.sniff(); } }
         else if (st === 'play' && M.vis > .5 && gd(d, M) < CATCH()) caught(d);
         if (d.st === 'chase' && d.t > 1.5) { d.st = 'cool'; d.cool = 2; d.mouth = 0; pickWaypoint(d); }
       } else if (d.st === 'sniff') {
@@ -617,7 +628,7 @@ Seq.scenes.route = (root, done) => {
       else if (exitHit()) { setState('enter'); pressed = false; ev = { X0: M.X, Z0: M.Z }; snd.slip(); Seq.vib([10, 30, 10]); for (const o of dogs) { o.st = 'cool'; o.cool = 5; o.mouth = 0; } }
     } else if (st === 'hide') {
       const sp = spots[ev.i], u = clamp(stT / .42, 0, 1), e = easeInOut(u); M.sp = 0; M.walkAmt = 0;
-      if (ev.box) { M.X = lerp(ev.X0, sp.X, e); M.Z = lerp(ev.Z0, sp.Z, e); M.hop = Math.sin(Math.PI * u) * 36 * sf; M.s = lerp(1, .72, e); sqT = 1 - .18 * Math.sin(Math.PI * u); }
+      if (ev.box) { M.X = lerp(ev.X0, sp.X, e); M.Z = lerp(ev.Z0, sp.Z, e); M.hop = Math.sin(Math.PI * u) * 22 * sf; M.s = lerp(1, .72, e); sqT = 1 - .18 * Math.sin(Math.PI * u); }
       else { M.X = sp.X; M.Z = lerp(ev.Z0, S0 + .012, e); M.s = lerp(1, .5, e); M.vis = 1 - clamp((u - .45) / .55, 0, 1); M.face = 1; }
       if (u >= 1) { M.hidden = ev.i; M.vis = 0; setState('hidden'); target.spot = ev.i; wantOut = false; }
     } else if (st === 'hidden') {
@@ -625,7 +636,7 @@ Seq.scenes.route = (root, done) => {
       if (wantOut && (pressed || target.spot !== M.hidden)) { const sp = spots[M.hidden]; setState('unhide'); ev = { i: M.hidden, box: sp.type === 'box' }; M.hidden = -1; M.vis = 1; snd.hop(); }
     } else if (st === 'unhide') {
       const sp = spots[ev.i], u = clamp(stT / .38, 0, 1), e = easeInOut(u); M.sp = 0;
-      if (ev.box) { M.X = sp.X; M.Z = sp.Z; M.hop = Math.sin(Math.PI * u) * 36 * sf; M.s = lerp(.72, 1, e); sqT = 1 - .14 * Math.sin(Math.PI * u); M.X += (clamp(target.X, sp.X - .25, sp.X + .25) - sp.X) * e * .6; }
+      if (ev.box) { M.X = sp.X; M.Z = sp.Z; M.hop = Math.sin(Math.PI * u) * 22 * sf; M.s = lerp(.72, 1, e); sqT = 1 - .14 * Math.sin(Math.PI * u); M.X += (clamp(target.X, sp.X - .25, sp.X + .25) - sp.X) * e * .6; }
       else { M.X = sp.X; M.Z = lerp(S0 + .012, S0 + .07, e); M.s = lerp(.5, 1, e); M.vis = clamp(u * 2, 0, 1); M.sp = 50; M.walkAmt = 1; M.phase += dt * 9; M.face = 1; }
       if (u >= 1) { M.hop = 0; M.s = 1; setState('play'); }
     } else if (st === 'home') {
@@ -674,10 +685,10 @@ Seq.scenes.route = (root, done) => {
   }
   // the dog's field of view: a cone cut short by furniture and walls
   function coneMarkup(d) {
-    const ox = d.x, oy = d.y - 8 * sf, R = SIGHT(); let p = `${f1(ox)},${f1(oy)}`;
+    const ox = d.x, oy = d.y - 5 * sf, R = SIGHT(); let p = `${f1(ox)},${f1(oy)}`;
     for (let k = -4; k <= 4; k++) {
-      const a = d.ang + CONE * k / 4, cx = Math.cos(a), cy = Math.sin(a); let r = 14 * sf;
-      for (; r < R; r += 7 * sf) { const g = unproj(ox + cx * r, oy + cy * r); if (g.X < -.95 || g.X > .95 || g.Z < S0 || g.Z > 1 || blockedAt(g.X, g.Z, 0, 0)) break; }
+      const a = d.ang + d.scan + CONE * k / 4, cx = Math.cos(a), cy = Math.sin(a); let r = 8 * sf;
+      for (; r < R; r += 6 * sf) { const g = unproj(ox + cx * r, oy + cy * r); if (g.X < -.95 || g.X > .95 || g.Z < S0 || g.Z > 1 || blockedAt(g.X, g.Z, 0, 0)) break; }
       p += ` ${f1(ox + cx * r)},${f1(oy + cy * r)}`;
     }
     return p;
@@ -700,7 +711,7 @@ Seq.scenes.route = (root, done) => {
     if (ba >= 0 && ba < 1.5) {
       const pop = easeOutBack(clamp(ba / .22, 0, 1)), fade = 1 - clamp((ba - 1.2) / .3, 0, 1), jig = Math.sin(ba * 40) * (ba < .5 ? 3 : 0);
       e.bang.setAttribute('opacity', f2(fade));
-      e.bangW.setAttribute('transform', `translate(${f2(hx + jig)} ${f2(hy)}) scale(${f2(Math.max(.01, pop) * sc * 1.6)})`);
+      e.bangW.setAttribute('transform', `translate(${f2(hx + jig)} ${f2(hy)}) scale(${f2(Math.max(.01, pop) * sc * 2.4)})`);
     } else e.bang.setAttribute('opacity', 0);
     const wa = t - d.woof;
     if (wa >= 0 && wa < .55) {
@@ -711,7 +722,7 @@ Seq.scenes.route = (root, done) => {
     const qa = t - d.q;                                    // "?" while it sniffs at where the mouse hid
     if (sniff && qa >= 0 && qa < 2.3) {
       e.qm.setAttribute('opacity', f2(1 - clamp((qa - 2) / .3, 0, 1)));
-      e.qW.setAttribute('transform', `translate(${f2(hx)} ${f2(hy + Math.sin(qa * 6) * 3)}) scale(${f2(Math.max(.01, easeOutBack(clamp(qa / .2, 0, 1))) * sc * 1.5)})`);
+      e.qW.setAttribute('transform', `translate(${f2(hx)} ${f2(hy + Math.sin(qa * 6) * 3)}) scale(${f2(Math.max(.01, easeOutBack(clamp(qa / .2, 0, 1))) * sc * 2.2)})`);
     } else e.qm.setAttribute('opacity', 0);
   }
   function renderRoom() {
