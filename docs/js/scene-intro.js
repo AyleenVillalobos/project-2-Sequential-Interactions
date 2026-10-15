@@ -366,7 +366,7 @@ Seq.scenes.intro = (root, done) => {
     f1.type = f2.type = 'bandpass'; f1.Q.value = 4; f2.Q.value = 6;
     f1.frequency.setValueAtTime(muffled ? 520 : 650, t0); f1.frequency.linearRampToValueAtTime(muffled ? 640 : 1000, t0 + dur * .4); f1.frequency.linearRampToValueAtTime(muffled ? 480 : 640, t0 + dur);
     f2.frequency.setValueAtTime(muffled ? 1200 : 1700, t0); f2.frequency.linearRampToValueAtTime(muffled ? 1500 : 2500, t0 + dur * .4); f2.frequency.linearRampToValueAtTime(muffled ? 1100 : 1800, t0 + dur);
-    const peak = muffled ? .07 : .15;
+    const peak = muffled ? .11 : .22;
     g.gain.setValueAtTime(.0001, t0); g.gain.exponentialRampToValueAtTime(peak, t0 + .05); g.gain.setValueAtTime(peak, t0 + dur * .6); g.gain.exponentialRampToValueAtTime(.0001, t0 + dur);
     o.connect(f1); o.connect(f2); f1.connect(mix); f2.connect(mix); mix.gain.value = 1; mix.connect(g);
     if (muffled) { const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900; g.connect(lp); lp.connect(out.get()); } else g.connect(out.get());
@@ -384,15 +384,15 @@ Seq.scenes.intro = (root, done) => {
   let rainNodes = null, dripT = 0, thunderT = 0;
   function drip() {
     if (!rainNodes) return;
-    const f = 1500 + Math.random() * 1900; tone('sine', f, f * .55, .05, .03);
-    if (Math.random() < .25) noise(.05, .03, 'bandpass', 3000, 2);
+    const f = 1500 + Math.random() * 1900; tone('sine', f, f * .55, .05, .012);
+    if (Math.random() < .25) noise(.05, .014, 'bandpass', 3000, 2);
     dripT = setTimeout(drip, 110 + Math.random() * 380);
   }
   function thunder() {
     if (!ok() || !rainNodes) return; const ac = AU.ac, t0 = ac.currentTime;
     const src = ac.createBufferSource(); src.buffer = AU.nbuf; src.playbackRate.value = .35;
     const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(260, t0); lp.frequency.exponentialRampToValueAtTime(70, t0 + 3);
-    const g = ac.createGain(); g.gain.setValueAtTime(.0001, t0); g.gain.exponentialRampToValueAtTime(.3, t0 + .6); g.gain.exponentialRampToValueAtTime(.0001, t0 + 3.2);
+    const g = ac.createGain(); g.gain.setValueAtTime(.0001, t0); g.gain.exponentialRampToValueAtTime(.1, t0 + .6); g.gain.exponentialRampToValueAtTime(.0001, t0 + 3.2);
     src.connect(lp).connect(g).connect(out.get()); src.start(t0, Math.random(), 3.4);
     thunderT = setTimeout(thunder, 9000 + Math.random() * 7000);
   }
@@ -401,10 +401,10 @@ Seq.scenes.intro = (root, done) => {
     const src = ac.createBufferSource(); src.buffer = AU.nbuf; src.loop = true;
     const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 700;
     const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 7500;
-    const g = ac.createGain(); g.gain.setValueAtTime(.0001, ac.currentTime); g.gain.linearRampToValueAtTime(.2, ac.currentTime + 1.2);
+    const g = ac.createGain(); g.gain.setValueAtTime(.0001, ac.currentTime); g.gain.linearRampToValueAtTime(.065, ac.currentTime + 1.2);
     const src2 = ac.createBufferSource(); src2.buffer = AU.nbuf; src2.loop = true; src2.playbackRate.value = .5;
     const lp2 = ac.createBiquadFilter(); lp2.type = 'lowpass'; lp2.frequency.value = 420;
-    const g2 = ac.createGain(); g2.gain.value = .11;
+    const g2 = ac.createGain(); g2.gain.value = .035;
     src.connect(hp).connect(lp).connect(g).connect(out.get()); src2.connect(lp2).connect(g2).connect(out.get());
     src.start(); src2.start(); rainNodes = [src, src2];
     drip(); thunderT = setTimeout(thunder, 5500);

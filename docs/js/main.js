@@ -12,7 +12,7 @@
 
   const ORDER = ['intro', 'route', 'freeze', 'fling'];
   const TITLES = {
-    route: '1 · Trace the sneak route',
+    route: '1 · Sneak past the dogs',
     freeze: '2 · Freeze when the dog looks',
     fling: '3 · Fling the cheese to your love'
   };

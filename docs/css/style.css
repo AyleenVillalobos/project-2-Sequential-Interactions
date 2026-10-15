@@ -194,3 +194,16 @@ html, body {
 .sc-night .bubble::after { border-radius: 0; background: var(--px-paper); border-color: var(--px-ink); border-width: 0 4px 4px 0; }
 .sc-freeze .hide { color: var(--px-accent); opacity: 1; z-index: 6; }
 .sc-freeze .hide.active { background: var(--px-accent); color: var(--px-paper); }
+
+/* ---------- Step 1: living room ---------- */
+.sc-room { background: #14102e; }
+.sc-room svg.scene-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.sc-room .flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 8; transition: opacity .06s linear; }
+.sc-room .flash.on { opacity: 1; }
+.sc-room .hint {
+  position: absolute; left: 50%; bottom: calc(40px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+  font-family: var(--px-font); font-weight: 800; text-transform: uppercase; letter-spacing: .05em; font-size: 14px; padding: 10px 16px; white-space: nowrap;
+  border-radius: 0; border: 3px solid var(--px-ink); background: var(--px-paper); color: var(--px-accent); box-shadow: 3px 3px 0 var(--px-ink);
+  pointer-events: none; opacity: 0; transition: opacity .4s ease; z-index: 6;
+}
+.sc-room .hint.on { opacity: 1; animation: hintp 1.8s ease-in-out infinite; }
