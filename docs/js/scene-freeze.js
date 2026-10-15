@@ -45,8 +45,8 @@ Seq.scenes.freeze = (root, done) => {
   </svg></div>
   <svg class="lay rings" xmlns="http://www.w3.org/2000/svg"><ellipse class="r0" fill="none" stroke="var(--ring)" opacity="0"/><ellipse class="r1" fill="none" stroke="var(--ring)" opacity="0"/></svg>
   <div class="bang"><svg viewBox="0 0 60 80" style="width:100%;height:100%"><path d="M22 6h16l-3 42H25z" fill="#f4f4f4" stroke="#1f1f1f" stroke-width="3.5" stroke-linejoin="round"/><circle cx="30" cy="63" r="7.5" fill="#f4f4f4" stroke="#1f1f1f" stroke-width="3.5"/></svg></div>
-  <div class="vig"></div>
-  <button class="hide" type="button" aria-label="Hide (hold)"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7l6 5 6-5M5 18h14"/></svg></button>`;
+  <div class="vig" data-px="vignette"></div>
+  <button class="hide" type="button" aria-label="Hide (hold)" data-px-ui><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7l6 5 6-5M5 18h14"/></svg></button>`;
 
   const q = s => root.querySelector(s);
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -415,20 +415,21 @@ Seq.scenes.freeze = (root, done) => {
     });
     if (S.hAmt > .003) {
       const h = S.hAmt, cA = .1 * h, eA = (.2 + .5 * trf) * h, rr = Math.max(W, H) * (1.05 - .5 * trf);
-      vig.style.background = `radial-gradient(circle at ${f2(rcx)}px ${f2(rcy)}px,rgba(0,0,0,${f2(cA)}) 0,rgba(0,0,0,${f2(cA)}) ${f2(60 * k)}px,rgba(0,0,0,${f2(eA)}) ${f2(rr)}px)`;
-    } else vig.style.background = 'none';
+      vig._pxVig = { x: rcx, y: rcy, cA, eA, r1: 60 * k, r2: rr };
+    } else vig._pxVig = null;
   }
 
+  const px = new Seq.Pixel(root);
   let last = performance.now();
   layout(); resetState();
   return {
     entry: { x: START_P * W, y: START_Q * H - 40 * k },
     frame(now) {
       const dt = Math.min(.05, (now - last) / 1000 || .016); last = now;
-      update(dt); render();
+      update(dt); render(); px.render(now);
     },
     destroy() {
-      whineStop(); ro.disconnect(); out.close();
+      whineStop(); ro.disconnect(); px.destroy(); out.close();
       removeEventListener('keydown', onKeyDown); removeEventListener('keyup', onKeyUp);
       removeEventListener('blur', letGo); document.removeEventListener('visibilitychange', letGo);
     }

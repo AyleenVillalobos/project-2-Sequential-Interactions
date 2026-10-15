@@ -653,6 +653,7 @@ Seq.scenes.fling = (root, done) => {
   }
 
   // ---------- boot ----------
+  const px = new Seq.Pixel(root);
   layout();
   const start = holeShot();
   cam.x.v = start.x; cam.y.v = start.y; cam.z.v = start.z;
@@ -668,8 +669,8 @@ Seq.scenes.fling = (root, done) => {
     entry: toScreen(HOLE_X, -40),
     frame(now) {
       const dt = Math.min((now - last) / 1000, 1 / 30); last = now;
-      update(dt); render();
+      update(dt); render(); px.render(now);
     },
-    destroy() { tensionStop(); ro.disconnect(); out.close(); }
+    destroy() { tensionStop(); ro.disconnect(); px.destroy(); out.close(); }
   };
 };

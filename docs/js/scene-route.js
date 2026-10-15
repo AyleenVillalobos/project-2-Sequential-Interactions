@@ -12,7 +12,7 @@ Seq.scenes.route = (root, done) => {
     </svg>`;
   root.innerHTML = `
   <div class="actor hole start">${HOLE_SVG}</div>
-  <div class="actor glow"></div>
+  <div class="actor glow" data-px="glow"></div>
   <div class="actor exit"><div class="pulse">${HOLE_SVG}</div></div>
   <canvas></canvas>
   <div class="actor dog">
@@ -445,8 +445,10 @@ Seq.scenes.route = (root, done) => {
     flare = warn ? 1 : Math.max(0, flare - dt * 1.6);
     printsA = lerp(printsA, printsT, Math.min(1, dt * 4));
     draw(now);
+    px.render(now);
   }
 
+  const px = new Seq.Pixel(root);
   layout(); reset();
   let rt = 0;
   const ro = new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => { if (st === 'fin' || st === 'done') return; layout(); reset(); }, 80); });
@@ -455,6 +457,6 @@ Seq.scenes.route = (root, done) => {
   return {
     entry: { x: L.peek.x, y: L.H - L.holeH * .45 },
     frame,
-    destroy() { ro.disconnect(); clearTimeout(rt); timers.forEach(clearTimeout); out.close(); }
+    destroy() { ro.disconnect(); px.destroy(); clearTimeout(rt); timers.forEach(clearTimeout); out.close(); }
   };
 };
