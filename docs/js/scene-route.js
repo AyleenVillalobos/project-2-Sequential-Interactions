@@ -179,6 +179,7 @@ Seq.scenes.route = (root, done) => {
 `; }
 
   /* ---------- layout (everything is built from the real width / height) ---------- */
+  let WIN = { x: 0, y: 0, w: 1, h: 1 }, CWIN = { x: 0, y: 0, w: 1, h: 1 };
   let W = 1, H = 1, yW = 0, vp = { x: 0, y: 0 }, sf = 1, HOME = { x: 0, y: 0 }, HOLE = { x: 0, y: 0 }, DOOR = { x: 0, w: 0, y: 0 };
   const DEPTH = .55;
   const scaleAt = y => lerp(.62, 1.15, clamp((y - yW) / (H - yW), 0, 1));
@@ -196,6 +197,7 @@ Seq.scenes.route = (root, done) => {
     for (let x = xl + 9; x < xr; x += 18) paperB += `M${f1(x)} ${f1(yt + 8)}V${f1(yW - 9)}`;
     for (let x = 6; x < xl; x += 12) { paperL += `M${x} ${f1(wallTopY(x))}V${f1(wallBaseY(x) - 12)}`; paperR += `M${W - x} ${f1(wallTopY(x))}V${f1(wallBaseY(x) - 12)}`; }
     const wx = W * .17, ww = W * .2, wy = yt + (yW - yt) * .16, wh = (yW - yt) * .5;
+    WIN = { x: wx, y: wy, w: ww, h: wh };
     const dw = W * .13, dh = (yW - yt) * .78, dx0 = DOOR.x - dw / 2, dy0 = yW - dh;
     const sx = W * .25, sw = W * .34, sh = (yW - yt) * .46, sy = yW + 16 - sh;
     const lampX = W * .19, plantX = W * .655;
@@ -205,6 +207,7 @@ Seq.scenes.route = (root, done) => {
     for (let i = 0; i < 7; i++) stars += `<circle cx="${f1(wx + 8 + (i * 37 % (ww - 16)))}" cy="${f1(wy + 8 + (i * 23 % (wh * .5)))}" r="1.4" fill="#fff"/>`;
     return `
     <defs>
+      <clipPath id="rWinClip"><rect x="${f1(wx)}" y="${f1(wy)}" width="${f1(ww)}" height="${f1(wh)}"/></clipPath>
       <radialGradient id="rLamp" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd98a" stop-opacity=".7"/><stop offset=".55" stop-color="#ffbb62" stop-opacity=".22"/><stop offset="1" stop-color="#ffbb62" stop-opacity="0"/></radialGradient>
       <linearGradient id="rFloor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b3a22"/><stop offset="1" stop-color="#b06a3c"/></linearGradient>
       <linearGradient id="rWall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2256"/><stop offset="1" stop-color="#413883"/></linearGradient>
@@ -228,6 +231,7 @@ Seq.scenes.route = (root, done) => {
       <rect x="${f1(wx)}" y="${f1(wy)}" width="${f1(ww)}" height="${f1(wh)}" fill="#1d1049"/>
       ${stars}
       <circle cx="${f1(wx + ww * .7)}" cy="${f1(wy + wh * .28)}" r="${f1(wh * .13)}" fill="#f1e9ff"/><circle cx="${f1(wx + ww * .7 + wh * .07)}" cy="${f1(wy + wh * .28 - wh * .05)}" r="${f1(wh * .12)}" fill="#1d1049"/>
+      <g clip-path="url(#rWinClip)"><g class="winRain"></g></g>
       <path d="M${f1(wx + ww / 2)} ${f1(wy)}V${f1(wy + wh)}M${f1(wx)} ${f1(wy + wh * .55)}H${f1(wx + ww)}" stroke="#dedcf0" stroke-width="3"/>
       <rect x="${f1(wx - 10)}" y="${f1(wy + wh + 3)}" width="${f1(ww + 20)}" height="7" fill="#dedcf0" stroke="${OL}" stroke-width="2.2"/>
       <path d="M${f1(wx - 8)} ${f1(wy - 8)}h${f1(ww * .2)}q-4 ${f1(wh * .5)} 2 ${f1(wh + 6)}h-${f1(ww * .2 - 4)}z" fill="#c4577f" stroke="${OL}" stroke-width="2.4"/>
@@ -294,11 +298,10 @@ Seq.scenes.route = (root, done) => {
     let paper = '';
     for (let x = 8; x < W; x += 18) paper += `M${x} 0V${f1(yw - 16)}`;
     const wx = W * .06, ww = W * .36, wy = H * .1, wh = H * .27;
+    CWIN = { x: wx, y: wy, w: ww, h: wh };
     const dx = W * .66, dw = W * .24, dh = H * .46, dy = yw - dh;
     const cx = W * .36, cy = H * .88, cs = Math.min(W / 210, H / 520) * 1.55;
-    let rain = '';
-    for (let i = 0; i < 9; i++) rain += `M${f1(wx + 10 + i * ww / 9)} ${f1(wy + 8 + (i * 29) % (wh * .6))}l-3 12`;
-    return `<defs><radialGradient id="cLamp" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd98a" stop-opacity=".55"/><stop offset="1" stop-color="#ffbb62" stop-opacity="0"/></radialGradient></defs>
+    return `<defs><clipPath id="cWinClip"><rect x="${f1(wx)}" y="${f1(wy)}" width="${f1(ww)}" height="${f1(wh)}"/></clipPath><radialGradient id="cLamp" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd98a" stop-opacity=".55"/><stop offset="1" stop-color="#ffbb62" stop-opacity="0"/></radialGradient></defs>
     <g class="ctRoot">
       <rect x="0" y="0" width="${W}" height="${f1(yw)}" fill="#322a6b"/>
       <path d="${paper}" stroke="rgba(0,0,0,.18)" stroke-width="1.6" fill="none"/>
@@ -310,7 +313,7 @@ Seq.scenes.route = (root, done) => {
         <rect x="${f1(wx - 6)}" y="${f1(wy - 6)}" width="${f1(ww + 12)}" height="${f1(wh + 12)}" fill="#dedcf0" stroke="${OL}" stroke-width="3"/>
         <rect x="${f1(wx)}" y="${f1(wy)}" width="${f1(ww)}" height="${f1(wh)}" fill="#1d1049"/>
         <circle cx="${f1(wx + ww * .74)}" cy="${f1(wy + wh * .3)}" r="${f1(wh * .12)}" fill="#f1e9ff"/><circle cx="${f1(wx + ww * .74 + wh * .06)}" cy="${f1(wy + wh * .3 - wh * .05)}" r="${f1(wh * .11)}" fill="#1d1049"/>
-        <path d="${rain}" stroke="#6c63b6" stroke-width="2" fill="none"/>
+        <g clip-path="url(#cWinClip)"><g class="ctRain"></g></g>
         <path d="M${f1(wx + ww / 2)} ${f1(wy)}V${f1(wy + wh)}M${f1(wx)} ${f1(wy + wh * .55)}H${f1(wx + ww)}" stroke="#dedcf0" stroke-width="3.4"/>
         <rect x="${f1(wx - 12)}" y="${f1(wy + wh + 4)}" width="${f1(ww + 24)}" height="8" fill="#dedcf0" stroke="${OL}" stroke-width="2.4"/>
       </g>
@@ -361,6 +364,7 @@ Seq.scenes.route = (root, done) => {
         bn: g.querySelector('.dLegBN'), bf: g.querySelector('.dLegBF'), fn: g.querySelector('.dLegFN'), ff: g.querySelector('.dLegFF'), mo: g.querySelector('.dMouthOpen'), ms: g.querySelector('.dMouthShut'),
         bang: el.fx.querySelector('.bangW' + i + ' .bang'), bangW: el.fx.querySelector('.bangW' + i), woof: el.fx.querySelector('.woofW' + i + ' .woof'), sh: el.shadows.querySelector('.shD' + i) };
     });
+    el.winRain = rm.querySelector('.winRain'); el.ctRain = ct.querySelector('.ctRain');
     el.shM = el.shadows.querySelector('.shM'); el.drops = el.fx.querySelector('.drops'); el.goal = el.fx.querySelector('.goal');
     // cut-away
     el.cut = { root: ct.querySelector('.ctRoot'), tabby: ct.querySelector('.tabby'), tail: ct.querySelector('.tabby .cTail'), body: ct.querySelector('.tabby .cBody'), head: ct.querySelector('.tabby .cHead'),
@@ -380,8 +384,41 @@ Seq.scenes.route = (root, done) => {
     rm.innerHTML = roomMarkup();
     ct.innerHTML = `<defs><linearGradient id="rFloor2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b3a22"/><stop offset="1" stop-color="#b06a3c"/></linearGradient></defs>` + cutMarkup();
     grab();
+    seedRain(winDrops, WIN, Math.round(12 + WIN.w / 9)); seedRain(ctDrops, CWIN, Math.round(10 + CWIN.w / 14));
     dogs.forEach(d => { if (!d.init) { d.x = d.fx * W; d.y = yW + (H - yW) * (d.fy - .2) / .8 + H * .05; d.init = true; pickWaypoint(d); } });
     if (!M.init) { M.init = true; M.x = HOLE.x; M.y = HOLE.y - 8; target.x = HOME.x; target.y = HOME.y; }
+  }
+
+  /* ---------- rain on the window glass (so you can tell we are indoors now) ---------- */
+  const winDrops = [], ctDrops = [];
+  function seedRain(arr, win, n) {
+    arr.length = 0;
+    for (let i = 0; i < n; i++) arr.push({ x: win.x + Math.random() * win.w, y: win.y + Math.random() * win.h, vy: 150 + Math.random() * 150, len: 7 + Math.random() * 9, slow: Math.random() < .28 });
+  }
+  function stepRain(arr, win, dt, k) {
+    for (const d of arr) {
+      const v = (d.slow ? d.vy * .22 : d.vy) * k;
+      d.y += v * dt; d.x -= v * .14 * dt;
+      if (d.y > win.y + win.h + 12) { d.y = win.y - 12; d.x = win.x + Math.random() * (win.w + 24); }
+      if (d.x < win.x - 12) d.x += win.w + 24;
+    }
+  }
+  function rainMarkup(arr, k) {
+    let m = '';
+    for (const d of arr) {
+      if (d.slow) m += `<path d="M${f1(d.x)} ${f1(d.y)}l${f1(-.6 * k)} ${f1(-9 * k)}" stroke="#cdc9f0" stroke-width="${f1(1.8 * k)}" stroke-linecap="round"/><circle cx="${f1(d.x)}" cy="${f1(d.y)}" r="${f1(2.1 * k)}" fill="#cdc9f0"/>`;
+      else m += `<path d="M${f1(d.x)} ${f1(d.y)}l${f1(-d.len * .14 * k)} ${f1(-d.len * k)}" stroke="#8981cd" stroke-width="${f1(1.7 * k)}" stroke-linecap="round"/>`;
+    }
+    return m;
+  }
+  /* very soft, muffled rain from outside (the opening's rain was loud; this is the same rain heard through a window) */
+  let rainNodes = null;
+  function indoorRain() {
+    if (!ok() || rainNodes) return; const ac = AU.ac;
+    const src = ac.createBufferSource(); src.buffer = AU.nbuf; src.loop = true;
+    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 650; lp.Q.value = .6;
+    const g = ac.createGain(); g.gain.setValueAtTime(.0001, ac.currentTime); g.gain.linearRampToValueAtTime(.045, ac.currentTime + 1.5);
+    src.connect(lp).connect(g).connect(out.get()); src.start(); rainNodes = src;
   }
 
   /* ---------- floor rules ---------- */
@@ -536,6 +573,7 @@ Seq.scenes.route = (root, done) => {
     updateMouse(dt);
     M.stand = lerp(M.stand, standT, Math.min(1, dt * 7)); M.look = lerp(M.look, lookT, Math.min(1, dt * 8)); M.ear = lerp(M.ear, earT, Math.min(1, dt * 10));
     M.sq = lerp(M.sq, sqT, Math.min(1, dt * 14));
+    stepRain(winDrops, WIN, dt, sf); stepRain(ctDrops, CWIN, dt, sf * 1.6);
     for (let i = drops.length - 1; i >= 0; i--) { const p = drops[i]; p.a += dt; p.vy += 520 * dt; p.x += p.vx * dt; p.y += p.vy * dt; if (p.a > .7) drops.splice(i, 1); }
   }
 
@@ -583,6 +621,7 @@ Seq.scenes.route = (root, done) => {
     } else e.woof.setAttribute('opacity', 0);
   }
   function renderRoom() {
+    el.winRain.innerHTML = rainMarkup(winDrops, sf);
     renderMouse(); dogs.forEach(renderDog);
     // depth order: whoever is lower on the screen is drawn in front
     const order = [{ y: M.y, n: el.mouse }, { y: dogs[0].y, n: dogs[0].el.g }, { y: dogs[1].y, n: dogs[1].el.g }].sort((a, b) => a.y - b.y);
@@ -597,6 +636,7 @@ Seq.scenes.route = (root, done) => {
     if (st === 'home') {} 
   }
   function renderCut() {
+    el.ctRain.innerHTML = rainMarkup(ctDrops, Math.min(W / 210, H / 520) * 1.3);
     const c = el.cut, u = clamp(stT / 3.4, 0, 1), z = 1 + .12 * easeOut(u);
     c.root.setAttribute('transform', `translate(${f1(W * .42)} ${f1(H * .62)}) scale(${f2(z)}) translate(${f1(-W * .42)} ${f1(-H * .62)})`);
     const tt = ct.style.display === 'none' ? 0 : t;
@@ -614,12 +654,12 @@ Seq.scenes.route = (root, done) => {
   function render() { if (st === 'cut') renderCut(); else renderRoom(); }
 
   /* ---------- go ---------- */
-  layout(); update(.016); render();
+  layout(); indoorRain(); update(.016); render();
   const ro = new ResizeObserver(() => { layout(); }); ro.observe(root);
   let last = performance.now();
   return {
     entry: { x: W * .5, y: H * .5 },
     frame(now) { const dt = clamp((now - last) / 1000, 0, 1 / 30); last = now; update(dt); render(); px.render(now); },
-    destroy() { ro.disconnect(); px.destroy(); out.close(); }
+    destroy() { ro.disconnect(); px.destroy(); if (rainNodes) { try { rainNodes.stop(); } catch (e) {} } out.close(); }
   };
 };
