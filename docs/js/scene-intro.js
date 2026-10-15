@@ -10,7 +10,7 @@ Seq.scenes.intro = (root, done) => {
 
   /* ---------- world layout (units; the wall base is y = 0, up is negative) ---------- */
   const TUN_X = -140, TUN_Y = 6, WALK_Y = 28;        // tunnel mouth, its floor, the mouse's walking line
-  const CAT_X = 58, SLAB_Y = -250, CAT_Y = SLAB_Y - 8, CAT_S = .95;   // the cat is small and chonky
+  const CAT_X = 58, SLAB_Y = -250, CAT_Y = SLAB_Y + 3, CAT_S = .95;   // the cat is small and chonky
   const MK = .85;                                                    // mouse art scale
   const LAND_X = 16, STOP_X = -26;
 
@@ -85,6 +85,11 @@ Seq.scenes.intro = (root, done) => {
       <linearGradient id="nLeg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b3acbd"/><stop offset="1" stop-color="#6f6880"/></linearGradient>
       <radialGradient id="nMouseEar" cx=".5" cy=".55" r=".7"><stop offset="0" stop-color="#f1b4c6"/><stop offset="1" stop-color="#c47d96"/></radialGradient>
 
+      <radialGradient id="nAO" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+      <clipPath id="nHeadClip"><ellipse cx="0" cy="0" rx="42" ry="34"/></clipPath>
+      <clipPath id="nCatBodyClip"><ellipse cx="0" cy="-32" rx="48" ry="35"/></clipPath>
+      <clipPath id="nMBodyClip"><ellipse cx="-5" cy="-19" rx="25" ry="18"/></clipPath>
+      <clipPath id="nMHeadClip"><ellipse cx="19" cy="-26" rx="17.5" ry="15.5"/></clipPath>
       <clipPath id="nHoleClip"><path d="M${TUN_X - 28} ${TUN_Y} V-30 A28 28 0 0 1 ${TUN_X + 28} -30 V${TUN_Y} Z"/></clipPath>
     </defs>
 
@@ -159,6 +164,18 @@ Seq.scenes.intro = (root, done) => {
         <path d="M-320 -24 H320" stroke="rgba(255,255,255,.07)" stroke-width="2"/>
       </g>
 
+      <!-- railing (behind the cat) -->
+      <g class="rail">
+        <rect x="-50" y="-262" width="224" height="9" fill="#241c52"/>
+        ${bars}
+        <rect x="-54" y="-292" width="232" height="9" rx="2" fill="#3a3070"/>
+        <rect x="-54" y="-292" width="232" height="2.4" rx="1" fill="rgba(255,255,255,.3)"/>
+        <rect x="-56" y="-288" width="9" height="40" rx="2" fill="url(#nBaluster)"/>
+        <rect x="165" y="-288" width="9" height="40" rx="2" fill="url(#nBaluster)"/>
+        <rect x="-58" y="-296" width="13" height="7" rx="2" fill="#4a3f88"/><rect x="163" y="-296" width="13" height="7" rx="2" fill="#4a3f88"/>
+        <path d="M-52 -290 H172" stroke="rgba(255,255,255,.14)" stroke-width="1.2"/>
+      </g>
+
       <!-- the cat: small, chonky, tuxedo -->
       <g class="cat" transform="translate(${CAT_X} ${CAT_Y}) scale(${CAT_S})">
         <ellipse cx="0" cy="3" rx="60" ry="7" fill="rgba(5,2,15,.5)"/>
@@ -169,19 +186,24 @@ Seq.scenes.intro = (root, done) => {
         <g class="cBody">
           <ellipse cx="-37" cy="-15" rx="17" ry="15" fill="url(#nCatBlack)"/>
           <ellipse cx="37" cy="-15" rx="17" ry="15" fill="url(#nCatBlack)"/>
-          <ellipse cx="0" cy="-32" rx="47" ry="35" fill="url(#nCatBlack)"/>
+          <ellipse cx="0" cy="-32" rx="48" ry="35" fill="url(#nCatBlack)"/>
           <ellipse cx="-22" cy="-50" rx="20" ry="11" fill="url(#nSheen)"/>
           <ellipse cx="0" cy="-26" rx="27" ry="26" fill="url(#nCatWhite)"/>
+          <ellipse cx="0" cy="-47" rx="31" ry="10" fill="url(#nAO)"/>
+          <ellipse cx="0" cy="-10" rx="30" ry="9" fill="url(#nAO)" opacity=".5"/>
           <path d="M-20 -40 q-3 5 0 9 M3 -43 q3 6 0 11 M19 -36 q-3 5 -1 9" fill="none" stroke="rgba(120,125,170,.28)" stroke-width="1.3" stroke-linecap="round"/>
           <ellipse cx="-45" cy="-4" rx="10" ry="5.5" fill="url(#nCatWhite)"/><ellipse cx="45" cy="-4" rx="10" ry="5.5" fill="url(#nCatWhite)"/>
           <ellipse cx="-14" cy="-6" rx="12.5" ry="8.5" fill="url(#nCatWhite)"/><ellipse cx="14" cy="-6" rx="12.5" ry="8.5" fill="url(#nCatWhite)"/>
           <path d="M-18 -2 V-8 M-11 -2 V-8 M11 -2 V-8 M18 -2 V-8" stroke="rgba(90,95,140,.4)" stroke-width="1.2" stroke-linecap="round"/>
         </g>
+        <ellipse cx="0" cy="-46" rx="34" ry="9" fill="url(#nAO)" opacity=".8"/>
         <g class="cHead" transform="translate(0 -76)">
           <path d="M-37 -8 Q-44 -38 -27 -44 Q-14 -36 -10 -25Z" fill="url(#nCatHead)"/>
           <path d="M37 -8 Q44 -38 27 -44 Q14 -36 10 -25Z" fill="url(#nCatHead)"/>
           <path d="M-32 -13 Q-36 -33 -27 -37 Q-19 -32 -16 -25Z" fill="url(#nEar)"/>
+          <path d="M-29 -20 q1 -7 3 -11 M-25 -19 q0 -6 2 -9" fill="none" stroke="rgba(255,235,240,.6)" stroke-width="1.1" stroke-linecap="round"/>
           <path d="M32 -13 Q36 -33 27 -37 Q19 -32 16 -25Z" fill="url(#nEar)"/>
+          <path d="M29 -20 q-1 -7 -3 -11 M25 -19 q0 -6 -2 -9" fill="none" stroke="rgba(255,235,240,.6)" stroke-width="1.1" stroke-linecap="round"/>
           <ellipse cx="0" cy="0" rx="42" ry="34" fill="url(#nCatHead)"/>
           <ellipse cx="-31" cy="10" rx="13" ry="11" fill="url(#nCatHead)"/><ellipse cx="31" cy="10" rx="13" ry="11" fill="url(#nCatHead)"/>
           <ellipse cx="-12" cy="-16" rx="24" ry="11" fill="url(#nSheen)"/>
@@ -192,7 +214,8 @@ Seq.scenes.intro = (root, done) => {
           <ellipse cx="-27" cy="7" rx="7.5" ry="4.4" fill="#ff8fae" opacity=".5"/><ellipse cx="27" cy="7" rx="7.5" ry="4.4" fill="#ff8fae" opacity=".5"/>
           <g class="cEyeL" transform="translate(-17 -3)"><g class="cEyeScale"><ellipse rx="10" ry="11" fill="#101a12"/><ellipse rx="8.6" ry="9.6" fill="url(#nCatEye)"/><ellipse class="cPupil" rx="5.6" ry="7" fill="#06070a"/><circle cx="-3.2" cy="-3.8" r="3.1" fill="#fff"/><circle cx="3.4" cy="3.6" r="1.5" fill="#fff" opacity=".9"/></g></g>
           <g class="cEyeR" transform="translate(17 -3)"><g class="cEyeScale"><ellipse rx="10" ry="11" fill="#101a12"/><ellipse rx="8.6" ry="9.6" fill="url(#nCatEye)"/><ellipse class="cPupil" rx="5.6" ry="7" fill="#06070a"/><circle cx="-3.2" cy="-3.8" r="3.1" fill="#fff"/><circle cx="3.4" cy="3.6" r="1.5" fill="#fff" opacity=".9"/></g></g>
-          <path d="M-3.6 6.5 Q0 4.2 3.6 6.5 Q2.7 11 0 12 Q-2.7 11 -3.6 6.5Z" fill="#f09bb0"/>
+          <g fill="rgba(110,115,160,.4)"><circle cx="-14" cy="12" r="1"/><circle cx="-10" cy="14" r="1"/><circle cx="-15" cy="16" r="1"/><circle cx="14" cy="12" r="1"/><circle cx="10" cy="14" r="1"/><circle cx="15" cy="16" r="1"/></g>
+          <path d="M-3.6 6.5 Q0 4.2 3.6 6.5 Q2.7 11 0 12 Q-2.7 11 -3.6 6.5Z" fill="#f09bb0"/><path d="M-2 6.4 Q0 5.5 2 6.4" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1" stroke-linecap="round"/>
           <path class="cMouthShut" d="M0 12 Q-2.6 17 -7.5 14 M0 12 Q2.6 17 7.5 14" fill="none" stroke="#4a2c3a" stroke-width="1.5" stroke-linecap="round"/>
           <g class="cMouthOpen" opacity="0">
             <path d="M-8 14 Q0 11.5 8 14 Q8 28 0 29 Q-8 28 -8 14Z" fill="#4a0f2a"/>
@@ -204,18 +227,6 @@ Seq.scenes.intro = (root, done) => {
             <path d="M-26 10 Q-38 6 -52 8 M-26 14 Q-39 14 -52 19"/><path d="M26 10 Q38 6 52 8 M26 14 Q39 14 52 19"/>
           </g>
         </g>
-      </g>
-
-      <!-- railing (in front of the cat) -->
-      <g class="rail">
-        <rect x="-50" y="-262" width="224" height="9" fill="#241c52"/>
-        ${bars}
-        <rect x="-54" y="-292" width="232" height="9" rx="2" fill="#3a3070"/>
-        <rect x="-54" y="-292" width="232" height="2.4" rx="1" fill="rgba(255,255,255,.3)"/>
-        <rect x="-56" y="-288" width="9" height="40" rx="2" fill="url(#nBaluster)"/>
-        <rect x="165" y="-288" width="9" height="40" rx="2" fill="url(#nBaluster)"/>
-        <rect x="-58" y="-296" width="13" height="7" rx="2" fill="#4a3f88"/><rect x="163" y="-296" width="13" height="7" rx="2" fill="#4a3f88"/>
-        <path d="M-52 -290 H172" stroke="rgba(255,255,255,.14)" stroke-width="1.2"/>
       </g>
 
       <!-- sidewalk, curb, road -->
@@ -262,15 +273,18 @@ Seq.scenes.intro = (root, done) => {
               <ellipse cx="-3" cy="-11" rx="19" ry="8" fill="#f1e9f1" opacity=".55"/>
               <path d="M-24 -29 Q-10 -40 6 -35" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="2" stroke-linecap="round"/>
               <g class="mLegFN"><g class="mLegS"><rect x="-3" y="0" width="6" height="14" rx="3" fill="url(#nLeg)"/><ellipse cx="1.5" cy="14.5" rx="5.2" ry="2.8" fill="#e8a9b9"/></g></g>
+              <ellipse cx="13" cy="-13" rx="15" ry="6" fill="url(#nAO)" opacity=".7"/>
               <g class="mHead">
                 <ellipse cx="33" cy="-22" rx="9" ry="6.4" fill="url(#nMouseHead)"/>
                 <ellipse cx="19" cy="-26" rx="17.5" ry="15.5" fill="url(#nMouseHead)"/>
-                <g class="mEar"><circle cx="8" cy="-41" r="11.5" fill="#8d869a"/><circle cx="8.5" cy="-40.5" r="8" fill="url(#nMouseEar)"/></g>
+                <path d="M6 -33 q4 -3 9 -2" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.6" stroke-linecap="round"/>
+                <g class="mEar"><circle cx="8" cy="-41" r="11.5" fill="#8d869a"/><circle cx="8.5" cy="-40.5" r="8" fill="url(#nMouseEar)"/><path d="M5 -44 q3 -3 7 -2 M4 -40 q4 -2 8 0" fill="none" stroke="rgba(255,235,240,.45)" stroke-width="1" stroke-linecap="round"/></g>
                 <ellipse class="mEyeOpen" cx="25" cy="-29" rx="4.3" ry="5" fill="#0d0a14"/>
                 <circle class="mEyeShine" cx="26.7" cy="-31.2" r="1.9" fill="#fff"/>
                 <circle class="mEyeShine" cx="23.6" cy="-26.8" r=".9" fill="#fff" opacity=".85"/>
                 <path class="mEyeHappy" d="M20.8 -28.5 Q25 -34.5 29.2 -28.5" fill="none" stroke="#0d0a14" stroke-width="1.9" stroke-linecap="round" opacity="0"/>
                 <ellipse class="mBlush" cx="27.5" cy="-20.5" rx="4.6" ry="3" fill="#f58fae" opacity=".4"/>
+                <rect x="34.6" y="-17.4" width="3.1" height="4" rx="1.1" fill="#fffaf0" stroke="rgba(60,40,60,.35)" stroke-width=".5"/><rect x="37.9" y="-17.6" width="3.1" height="4" rx="1.1" fill="#fffaf0" stroke="rgba(60,40,60,.35)" stroke-width=".5"/>
                 <circle cx="39.2" cy="-23" r="3.3" fill="#e9879f"/><circle cx="38.3" cy="-24" r="1" fill="#fff" opacity=".75"/>
                 <path class="mSmile" d="M31.5 -16.5 Q36 -12.5 39.5 -17" fill="none" stroke="#3a2536" stroke-width="1.3" stroke-linecap="round" opacity="0"/>
                 <g stroke="rgba(255,255,255,.6)" stroke-width=".9" stroke-linecap="round" fill="none"><path d="M36 -21 L50 -28 M37 -20 L52 -21 M36 -19 L50 -14"/></g>
