@@ -248,8 +248,10 @@
   };
   Pixel.prototype.render = function (now) {
     if (!this.bw) return;
-    if (this.opts.fps && now - this.last < 1000 / this.opts.fps - 3) return;
+    // adaptive: never spend more than ~60% of a frame budget here, so slow phones drop to ~30 fps art instead of stuttering
+    if (now - this.last < Math.max(this.opts.fps ? 1000 / this.opts.fps - 3 : 0, (this.cost || 0) * 1.6)) return;
     this.last = now;
+    const tStart = performance.now();
     const w2 = this.work.width, h2 = this.work.height, ctx = this.wctx;
     this.gradCache.clear();
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.filter = 'none'; ctx.imageSmoothingEnabled = true;
@@ -273,6 +275,7 @@
     this.octx.putImageData(this.img, 0, 0);
     const info = { k: this.k, w: bw, h: bh };
     for (const f of this.overlays) f(this.octx, info);
+    const dur = performance.now() - tStart; this.cost = this.cost ? this.cost * .85 + dur * .15 : dur;
   };
   Pixel.prototype.destroy = function () { this.ro.disconnect(); };
 
