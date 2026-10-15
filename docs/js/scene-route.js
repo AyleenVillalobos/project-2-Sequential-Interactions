@@ -515,7 +515,7 @@ Seq.scenes.route = (root, done) => {
   root.addEventListener('pointerup', onUp); root.addEventListener('pointercancel', onUp);
 
   /* ---------- tuning ---------- */
-  const MOUSE_V = () => W * .55, DOG_V = () => W * .42, CHASE_V = () => W * .5;
+  const MOUSE_V = () => W * .5, DOG_V = () => W * .2, CHASE_V = () => W * .3;
   const SIGHT = () => W * .42, CATCH = () => 17 * sf, CONE = 38 * Math.PI / 180;
   const exitHit = () => M.X > .84 && Math.abs(M.Z - EXIT.Z) < .05;
   // can dog d see the mouse? it has to be inside the cone it is facing, in range, with no furniture in between
