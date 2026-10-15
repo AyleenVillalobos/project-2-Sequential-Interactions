@@ -147,3 +147,28 @@ html, body {
 
 /* ---------- Opening + Step 3 (side view) ---------- */
 .sc-side svg.scene-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* ---------- Opening: rainy night ---------- */
+.sc-night { background: #0b0624; }
+.sc-night svg.scene-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.sc-night canvas.rain { position: absolute; left: 0; top: 0; pointer-events: none; }
+.sc-night .twk { animation: twk 3.4s ease-in-out infinite; }
+@keyframes twk { 0%, 100% { opacity: .95; } 50% { opacity: .25; } }
+.sc-night .hint {
+  position: absolute; left: 50%; bottom: calc(44px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%); padding: 12px 26px; border-radius: 999px;
+  background: rgba(244, 236, 255, .92); color: #2a1458; font-weight: 700; font-size: 17px; letter-spacing: .02em;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, .35); pointer-events: none; opacity: 0; transition: opacity .5s ease; white-space: nowrap;
+}
+.sc-night .hint.on { opacity: 1; animation: hintp 1.8s ease-in-out infinite; }
+@keyframes hintp { 0%, 100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.05); } }
+.sc-night .bubble {
+  position: absolute; left: 0; top: 0; opacity: 0; pointer-events: none; z-index: 5;
+  padding: 10px 20px 11px; border-radius: 22px; background: #fff7e0; color: #2a1458;
+  border: 3px solid #2a1458; font-weight: 800; font-size: 26px; letter-spacing: .01em; white-space: nowrap;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .4); transform-origin: 50% 100%;
+}
+.sc-night .bubble::after {
+  content: ""; position: absolute; left: 50%; bottom: -11px; width: 16px; height: 16px; margin-left: -8px;
+  background: #fff7e0; border-right: 3px solid #2a1458; border-bottom: 3px solid #2a1458; transform: rotate(45deg);
+}
