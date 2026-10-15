@@ -1,4 +1,4 @@
-/* Step 1 — Sneak past the dogs.
+/* Step 1 — Sneak past the dogs (and hide from them).
    The mouse has just come in through a hole in the wall of a new house. Intro: the mouse gets
    in, we cut to the tabby cat waiting in a closed room (the goal), then cut back. Game: drag your
    finger (or mouse) anywhere and the mouse runs to it; two fast dogs patrol the living room.
@@ -10,7 +10,7 @@ Seq.scenes.route = (root, done) => {
   <svg class="scene-svg rm" xmlns="http://www.w3.org/2000/svg"></svg>
   <svg class="scene-svg ct" xmlns="http://www.w3.org/2000/svg" style="display:none"></svg>
   <div class="flash" data-px-ui></div>
-  <div class="hint" data-px-ui>Drag to guide the mouse</div>`;
+  <div class="hint" data-px-ui>Drag to move · tap boxes to hide</div>`;
   const rm = root.querySelector('svg.rm'), ct = root.querySelector('svg.ct'), flash = root.querySelector('.flash'), hint = root.querySelector('.hint');
   const px = new Seq.Pixel(root, { bg: '#14102e' });
 
@@ -163,8 +163,8 @@ Seq.scenes.route = (root, done) => {
           <ellipse cx="0" cy="22" rx="11" ry="7" fill="#fff"/>
           <path d="M-22 20 Q0 34 22 20 Q18 30 0 31 Q-18 30 -22 20Z" fill="#dedcf0" opacity=".7"/>
           <ellipse cx="-30" cy="8" rx="8.5" ry="5.4" fill="#ff7fa3" opacity=".7"/><ellipse cx="30" cy="8" rx="8.5" ry="5.4" fill="#ff7fa3" opacity=".7"/>
-          <g class="cEyeL" transform="translate(-19 -2)"><g class="cEyeScale"><ellipse rx="10.5" ry="12.5" fill="#0c0818"/><ellipse class="cPupil" rx="7.6" ry="9.4" fill="#f4d35e"/><path d="M-7 -4 Q0 -11 7 -4 Q0 -7 -7 -4Z" fill="#c46a38"/><ellipse rx="3.5" ry="4.8" fill="#0c0818" opacity=".85"/><circle cx="-3.8" cy="-4.8" r="3.8" fill="#fff"/><circle cx="3.8" cy="4.4" r="1.9" fill="#fff"/></g></g>
-          <g class="cEyeR" transform="translate(19 -2)"><g class="cEyeScale"><ellipse rx="10.5" ry="12.5" fill="#0c0818"/><ellipse class="cPupil" rx="7.6" ry="9.4" fill="#f4d35e"/><path d="M-7 -4 Q0 -11 7 -4 Q0 -7 -7 -4Z" fill="#c46a38"/><ellipse rx="3.5" ry="4.8" fill="#0c0818" opacity=".85"/><circle cx="-3.8" cy="-4.8" r="3.8" fill="#fff"/><circle cx="3.8" cy="4.4" r="1.9" fill="#fff"/></g></g>
+          <g class="cEyeL" transform="translate(-19 -2)"><g class="cEyeScale"><ellipse rx="10.5" ry="12.5" fill="#0c0818"/><ellipse class="cPupil" rx="7.6" ry="9.4" fill="#45b98d"/><path d="M-7 -4 Q0 -11 7 -4 Q0 -7 -7 -4Z" fill="#1d7c63"/><ellipse rx="3.5" ry="4.8" fill="#0c0818" opacity=".85"/><circle cx="-3.8" cy="-4.8" r="3.8" fill="#fff"/><circle cx="3.8" cy="4.4" r="1.9" fill="#fff"/></g></g>
+          <g class="cEyeR" transform="translate(19 -2)"><g class="cEyeScale"><ellipse rx="10.5" ry="12.5" fill="#0c0818"/><ellipse class="cPupil" rx="7.6" ry="9.4" fill="#45b98d"/><path d="M-7 -4 Q0 -11 7 -4 Q0 -7 -7 -4Z" fill="#1d7c63"/><ellipse rx="3.5" ry="4.8" fill="#0c0818" opacity=".85"/><circle cx="-3.8" cy="-4.8" r="3.8" fill="#fff"/><circle cx="3.8" cy="4.4" r="1.9" fill="#fff"/></g></g>
           <path d="M-3.8 7 Q0 4.6 3.8 7 Q2.8 11.4 0 12.4 Q-2.8 11.4 -3.8 7Z" fill="#ff8fae" stroke="#0c0818" stroke-width="1.5"/>
           <path class="cMouthShut" d="M0 12.4 Q-3 17.5 -7.4 14 M0 12.4 Q3 17.5 7.4 14" fill="none" stroke="#0c0818" stroke-width="1.9"/>
           <g class="cMouthOpen" opacity="0">
@@ -178,114 +178,125 @@ Seq.scenes.route = (root, done) => {
         </g>
 `; }
 
-  /* ---------- layout (everything is built from the real width / height) ---------- */
+  /* ---------- geometry: a one-point-perspective room ----------
+     Ground position = (X, Z): X is -1..1 across the room (walls at +-1), Z is depth (S0 = the back wall, 1 = the screen's bottom edge). */
+  const S0 = .45;
   let WIN = { x: 0, y: 0, w: 1, h: 1 }, CWIN = { x: 0, y: 0, w: 1, h: 1 };
-  let W = 1, H = 1, yW = 0, vp = { x: 0, y: 0 }, sf = 1, HOME = { x: 0, y: 0 }, HOLE = { x: 0, y: 0 }, DOOR = { x: 0, w: 0, y: 0 };
-  const DEPTH = .55;
-  const scaleAt = y => lerp(.62, 1.15, clamp((y - yW) / (H - yW), 0, 1));
-  const wallBaseY = x => vp.y + (yW - vp.y) * (vp.x / (vp.x - x));
-  const wallTopY = x => vp.y + (vp.y * -1 + 0) * 0 + (H * .03 - vp.y) * (vp.x / (vp.x - x));
+  let W = 1, H = 1, VPt = { x: 0, y: 0 }, xl = 0, xr = 0, yt = 0, yW = 0, sf = 1;
+  const proj = (X, Z) => ({ x: VPt.x + X * (W / 2) * Z, y: VPt.y + (H - VPt.y) * Z });
+  const zScale = Z => Z * 1.32;
+  const topY = s => VPt.y + (yt - VPt.y) * (s / S0);
+  const baseY = s => VPt.y + (H - VPt.y) * s;
+  const wallPt = (side, s, h) => { const b = baseY(s), tp = topY(s); return { x: VPt.x + side * (W / 2) * s, y: b - h * (b - tp) }; };
+  const backPt = (X, h) => ({ x: VPt.x + X * (W / 2) * S0, y: yW - h * (yW - yt) });
+  const pts = a => a.map(p => `${f1(p.x)},${f1(p.y)}`).join(' ');
+  const D1 = .62, D2 = .8, DH = .4;                                          // the door on the right wall: depth range, height (fraction of the wall)
+  const BOXES = [{ X: -.5, Z: .74 }, { X: .36, Z: .9 }, { X: .84, Z: .6 }];  // cardboard boxes the mouse can jump into
+  const HOLES = [{ X: -.82 }, { X: .86 }];                                   // holes in the back wall (the first is where the mouse came in)
+  let spots = [];
+
+  function boxMarkup() {
+    return `<g class="boxRoot" stroke-linejoin="round" stroke-linecap="round">
+      <ellipse cx="3" cy="2" rx="40" ry="8" fill="rgba(5,2,15,.45)"/>
+      <path d="M-30 -36 L28 -36 L36 -47 L-22 -47Z" fill="#3a2418" stroke="${OL}" stroke-width="2.6"/>
+      <g class="peek" opacity="0">
+        <circle cx="-11" cy="-44" r="6.4" fill="#b6adcf" stroke="${OL}" stroke-width="2.4"/><circle cx="-11" cy="-44" r="3.6" fill="#f48fae"/>
+        <circle cx="11" cy="-44" r="6.4" fill="#b6adcf" stroke="${OL}" stroke-width="2.4"/><circle cx="11" cy="-44" r="3.6" fill="#f48fae"/>
+        <ellipse cx="0" cy="-38" rx="12" ry="6" fill="#b6adcf" stroke="${OL}" stroke-width="2.4"/>
+        <circle cx="-4.5" cy="-38" r="2.1" fill="#fff"/><circle cx="4.5" cy="-38" r="2.1" fill="#fff"/><circle cx="-4" cy="-37.6" r="1.1" fill="${OL}"/><circle cx="5" cy="-37.6" r="1.1" fill="${OL}"/>
+      </g>
+      <rect x="-30" y="-36" width="58" height="36" fill="#d9965a" stroke="${OL}" stroke-width="3"/>
+      <path d="M28 -36 L36 -47 L36 -11 L28 0Z" fill="#b06a3c" stroke="${OL}" stroke-width="3"/>
+      <rect x="-5" y="-36" width="11" height="15" fill="#e8c08a" stroke="${OL}" stroke-width="2"/>
+      <path d="M-30 -36 L-37 -41 L-33 -30Z" fill="#e8c08a" stroke="${OL}" stroke-width="2.2"/>
+      <path d="M-14 -13 q-6 -6 -8 -1 q0 5 8 9 q8 -4 8 -9 q-2 -5 -8 1z" fill="#ff7fa3" stroke="${OL}" stroke-width="1.6"/>
+    </g>`;
+  }
 
   function roomMarkup() {
-    const xl = W * .12, xr = W * .88, yt = H * .03, yE = wallBaseY(0), yTe = wallTopY(0);
-    let planks = '';
-    const dX = W * .1;
-    for (let i = -16; i <= 16; i++) { const xi = vp.x + i * dX, xb = vp.x + (xi - vp.x) * (H - vp.y) / (yW - vp.y); planks += `M${f1(xi)} ${yW}L${f1(xb)} ${H}`; }
-    let seams = '';
-    for (let k = 1; k <= 7; k++) { const y = yW + (H - yW) * Math.pow(k / 7, 1.55); seams += `M0 ${f1(y)}H${W}`; }
-    let paperB = '', paperL = '', paperR = '';
-    for (let x = xl + 9; x < xr; x += 18) paperB += `M${f1(x)} ${f1(yt + 8)}V${f1(yW - 9)}`;
-    for (let x = 6; x < xl; x += 12) { paperL += `M${x} ${f1(wallTopY(x))}V${f1(wallBaseY(x) - 12)}`; paperR += `M${W - x} ${f1(wallTopY(x))}V${f1(wallBaseY(x) - 12)}`; }
-    const wx = W * .17, ww = W * .2, wy = yt + (yW - yt) * .16, wh = (yW - yt) * .5;
+    const L = (s, h) => wallPt(-1, s, h), R = (s, h) => wallPt(1, s, h);
+    let planks = '', seams = '', paperL = '', paperR = '', paperB = '';
+    for (let i = -8; i <= 8; i++) { const xb = VPt.x + i * (W / 6), xk = VPt.x + (xb - VPt.x) * S0; planks += `M${f1(xb)} ${H}L${f1(xk)} ${f1(yW)}`; }
+    for (let k = 0; k <= 8; k++) { const Z = 1 / (1 + k * (1 / S0 - 1) / 8), a = proj(-1, Z), b = proj(1, Z); seams += `M${f1(a.x)} ${f1(a.y)}H${f1(b.x)}`; }
+    for (let i = 0; i <= 12; i++) { const s = 1 / (1 + i * (1 / S0 - 1) / 12), a = L(s, .05), b = L(s, .97), c = R(s, .05), d = R(s, .97); paperL += `M${f1(a.x)} ${f1(a.y)}L${f1(b.x)} ${f1(b.y)}`; paperR += `M${f1(c.x)} ${f1(c.y)}L${f1(d.x)} ${f1(d.y)}`; }
+    for (let X = -.92; X < 1; X += .16) { const a = backPt(X, .05), b = backPt(X, .97); paperB += `M${f1(a.x)} ${f1(a.y)}L${f1(b.x)} ${f1(b.y)}`; }
+    const w0 = backPt(-.6, .9), w1 = backPt(-.04, .46), wx = w0.x, wy = w0.y, ww = w1.x - w0.x, wh = w1.y - w0.y;
     WIN = { x: wx, y: wy, w: ww, h: wh };
-    const dw = W * .13, dh = (yW - yt) * .78, dx0 = DOOR.x - dw / 2, dy0 = yW - dh;
-    const sx = W * .25, sw = W * .34, sh = (yW - yt) * .46, sy = yW + 16 - sh;
-    const lampX = W * .19, plantX = W * .655;
-    const hx = HOLE.x, hb = HOLE.y;
-    const rugY = yW + (H - yW) * .5, rugRX = W * .3, rugRY = (H - yW) * .11;
+    const dFrame = [R(D1 - .02, 0), R(D2 + .02, 0), R(D2 + .02, DH + .05), R(D1 - .02, DH + .05)], dDoor = [R(D1, 0), R(D2, 0), R(D2, DH), R(D1, DH)];
+    const dq = (sa, sb, ha, hb) => [R(sa, ha), R(sb, ha), R(sb, hb), R(sa, hb)], dm = (u, h) => R(D1 + (D2 - D1) * u, DH * h);
+    const knob = dm(.82, .45), heart = dm(.5, .72), dCenter = dm(.5, 0);
+    const rug = (k) => { let d = ''; for (let a = 0; a < 360; a += 15) { const r = a * Math.PI / 180, p = proj(.36 * k * Math.cos(r), .76 + .042 * k * Math.sin(r)); d += (a ? 'L' : 'M') + f1(p.x) + ' ' + f1(p.y); } return d + 'Z'; };
+    const lS = [L(.6, .5), L(.7, .5), L(.7, .7), L(.6, .7)], lS2 = [L(.61, .52), L(.69, .52), L(.69, .68), L(.61, .68)];
+    const lightA = proj(1, D1), lightB = proj(1, D2), lightC = proj(.52, D2 + .1), lightD = proj(.6, D1 - .06);
+    const sofaL = backPt(-.56, 0).x, sofaR = backPt(.42, 0).x, sw_ = sofaR - sofaL, sh_ = sw_ * .52, sy_ = yW + 8 - sh_;
+    const hole = (X) => { const c = backPt(X, 0), w = 11, hh = 26; return `<path d="M${f1(c.x - w - 3)} ${f1(c.y)}V${f1(c.y - hh)}A${w + 3} ${w + 3} 0 0 1 ${f1(c.x + w + 3)} ${f1(c.y - hh)}V${f1(c.y)}Z" fill="#6c63b6" stroke="${OL}" stroke-width="2.6"/><path d="M${f1(c.x - w)} ${f1(c.y)}V${f1(c.y - hh)}A${w} ${w} 0 0 1 ${f1(c.x + w)} ${f1(c.y - hh)}V${f1(c.y)}Z" fill="#0b0624"/><g class="holeEyes" opacity="0"><circle cx="${f1(c.x - 4)}" cy="${f1(c.y - 11)}" r="2.4" fill="#fff"/><circle cx="${f1(c.x + 4)}" cy="${f1(c.y - 11)}" r="2.4" fill="#fff"/><circle cx="${f1(c.x - 3.4)}" cy="${f1(c.y - 10.6)}" r="1.2" fill="${OL}"/><circle cx="${f1(c.x + 4.6)}" cy="${f1(c.y - 10.6)}" r="1.2" fill="${OL}"/></g>`; };
+    const plant = backPt(.64, 0);
     let stars = '';
-    for (let i = 0; i < 7; i++) stars += `<circle cx="${f1(wx + 8 + (i * 37 % (ww - 16)))}" cy="${f1(wy + 8 + (i * 23 % (wh * .5)))}" r="1.4" fill="#fff"/>`;
+    for (let i = 0; i < 6; i++) stars += `<circle cx="${f1(wx + 6 + (i * 37 % Math.max(8, ww - 12)))}" cy="${f1(wy + 6 + (i * 23 % Math.max(8, wh * .5)))}" r="1.4" fill="#fff"/>`;
     return `
     <defs>
       <clipPath id="rWinClip"><rect x="${f1(wx)}" y="${f1(wy)}" width="${f1(ww)}" height="${f1(wh)}"/></clipPath>
-      <radialGradient id="rLamp" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd98a" stop-opacity=".7"/><stop offset=".55" stop-color="#ffbb62" stop-opacity=".22"/><stop offset="1" stop-color="#ffbb62" stop-opacity="0"/></radialGradient>
       <linearGradient id="rFloor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b3a22"/><stop offset="1" stop-color="#b06a3c"/></linearGradient>
       <linearGradient id="rWall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2256"/><stop offset="1" stop-color="#413883"/></linearGradient>
     </defs>
-    <polygon points="0,0 ${W},0 ${f1(xr)},${f1(yt)} ${f1(xl)},${f1(yt)}" fill="#1c1740"/>
-    <polygon points="0,${f1(yE)} ${f1(xl)},${yW} ${f1(xr)},${yW} ${W},${f1(yE)} ${W},${H} 0,${H}" fill="url(#rFloor)"/>
+    <polygon points="0,0 ${W},0 ${W},${f1(topY(1))} ${f1(xr)},${f1(yt)} ${f1(xl)},${f1(yt)} 0,${f1(topY(1))}" fill="#1c1740"/>
+    <polygon points="${f1(xl)},${f1(yW)} ${f1(xr)},${f1(yW)} ${W},${H} 0,${H}" fill="url(#rFloor)"/>
     <path d="${planks}" stroke="rgba(30,12,8,.5)" stroke-width="2" fill="none"/>
-    <path d="${seams}" stroke="rgba(30,12,8,.22)" stroke-width="1.4" fill="none"/>
-    <polygon points="0,${f1(yTe)} ${f1(xl)},${f1(yt)} ${f1(xl)},${yW} 0,${f1(yE)}" fill="#261f55"/>
-    <polygon points="${W},${f1(yTe)} ${f1(xr)},${f1(yt)} ${f1(xr)},${yW} ${W},${f1(yE)}" fill="#261f55"/>
-    <path d="${paperL}${paperR}" stroke="rgba(0,0,0,.2)" stroke-width="1.4" fill="none"/>
+    <path d="${seams}" stroke="rgba(30,12,8,.24)" stroke-width="1.4" fill="none"/>
+    <polygon points="${pts([L(S0, 0), L(S0, 1), L(1, 1), L(1, 0)])}" fill="#261f55"/>
+    <polygon points="${pts([R(S0, 0), R(S0, 1), R(1, 1), R(1, 0)])}" fill="#2b2260"/>
+    <path d="${paperL}${paperR}" stroke="rgba(0,0,0,.22)" stroke-width="1.5" fill="none"/>
     <rect x="${f1(xl)}" y="${f1(yt)}" width="${f1(xr - xl)}" height="${f1(yW - yt)}" fill="url(#rWall)"/>
     <path d="${paperB}" stroke="rgba(0,0,0,.16)" stroke-width="1.6" fill="none"/>
-    <rect x="${f1(xl)}" y="${f1(yt)}" width="${f1(xr - xl)}" height="8" fill="#6c63b6"/><rect x="${f1(xl)}" y="${f1(yt + 8)}" width="${f1(xr - xl)}" height="2" fill="#1c1740"/>
-    <polygon points="${f1(xl)},${yW - 10} ${f1(xl)},${yW} 0,${f1(yE)} 0,${f1(yE - 16)}" fill="#c6c4dc"/><polygon points="${f1(xr)},${yW - 10} ${f1(xr)},${yW} ${W},${f1(yE)} ${W},${f1(yE - 16)}" fill="#c6c4dc"/>
-    <rect x="${f1(xl)}" y="${yW - 10}" width="${f1(xr - xl)}" height="10" fill="#dedcf0"/><rect x="${f1(xl)}" y="${yW - 10}" width="${f1(xr - xl)}" height="2" fill="#fff"/><rect x="${f1(xl)}" y="${yW - 1}" width="${f1(xr - xl)}" height="2" fill="#544b9c"/>
+    <polygon points="${pts([L(S0, .965), L(1, .965), L(1, 1), L(S0, 1)])}" fill="#6c63b6"/><polygon points="${pts([R(S0, .965), R(1, .965), R(1, 1), R(S0, 1)])}" fill="#6c63b6"/>
+    <rect x="${f1(xl)}" y="${f1(yt)}" width="${f1(xr - xl)}" height="${f1((yW - yt) * .035)}" fill="#6c63b6"/>
+    <polygon points="${pts([L(S0, 0), L(1, 0), L(1, .05), L(S0, .05)])}" fill="#c6c4dc"/><polygon points="${pts([R(S0, 0), R(1, 0), R(1, .05), R(S0, .05)])}" fill="#c6c4dc"/>
+    <rect x="${f1(xl)}" y="${f1(yW - (yW - yt) * .05)}" width="${f1(xr - xl)}" height="${f1((yW - yt) * .05)}" fill="#dedcf0"/><rect x="${f1(xl)}" y="${f1(yW - (yW - yt) * .05)}" width="${f1(xr - xl)}" height="2" fill="#fff"/>
 
-    <ellipse cx="${f1(lampX + W * .04)}" cy="${f1(yW - 56)}" rx="${f1(W * .14)}" ry="${f1(H * .1)}" fill="url(#rLamp)"/>
     <g stroke-linejoin="round">
-      <rect x="${f1(wx - 5)}" y="${f1(wy - 5)}" width="${f1(ww + 10)}" height="${f1(wh + 10)}" fill="#dedcf0" stroke="${OL}" stroke-width="2.6"/>
+      <polygon points="${pts(lS)}" fill="#dedcf0" stroke="${OL}" stroke-width="2.4"/><polygon points="${pts(lS2)}" fill="#6c63b6"/>
+      <polygon points="${pts([L(.63, .56), L(.67, .56), L(.67, .63), L(.63, .63)])}" fill="#ffc4d6"/>
+      <rect x="${f1(wx - 4)}" y="${f1(wy - 4)}" width="${f1(ww + 8)}" height="${f1(wh + 8)}" fill="#dedcf0" stroke="${OL}" stroke-width="2.4"/>
       <rect x="${f1(wx)}" y="${f1(wy)}" width="${f1(ww)}" height="${f1(wh)}" fill="#1d1049"/>
       ${stars}
-      <circle cx="${f1(wx + ww * .7)}" cy="${f1(wy + wh * .28)}" r="${f1(wh * .13)}" fill="#f1e9ff"/><circle cx="${f1(wx + ww * .7 + wh * .07)}" cy="${f1(wy + wh * .28 - wh * .05)}" r="${f1(wh * .12)}" fill="#1d1049"/>
+      <circle cx="${f1(wx + ww * .68)}" cy="${f1(wy + wh * .26)}" r="${f1(ww * .13)}" fill="#f1e9ff"/><circle cx="${f1(wx + ww * .68 + ww * .07)}" cy="${f1(wy + wh * .26 - ww * .05)}" r="${f1(ww * .12)}" fill="#1d1049"/>
       <g clip-path="url(#rWinClip)"><g class="winRain"></g></g>
-      <path d="M${f1(wx + ww / 2)} ${f1(wy)}V${f1(wy + wh)}M${f1(wx)} ${f1(wy + wh * .55)}H${f1(wx + ww)}" stroke="#dedcf0" stroke-width="3"/>
-      <rect x="${f1(wx - 10)}" y="${f1(wy + wh + 3)}" width="${f1(ww + 20)}" height="7" fill="#dedcf0" stroke="${OL}" stroke-width="2.2"/>
-      <path d="M${f1(wx - 8)} ${f1(wy - 8)}h${f1(ww * .2)}q-4 ${f1(wh * .5)} 2 ${f1(wh + 6)}h-${f1(ww * .2 - 4)}z" fill="#c4577f" stroke="${OL}" stroke-width="2.4"/>
-      <path d="M${f1(wx + ww + 8)} ${f1(wy - 8)}h-${f1(ww * .2)}q4 ${f1(wh * .5)} -2 ${f1(wh + 6)}h${f1(ww * .2 - 4)}z" fill="#c4577f" stroke="${OL}" stroke-width="2.4"/>
-      <rect x="${f1(W * .44)}" y="${f1(yt + 24)}" width="${f1(W * .09)}" height="${f1(W * .11)}" fill="#8981cd" stroke="${OL}" stroke-width="2.6"/><rect x="${f1(W * .455)}" y="${f1(yt + 30)}" width="${f1(W * .06)}" height="${f1(W * .08)}" fill="#ffc4d6"/>
-      <path d="M${f1(W * .485)} ${f1(yt + 56)} q-6 -6 -8 -1 q0 6 8 11 q8 -5 8 -11 q-2 -5 -8 1z" fill="#e5475c"/>
-      <rect x="${f1(W * .56)}" y="${f1(yt + 18)}" width="${f1(W * .08)}" height="${f1(W * .07)}" fill="#cdc9f0" stroke="${OL}" stroke-width="2.6"/><rect x="${f1(W * .57)}" y="${f1(yt + 24)}" width="${f1(W * .06)}" height="${f1(W * .045)}" fill="#6c63b6"/>
-    </g>
-    <path d="M${f1(W * .06)} ${yW - 4}h${f1(W * .8)}" stroke="none"/>
-
-    <polygon points="${f1(dx0 - W * .02)},${yW} ${f1(dx0 + dw + W * .02)},${yW} ${f1(dx0 + dw + W * .11)},${f1(yW + H * .17)} ${f1(dx0 - W * .11)},${f1(yW + H * .17)}" fill="rgba(255,217,138,.34)"/>
-    <ellipse cx="${f1(plantX)}" cy="${yW + 14}" rx="22" ry="5" fill="rgba(5,2,15,.4)"/>
-    <ellipse cx="${f1(lampX)}" cy="${yW + 12}" rx="24" ry="5" fill="rgba(5,2,15,.4)"/>
-    <ellipse cx="${f1(W * .42)}" cy="${yW + 20}" rx="${f1(sw * .5)}" ry="6" fill="rgba(5,2,15,.4)"/>
-    <ellipse cx="${f1(DOOR.x)}" cy="${yW + 1}" rx="${f1(dw * .55)}" ry="3" fill="rgba(5,2,15,.35)"/>
-    <g stroke-linejoin="round">
-      <rect x="${f1(dx0 - 5)}" y="${f1(dy0 - 5)}" width="${f1(dw + 10)}" height="${f1(dh + 5)}" fill="#6b3a22" stroke="${OL}" stroke-width="2.6"/>
-      <rect x="${f1(dx0)}" y="${f1(dy0)}" width="${f1(dw)}" height="${f1(dh)}" fill="#a8643a" stroke="${OL}" stroke-width="2.2"/>
-      <rect x="${f1(dx0 + dw * .14)}" y="${f1(dy0 + dh * .08)}" width="${f1(dw * .72)}" height="${f1(dh * .36)}" fill="#8a4a30" stroke="${OL}" stroke-width="2"/>
-      <rect x="${f1(dx0 + dw * .14)}" y="${f1(dy0 + dh * .52)}" width="${f1(dw * .72)}" height="${f1(dh * .38)}" fill="#8a4a30" stroke="${OL}" stroke-width="2"/>
-      <circle cx="${f1(dx0 + dw * .82)}" cy="${f1(dy0 + dh * .5)}" r="3.6" fill="#f4d35e" stroke="${OL}" stroke-width="1.8"/>
-      <path class="doorHeartBase" d="M${f1(DOOR.x)} ${f1(dy0 + dh * .33)} q-9 -9 -12 -2 q0 8 12 15 q12 -7 12 -15 q-3 -7 -12 2z" fill="#ff7fa3" stroke="${OL}" stroke-width="2"/>
-      <rect x="${f1(dx0 + 2)}" y="${yW - 5}" width="${f1(dw - 4)}" height="5" fill="#fff1bd"/>
-    </g>
-    <g stroke-linejoin="round">
-      <rect x="${f1(lampX - 14)}" y="${f1(yW - 30)}" width="28" height="3" fill="#a8643a" stroke="${OL}" stroke-width="2"/>
-      <path d="M${f1(lampX - 17)} ${yW - 4}h34v-26h-34z" fill="#8a4a30" stroke="${OL}" stroke-width="2.4"/>
-      <rect x="${f1(lampX - 3)}" y="${f1(yW - 62)}" width="6" height="32" fill="#6b3a22" stroke="${OL}" stroke-width="2"/>
-      <path d="M${f1(lampX - 17)} ${yW - 60}l6 -22h22l6 22z" fill="#ffd98a" stroke="${OL}" stroke-width="2.4"/>
-      <path d="M${f1(lampX - 2)} ${yW - 82}v22" stroke="rgba(255,255,255,.5)" stroke-width="3"/>
-
-      <rect x="${f1(sx + 4)}" y="${f1(sy + sh - 6)}" width="9" height="10" fill="#6b3a22" stroke="${OL}" stroke-width="2"/><rect x="${f1(sx + sw - 13)}" y="${f1(sy + sh - 6)}" width="9" height="10" fill="#6b3a22" stroke="${OL}" stroke-width="2"/>
-      <rect x="${f1(sx + 14)}" y="${f1(sy)}" width="${f1(sw - 28)}" height="${f1(sh * .6)}" rx="8" fill="#8981cd" stroke="${OL}" stroke-width="2.8"/>
-      <rect x="${f1(sx)}" y="${f1(sy + sh * .42)}" width="${f1(sw)}" height="${f1(sh * .46)}" rx="7" fill="#6c63b6" stroke="${OL}" stroke-width="2.8"/>
-      <rect x="${f1(sx + 8)}" y="${f1(sy + sh * .44)}" width="${f1(sw / 2 - 10)}" height="${f1(sh * .22)}" rx="5" fill="#aaa4e0" stroke="${OL}" stroke-width="2.2"/><rect x="${f1(sx + sw / 2 + 2)}" y="${f1(sy + sh * .44)}" width="${f1(sw / 2 - 10)}" height="${f1(sh * .22)}" rx="5" fill="#aaa4e0" stroke="${OL}" stroke-width="2.2"/>
-      <rect x="${f1(sx - 10)}" y="${f1(sy + sh * .22)}" width="24" height="${f1(sh * .68)}" rx="9" fill="#5638a6" stroke="${OL}" stroke-width="2.8"/><rect x="${f1(sx + sw - 14)}" y="${f1(sy + sh * .22)}" width="24" height="${f1(sh * .68)}" rx="9" fill="#5638a6" stroke="${OL}" stroke-width="2.8"/>
-      <rect x="${f1(sx + sw * .2)}" y="${f1(sy + sh * .1)}" width="22" height="22" rx="5" fill="#ff9db9" stroke="${OL}" stroke-width="2.2" transform="rotate(-10 ${f1(sx + sw * .2 + 11)} ${f1(sy + sh * .1 + 11)})"/>
-
-      <path d="M${f1(plantX - 14)} ${yW + 10}h28l-4 -26h-20z" fill="#c46a38" stroke="${OL}" stroke-width="2.6"/><rect x="${f1(plantX - 16)}" y="${yW - 20}" width="32" height="6" fill="#d9965a" stroke="${OL}" stroke-width="2.2"/>
-      <ellipse cx="${f1(plantX - 12)}" cy="${yW - 44}" rx="8" ry="20" fill="#4f9a6a" stroke="${OL}" stroke-width="2.4" transform="rotate(-24 ${f1(plantX - 12)} ${yW - 44})"/>
-      <ellipse cx="${f1(plantX + 12)}" cy="${yW - 44}" rx="8" ry="20" fill="#4f9a6a" stroke="${OL}" stroke-width="2.4" transform="rotate(24 ${f1(plantX + 12)} ${yW - 44})"/>
-      <ellipse cx="${f1(plantX)}" cy="${yW - 52}" rx="9" ry="24" fill="#2f5d4a" stroke="${OL}" stroke-width="2.4"/>
+      <path d="M${f1(wx + ww / 2)} ${f1(wy)}V${f1(wy + wh)}M${f1(wx)} ${f1(wy + wh * .55)}H${f1(wx + ww)}" stroke="#dedcf0" stroke-width="2.6"/>
+      <rect x="${f1(wx - 7)}" y="${f1(wy + wh + 2)}" width="${f1(ww + 14)}" height="6" fill="#dedcf0" stroke="${OL}" stroke-width="2"/>
+      <path d="M${f1(wx - 6)} ${f1(wy - 6)}h${f1(ww * .2)}q-3 ${f1(wh * .5)} 1 ${f1(wh + 4)}h-${f1(ww * .2 - 3)}z" fill="#c4577f" stroke="${OL}" stroke-width="2"/>
+      <path d="M${f1(wx + ww + 6)} ${f1(wy - 6)}h-${f1(ww * .2)}q3 ${f1(wh * .5)} -1 ${f1(wh + 4)}h${f1(ww * .2 - 3)}z" fill="#c4577f" stroke="${OL}" stroke-width="2"/>
+      <rect x="${f1(backPt(.1, .86).x)}" y="${f1(backPt(.1, .86).y)}" width="${f1(backPt(.34, 0).x - backPt(.1, 0).x)}" height="${f1((yW - yt) * .26)}" fill="#8981cd" stroke="${OL}" stroke-width="2.4"/>
+      <rect x="${f1(backPt(.14, .8).x)}" y="${f1(backPt(.14, .8).y)}" width="${f1(backPt(.3, 0).x - backPt(.14, 0).x)}" height="${f1((yW - yt) * .18)}" fill="#ffc4d6"/>
+      <path d="M${f1(backPt(.22, .7).x)} ${f1(backPt(.22, .7).y)} q-5 -5 -7 -1 q0 5 7 9 q7 -4 7 -9 q-2 -4 -7 1z" fill="#e5475c"/>
     </g>
 
     <g stroke-linejoin="round">
-      <ellipse cx="${f1(W * .5)}" cy="${f1(rugY)}" rx="${f1(rugRX)}" ry="${f1(rugRY)}" fill="#8c2447" stroke="${OL}" stroke-width="2.6"/>
-      <ellipse cx="${f1(W * .5)}" cy="${f1(rugY)}" rx="${f1(rugRX * .82)}" ry="${f1(rugRY * .8)}" fill="#c4577f"/>
-      <ellipse cx="${f1(W * .5)}" cy="${f1(rugY)}" rx="${f1(rugRX * .56)}" ry="${f1(rugRY * .55)}" fill="#8c2447"/>
-      <ellipse cx="${f1(W * .5)}" cy="${f1(rugY)}" rx="${f1(rugRX * .3)}" ry="${f1(rugRY * .3)}" fill="#ffc4d6"/>
+      <polygon points="${pts(dFrame)}" fill="#6b3a22" stroke="${OL}" stroke-width="2.6"/>
+      <polygon points="${pts(dDoor)}" fill="#a8643a" stroke="${OL}" stroke-width="2.2"/>
+      <polygon points="${pts(dq(D1 + (D2 - D1) * .14, D2 - (D2 - D1) * .14, DH * .08, DH * .42))}" fill="#8a4a30" stroke="${OL}" stroke-width="1.8"/>
+      <polygon points="${pts(dq(D1 + (D2 - D1) * .14, D2 - (D2 - D1) * .14, DH * .52, DH * .92))}" fill="#8a4a30" stroke="${OL}" stroke-width="1.8"/>
+      <circle cx="${f1(knob.x)}" cy="${f1(knob.y)}" r="3.4" fill="#f4d35e" stroke="${OL}" stroke-width="1.8"/>
+      <path d="M${f1(heart.x)} ${f1(heart.y + 5)} q-9 -9 -11 -2 q0 7 11 13 q11 -6 11 -13 q-2 -7 -11 2z" fill="#ff7fa3" stroke="${OL}" stroke-width="2"/>
+      <polygon points="${pts([R(D1 + .008, 0), R(D2 - .008, 0), R(D2 - .008, .014), R(D1 + .008, .014)])}" fill="#fff1bd"/>
     </g>
-    <polygon points="${f1(W * .2)},${yW + 8} ${f1(W * .42)},${yW + 8} ${f1(W * .58)},${f1(yW + (H - yW) * .38)} ${f1(W * .24)},${f1(yW + (H - yW) * .38)}" fill="rgba(180,190,255,.1)"/>
+    <polygon points="${pts([lightA, lightB, lightC, lightD])}" fill="rgba(255,217,138,.34)"/>
     <g stroke-linejoin="round">
-      <path d="M${f1(hx - 15)} ${f1(hb)}V${f1(hb - 22)}A15 15 0 0 1 ${f1(hx + 15)} ${f1(hb - 22)}V${f1(hb)}Z" fill="#6c63b6" stroke="${OL}" stroke-width="2.6"/>
-      <path d="M${f1(hx - 10)} ${f1(hb)}V${f1(hb - 21)}A10 10 0 0 1 ${f1(hx + 10)} ${f1(hb - 21)}V${f1(hb)}Z" fill="#0b0624"/>
+      <path d="${rug(1)}" fill="#8c2447" stroke="${OL}" stroke-width="2.6"/><path d="${rug(.82)}" fill="#c4577f"/><path d="${rug(.56)}" fill="#8c2447"/><path d="${rug(.3)}" fill="#ffc4d6"/>
+    </g>
+
+    <g stroke-linejoin="round">
+      <ellipse cx="${f1(plant.x)}" cy="${f1(yW + 5)}" rx="14" ry="4" fill="rgba(5,2,15,.4)"/>
+      <ellipse cx="${f1((sofaL + sofaR) / 2)}" cy="${f1(yW + 10)}" rx="${f1(sw_ * .52)}" ry="5" fill="rgba(5,2,15,.4)"/>
+      <rect x="${f1(sofaL + 8)}" y="${f1(sy_)}" width="${f1(sw_ - 16)}" height="${f1(sh_ * .6)}" rx="6" fill="#8981cd" stroke="${OL}" stroke-width="2.4"/>
+      <rect x="${f1(sofaL)}" y="${f1(sy_ + sh_ * .42)}" width="${f1(sw_)}" height="${f1(sh_ * .46)}" rx="5" fill="#6c63b6" stroke="${OL}" stroke-width="2.4"/>
+      <rect x="${f1(sofaL + 6)}" y="${f1(sy_ + sh_ * .44)}" width="${f1(sw_ / 2 - 8)}" height="${f1(sh_ * .22)}" rx="4" fill="#aaa4e0" stroke="${OL}" stroke-width="2"/><rect x="${f1(sofaL + sw_ / 2 + 2)}" y="${f1(sy_ + sh_ * .44)}" width="${f1(sw_ / 2 - 8)}" height="${f1(sh_ * .22)}" rx="4" fill="#aaa4e0" stroke="${OL}" stroke-width="2"/>
+      <rect x="${f1(sofaL - 7)}" y="${f1(sy_ + sh_ * .24)}" width="16" height="${f1(sh_ * .66)}" rx="7" fill="#5638a6" stroke="${OL}" stroke-width="2.4"/><rect x="${f1(sofaR - 9)}" y="${f1(sy_ + sh_ * .24)}" width="16" height="${f1(sh_ * .66)}" rx="7" fill="#5638a6" stroke="${OL}" stroke-width="2.4"/>
+      <rect x="${f1(sofaL + sw_ * .12)}" y="${f1(sy_ + sh_ * .1)}" width="15" height="15" rx="4" fill="#ff9db9" stroke="${OL}" stroke-width="2" transform="rotate(-10 ${f1(sofaL + sw_ * .12 + 7)} ${f1(sy_ + sh_ * .1 + 7)})"/>
+      <path d="M${f1(plant.x - 9)} ${f1(yW + 4)}h18l-3 -17h-12z" fill="#c46a38" stroke="${OL}" stroke-width="2.2"/>
+      <ellipse cx="${f1(plant.x - 8)}" cy="${f1(yW - 30)}" rx="5.5" ry="14" fill="#4f9a6a" stroke="${OL}" stroke-width="2" transform="rotate(-24 ${f1(plant.x - 8)} ${f1(yW - 30)})"/>
+      <ellipse cx="${f1(plant.x + 8)}" cy="${f1(yW - 30)}" rx="5.5" ry="14" fill="#4f9a6a" stroke="${OL}" stroke-width="2" transform="rotate(24 ${f1(plant.x + 8)} ${f1(yW - 30)})"/>
+      <ellipse cx="${f1(plant.x)}" cy="${f1(yW - 36)}" rx="6" ry="17" fill="#2f5d4a" stroke="${OL}" stroke-width="2"/>
+      ${hole(HOLES[0].X)}${hole(HOLES[1].X)}
     </g>
     <g class="shadows"></g><g class="actors"></g><g class="fx"></g>`;
   }
@@ -339,54 +350,17 @@ Seq.scenes.route = (root, done) => {
   }
 
   /* ---------- state ---------- */
-  const M = { x: 0, y: 0, face: 1, phase: 0, sp: 0, walkAmt: 0, sq: 1, hop: 0, stand: 0, paws: 0, look: 0, ear: 0, s: 1, vis: 0, shake: 0 };
-  const target = { x: 0, y: 0 };
-  const dogs = [mkDog(DOG_A, .72, .66, 1), mkDog(DOG_B, .26, .8, .9)];
-  function mkDog(pal, fx, fy, pitch) { return { pal, x: fx, y: fy, fx, fy, dir: 1, st: 'patrol', t: 0, tx: 0, ty: 0, pause: 0, v: 0, phase: Math.random() * 6, cool: 0, mouth: 0, bang: -9, woof: -9, barked: 0, pitch, ear: 0, init: false }; }
-  let st = 'intro1', stT = 0, t = 0, reported = false, hintOn = false, ev = {}, drops = [], lastStep = 0, houseT = 0;
+  const M = { X: 0, Z: 0, x: 0, y: 0, face: 1, phase: 0, sp: 0, walkAmt: 0, sq: 1, hop: 0, stand: 0, look: 0, ear: 0, s: 1, vis: 0, hidden: -1 };
+  const target = { X: 0, Z: 0, spot: -1 };
+  const mkDog = (pal, X, Z, pitch) => ({ pal, X, Z, x: 0, y: 0, dir: 1, st: 'patrol', t: 0, tX: X, tZ: Z, pause: 0, v: 0, phase: Math.random() * 6, cool: 0, mouth: 0, bang: -9, woof: -9, q: -9, barked: 0, pitch, ear: 0, spot: -1 });
+  const dogs = [mkDog(DOG_A, .55, .86, 1), mkDog(DOG_B, -.35, .7, .9)];
+  let st = 'intro1', stT = 0, t = 0, reported = false, hintOn = false, ev = {}, drops = [], lastStep = 0, houseT = 0, pressed = false, wantOut = false;
   const setState = n => { st = n; stT = 0; ev = {}; };
-
-  let el = {};
-  function grab() {
-    const q = s => rm.querySelector(s), qa = s => [...rm.querySelectorAll(s)];
-    el = { actors: q('.actors'), shadows: q('.shadows'), fx: q('.fx') };
-    el.actors.innerHTML = `<g class="actor mouseA">${mouseMarkup}</g><g class="actor dogA0">${dogMarkup(DOG_A)}</g><g class="actor dogA1">${dogMarkup(DOG_B)}</g>`;
-    el.shadows.innerHTML = '<ellipse class="shM" rx="1" ry="1" fill="rgba(5,2,15,.5)"/><ellipse class="shD0" rx="1" ry="1" fill="rgba(5,2,15,.5)"/><ellipse class="shD1" rx="1" ry="1" fill="rgba(5,2,15,.5)"/>';
-    el.fx.innerHTML = `<g class="bangW0">${bangMarkup}</g><g class="bangW1">${bangMarkup}</g><g class="woofW0">${woofMarkup}</g><g class="woofW1">${woofMarkup}</g><g class="drops"></g>
-      <g class="goal" opacity="0"><path d="M0 8 q-11 -11 -15 -3 q0 10 15 19 q15 -9 15 -19 q-4 -8 -15 3z" fill="#ff7fa3" stroke="${OL}" stroke-width="2.6" stroke-linejoin="round"/></g>`;
-    const A = el.actors;
-    el.mouse = A.querySelector('.mouseA');
-    el.m = { root: el.mouse.querySelector('.mRoot'), squash: el.mouse.querySelector('.mSquash'), body: el.mouse.querySelector('.mBody'), head: el.mouse.querySelector('.mHead'), ear: el.mouse.querySelector('.mEar'), tail: el.mouse.querySelector('.mTail'),
-      bn: el.mouse.querySelector('.mLegBN'), bf: el.mouse.querySelector('.mLegBF'), fn: el.mouse.querySelector('.mLegFN'), ff: el.mouse.querySelector('.mLegFF'), letter: el.mouse.querySelector('.mLetter') };
-    dogs.forEach((d, i) => {
-      const g = A.querySelector('.dogA' + i);
-      d.el = { g, root: g.querySelector('.dRoot'), body: g.querySelector('.dBody'), head: g.querySelector('.dHead'), ear: g.querySelector('.dEar'), tail: g.querySelector('.dTail'),
-        bn: g.querySelector('.dLegBN'), bf: g.querySelector('.dLegBF'), fn: g.querySelector('.dLegFN'), ff: g.querySelector('.dLegFF'), mo: g.querySelector('.dMouthOpen'), ms: g.querySelector('.dMouthShut'),
-        bang: el.fx.querySelector('.bangW' + i + ' .bang'), bangW: el.fx.querySelector('.bangW' + i), woof: el.fx.querySelector('.woofW' + i + ' .woof'), sh: el.shadows.querySelector('.shD' + i) };
-    });
-    el.winRain = rm.querySelector('.winRain'); el.ctRain = ct.querySelector('.ctRain');
-    el.shM = el.shadows.querySelector('.shM'); el.drops = el.fx.querySelector('.drops'); el.goal = el.fx.querySelector('.goal');
-    // cut-away
-    el.cut = { root: ct.querySelector('.ctRoot'), tabby: ct.querySelector('.tabby'), tail: ct.querySelector('.tabby .cTail'), body: ct.querySelector('.tabby .cBody'), head: ct.querySelector('.tabby .cHead'),
-      eyes: [...ct.querySelectorAll('.tabby .cEyeScale')], pupils: [...ct.querySelectorAll('.tabby .cPupil')], heart: ct.querySelector('.tHeart') };
-  }
-
-  function layout() {
-    const r = root.getBoundingClientRect(), nW = Math.max(1, r.width), nH = Math.max(1, r.height);
-    const rx = W > 1 ? nW / W : 1, ry = H > 1 ? nH / H : 1;
-    if (W > 1) for (const o of [M, target, ...dogs]) { o.x *= rx; o.y *= ry; o.tx = (o.tx || 0) * rx; o.ty = (o.ty || 0) * ry; }
-    W = nW; H = nH; sf = W / 390;
-    rm.setAttribute('viewBox', `0 0 ${W} ${H}`); ct.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    yW = Math.round(H * .37); vp = { x: W / 2, y: yW - H * .16 };
-    DOOR = { x: W * .76, w: W * .13, y: yW };
-    const hx = W * .045; HOLE = { x: hx, y: wallBaseY(hx) };
-    HOME = { x: W * .1, y: HOLE.y + H * .035 };
-    rm.innerHTML = roomMarkup();
-    ct.innerHTML = `<defs><linearGradient id="rFloor2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b3a22"/><stop offset="1" stop-color="#b06a3c"/></linearGradient></defs>` + cutMarkup();
-    grab();
-    seedRain(winDrops, WIN, Math.round(12 + WIN.w / 9)); seedRain(ctDrops, CWIN, Math.round(10 + CWIN.w / 14));
-    dogs.forEach(d => { if (!d.init) { d.x = d.fx * W; d.y = yW + (H - yW) * (d.fy - .2) / .8 + H * .05; d.init = true; pickWaypoint(d); } });
-    if (!M.init) { M.init = true; M.x = HOLE.x; M.y = HOLE.y - 8; target.x = HOME.x; target.y = HOME.y; }
+  const HOLE_FRONT = () => ({ X: HOLES[0].X, Z: S0 + .05 }), HOME = () => ({ X: -.68, Z: S0 + .13 });
+  extra();
+  function extra() {
+    snd.hop = () => { tone('sine', 420, 700, .07, .07); };
+    snd.sniff = () => { noise(.12, .05, 'bandpass', 900, 1); noise(.1, .05, 'bandpass', 900, 1, .17); };
   }
 
   /* ---------- rain on the window glass (so you can tell we are indoors now) ---------- */
@@ -411,7 +385,6 @@ Seq.scenes.route = (root, done) => {
     }
     return m;
   }
-  /* very soft, muffled rain from outside (the opening's rain was loud; this is the same rain heard through a window) */
   let rainNodes = null;
   function indoorRain() {
     if (!ok() || rainNodes) return; const ac = AU.ac;
@@ -421,43 +394,86 @@ Seq.scenes.route = (root, done) => {
     src.connect(lp).connect(g).connect(out.get()); src.start(); rainNodes = src;
   }
 
-  /* ---------- floor rules ---------- */
-  function clampFloor(o) {
-    const sofa = o.x > W * .22 && o.x < W * .6, minY = sofa ? yW + 26 : yW + 8;
-    o.x = clamp(o.x, W * .03, W * .97); o.y = clamp(o.y, minY, H - 24);
+  /* ---------- scene elements ---------- */
+  let el = {}, acts = [];
+  function grab() {
+    const q = s => rm.querySelector(s);
+    el = { actors: q('.actors'), shadows: q('.shadows'), fx: q('.fx'), winRain: q('.winRain'), ctRain: ct.querySelector('.ctRain'), holeEyes: [...rm.querySelectorAll('.holeEyes')] };
+    el.actors.innerHTML = `<g class="actor mouseA">${mouseMarkup}</g><g class="actor dogA0">${dogMarkup(DOG_A)}</g><g class="actor dogA1">${dogMarkup(DOG_B)}</g>` + BOXES.map((b, i) => `<g class="actor boxA${i}">${boxMarkup()}</g>`).join('');
+    el.shadows.innerHTML = '<ellipse class="shM" rx="1" ry="1" fill="rgba(5,2,15,.5)"/><ellipse class="shD0" rx="1" ry="1" fill="rgba(5,2,15,.5)"/><ellipse class="shD1" rx="1" ry="1" fill="rgba(5,2,15,.5)"/>';
+    const qm = `<text class="qm" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-weight="800" font-size="30" fill="#ffe9a8" stroke="${OL}" stroke-width="3.4" paint-order="stroke" opacity="0">?</text>`;
+    el.fx.innerHTML = `<g class="bangW0">${bangMarkup}</g><g class="bangW1">${bangMarkup}</g><g class="woofW0">${woofMarkup}</g><g class="woofW1">${woofMarkup}</g><g class="qW0">${qm}</g><g class="qW1">${qm}</g><g class="drops"></g>
+      <g class="goal" opacity="0"><path d="M0 8 q-11 -11 -15 -3 q0 10 15 19 q15 -9 15 -19 q-4 -8 -15 3z" fill="#ff7fa3" stroke="${OL}" stroke-width="2.6" stroke-linejoin="round"/></g>`;
+    const A = el.actors;
+    el.mouse = A.querySelector('.mouseA');
+    const m = el.mouse.querySelector.bind(el.mouse);
+    el.m = { root: m('.mRoot'), squash: m('.mSquash'), body: m('.mBody'), head: m('.mHead'), ear: m('.mEar'), tail: m('.mTail'), bn: m('.mLegBN'), bf: m('.mLegBF'), fn: m('.mLegFN'), ff: m('.mLegFF'), letter: m('.mLetter') };
+    dogs.forEach((d, i) => {
+      const g = A.querySelector('.dogA' + i);
+      d.el = { g, root: g.querySelector('.dRoot'), head: g.querySelector('.dHead'), ear: g.querySelector('.dEar'), tail: g.querySelector('.dTail'), bn: g.querySelector('.dLegBN'), bf: g.querySelector('.dLegBF'), fn: g.querySelector('.dLegFN'), ff: g.querySelector('.dLegFF'),
+        mo: g.querySelector('.dMouthOpen'), ms: g.querySelector('.dMouthShut'), bang: el.fx.querySelector('.bangW' + i + ' .bang'), bangW: el.fx.querySelector('.bangW' + i), woof: el.fx.querySelector('.woofW' + i + ' .woof'), qW: el.fx.querySelector('.qW' + i), qm: el.fx.querySelector('.qW' + i + ' .qm'), sh: el.shadows.querySelector('.shD' + i) };
+    });
+    el.boxes = BOXES.map((b, i) => { const g = A.querySelector('.boxA' + i); return { g, peek: g.querySelector('.peek') }; });
+    el.shM = el.shadows.querySelector('.shM'); el.drops = el.fx.querySelector('.drops'); el.goal = el.fx.querySelector('.goal');
+    el.cut = { root: ct.querySelector('.ctRoot'), tabby: ct.querySelector('.tabby'), tail: ct.querySelector('.tabby .cTail'), body: ct.querySelector('.tabby .cBody'), head: ct.querySelector('.tabby .cHead'),
+      eyes: [...ct.querySelectorAll('.tabby .cEyeScale')], pupils: [...ct.querySelectorAll('.tabby .cPupil')], heart: ct.querySelector('.tHeart') };
   }
-  function pickWaypoint(d) {
-    const toward = Math.random() < .4 && st === 'play';
-    let tx, ty;
-    if (toward) { tx = M.x + (Math.random() - .5) * W * .3; ty = M.y + (Math.random() - .5) * H * .15; }
-    else { tx = W * (.06 + Math.random() * .88); ty = yW + 30 + Math.random() * (H - yW - 60); }
-    d.tx = tx; d.ty = ty; clampFloor(d.tx !== undefined ? { get x() { return d.tx; }, set x(v) { d.tx = v; }, get y() { return d.ty; }, set y(v) { d.ty = v; } } : d);
+  function place(o) { const p = proj(o.X, o.Z); o.x = p.x; o.y = p.y; }
+
+  function layout() {
+    const r = root.getBoundingClientRect();
+    W = Math.max(1, r.width); H = Math.max(1, r.height); sf = W / 390;
+    rm.setAttribute('viewBox', `0 0 ${W} ${H}`); ct.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    VPt = { x: W / 2, y: H * .27 };
+    xl = VPt.x - (W / 2) * S0; xr = VPt.x + (W / 2) * S0; yt = VPt.y - VPt.y * S0; yW = VPt.y + (H - VPt.y) * S0;
+    rm.innerHTML = roomMarkup();
+    ct.innerHTML = `<defs><linearGradient id="rFloor2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b3a22"/><stop offset="1" stop-color="#b06a3c"/></linearGradient></defs>` + cutMarkup();
+    spots = [
+      ...HOLES.map(h => { const c = backPt(h.X, .05); return { type: 'hole', X: h.X, Z: S0 + .05, cx: c.x, cy: c.y - 12, r: 34 * sf }; }),
+      ...BOXES.map(b => { const p = proj(b.X, b.Z), sc = zScale(b.Z) * sf * .78; return { type: 'box', X: b.X, Z: b.Z, cx: p.x, cy: p.y - 22 * sc, r: Math.max(34, 56 * zScale(b.Z)) * sf }; })
+    ];
+    grab();
+    seedRain(winDrops, WIN, Math.round(12 + WIN.w / 9)); seedRain(ctDrops, CWIN, Math.round(10 + CWIN.w / 14));
+    for (const o of [M, ...dogs]) place(o);
+    if (!M.init) { M.init = true; M.X = HOLES[0].X; M.Z = S0 + .01; place(M); target.X = HOME().X; target.Z = HOME().Z; dogs.forEach(pickWaypoint); }
   }
-  function stepToward(o, tx, ty, speed, dt) {
-    const sc = scaleAt(o.y), dx = tx - o.x, dy = (ty - o.y) / DEPTH, d = Math.hypot(dx, dy);
-    if (d < 1.5) { o.v = 0; return 0; }
-    const step = Math.min(d, speed * sc * dt);
-    o.x += dx / d * step; o.y += dy / d * step * DEPTH;
-    o.v = step / Math.max(dt, 1e-4);
+
+  /* ---------- ground rules ---------- */
+  const gd = (a, b) => Math.hypot((a.X - b.X) * W / 2, (a.Z - b.Z) * W * .8);
+  function clampG(o) { const sofa = o.X > -.5 && o.X < .5; o.X = clamp(o.X, -.93, .93); o.Z = clamp(o.Z, S0 + (sofa ? .1 : .045), .97); }
+  function stepG(o, tX, tZ, speed, dt) {
+    const d = gd(o, { X: tX, Z: tZ });
+    if (d < 1) { o.v = 0; return 0; }
+    const step = Math.min(d, speed * dt), k = step / d;
+    o.X += (tX - o.X) * k; o.Z += (tZ - o.Z) * k; o.v = step / Math.max(dt, 1e-4);
     return d - step;
   }
-  const worldDist = (a, b) => { const sc = (scaleAt(a.y) + scaleAt(b.y)) / 2; return Math.hypot((a.x - b.x) / sc, (a.y - b.y) / DEPTH / sc); };
+  function pickWaypoint(d) {
+    const r = Math.random();
+    if (r < .3 && spots.length) { const s = spots[(Math.random() * spots.length) | 0]; d.tX = s.X + (Math.random() - .5) * .2; d.tZ = s.Z + .07 + Math.random() * .05; }
+    else if (r < .5 && st === 'play') { d.tX = M.X + (Math.random() - .5) * .5; d.tZ = M.Z + (Math.random() - .5) * .2; }
+    else { d.tX = -.9 + Math.random() * 1.8; d.tZ = S0 + .12 + Math.random() * (.96 - S0 - .12); }
+    d.tX = clamp(d.tX, -.93, .93); d.tZ = clamp(d.tZ, S0 + .1, .97);
+  }
 
-  /* ---------- input: finger / mouse anywhere moves the mouse there ---------- */
-  let pressed = false;
+  /* ---------- input: finger / mouse anywhere moves the mouse there; tap a hole or box to hide in it ---------- */
   function setTarget(e) {
-    const r = root.getBoundingClientRect();
-    target.x = e.clientX - r.left; target.y = e.clientY - r.top - 14 * sf;       // a little above the finger so it stays visible
-    clampFloor(target);
+    const r = root.getBoundingClientRect(), px_ = e.clientX - r.left, py_ = e.clientY - r.top;
+    let best = -1, bd = 1e9;
+    spots.forEach((s, i) => { const d = Math.hypot(px_ - s.cx, py_ - s.cy); if (d < s.r && d < bd) { bd = d; best = i; } });
+    if (best >= 0) { target.spot = best; target.X = spots[best].X; target.Z = spots[best].Z; return; }
+    target.spot = -1;
+    const Z = clamp((py_ - 14 * sf - VPt.y) / (H - VPt.y), S0 + .05, .97), X = clamp((px_ - VPt.x) / ((W / 2) * Z), -.93, .93);
+    target.X = X; target.Z = Z; clampG(target);
   }
   const onDown = e => {
     Seq.audioInit();
-    if (st === 'cut' && stT > .8) { setState('back'); doFlash(); showRoom(); return; }     // tap skips the cut-away
-    if (st !== 'play') return;
+    if (st === 'cut' && stT > .8) { setState('back'); doFlash(); showRoom(); return; }
+    if (st !== 'play' && st !== 'hidden') return;
     pressed = true; try { root.setPointerCapture(e.pointerId); } catch (_) {}
-    setTarget(e); e.preventDefault();
+    setTarget(e); if (st === 'hidden' && target.spot !== M.hidden) wantOut = true; e.preventDefault();
   };
-  const onMove = e => { if (pressed && st === 'play') { setTarget(e); e.preventDefault(); } };
+  const onMove = e => { if (pressed && (st === 'play' || st === 'hidden')) { setTarget(e); if (st === 'hidden' && target.spot !== M.hidden) wantOut = true; e.preventDefault(); } };
   const onUp = () => { pressed = false; };
   root.addEventListener('pointerdown', onDown);
   root.addEventListener('pointermove', onMove);
@@ -465,92 +481,86 @@ Seq.scenes.route = (root, done) => {
 
   /* ---------- tuning ---------- */
   const MOUSE_V = () => W * .66, DOG_V = () => W * .5, CHASE_V = () => W * .6;
-  const SIGHT = () => W * .34, CATCH = () => 30 * sf;
-  const doorHit = () => Math.abs(M.x - DOOR.x) < DOOR.w * .62 && M.y < yW + 20;
+  const SIGHT = () => W * .36, CATCH = () => 30 * sf;
+  const doorHit = () => M.X > .8 && M.Z > D1 - .03 && M.Z < D2 + .03;
 
   function doFlash() { flash.classList.add('on'); setTimeout(() => flash.classList.remove('on'), 110); }
   function showCut() { rm.style.display = 'none'; ct.style.display = ''; }
   function showRoom() { ct.style.display = 'none'; rm.style.display = ''; }
 
   /* ---------- update ---------- */
-  function spawnDrops(n) { for (let i = 0; i < n; i++) drops.push({ x: M.x + (Math.random() - .5) * 30 * sf, y: M.y - 22 * sf * scaleAt(M.y), vx: (Math.random() - .5) * 150, vy: -60 - Math.random() * 80, a: 0 }); }
+  function spawnDrops(n) { for (let i = 0; i < n; i++) drops.push({ x: M.x + (Math.random() - .5) * 30 * sf, y: M.y - 22 * sf * zScale(M.Z), vx: (Math.random() - .5) * 150, vy: -60 - Math.random() * 80, a: 0 }); }
+  function alertDog(d) { d.st = 'alert'; d.t = 0; d.bang = t; d.barked = 0; d.dir = M.X > d.X ? 1 : -1; d.v = 0; snd.alarm(); }
   function updateDogs(dt) {
+    const hid = M.hidden >= 0, seen = (st === 'play' || st === 'hide' || st === 'unhide') && M.vis > .5 && !hid;
     for (const d of dogs) {
       d.t += dt; d.cool = Math.max(0, d.cool - dt);
       if (d.st === 'patrol' || d.st === 'cool') {
         if (d.pause > 0) { d.pause -= dt; d.v = 0; }
         else {
-          const left = stepToward(d, d.tx, d.ty, DOG_V(), dt);
-          if (Math.abs(d.tx - d.x) > 3) d.dir = d.tx > d.x ? 1 : -1;
-          if (left < 4) { d.pause = Math.random() < .3 ? .18 + Math.random() * .3 : 0; pickWaypoint(d); }
+          const left = stepG(d, d.tX, d.tZ, DOG_V(), dt);
+          if (Math.abs(d.tX - d.X) > .01) d.dir = d.tX > d.X ? 1 : -1;
+          if (left < 6) { d.pause = Math.random() < .3 ? .15 + Math.random() * .3 : 0; pickWaypoint(d); }
         }
         if (d.st === 'cool' && d.cool <= 0) d.st = 'patrol';
-        // sight
-        if (st === 'play' && d.st === 'patrol' && d.cool <= 0 && M.vis > .5) {
-          const front = (M.x - d.x) * d.dir > -W * .05;
-          if (front && worldDist(d, M) < SIGHT() / sf) { d.st = 'alert'; d.t = 0; d.bang = t; d.barked = 0; d.dir = M.x > d.x ? 1 : -1; d.v = 0; snd.alarm(); }
-        }
+        if (seen && d.st === 'patrol' && d.cool <= 0 && (M.X - d.X) * d.dir > -.06 && gd(d, M) < SIGHT()) alertDog(d);
       } else if (d.st === 'alert') {
-        d.v = 0; d.dir = M.x > d.x ? 1 : -1;
-        const b = d.t * 5.2;
-        d.mouth = Math.sin(b * Math.PI) > .1 ? 1 : 0;
+        d.v = 0; d.dir = M.X > d.X ? 1 : -1;
+        d.mouth = Math.sin(d.t * 5.2 * Math.PI) > .1 ? 1 : 0;
         if (d.barked < 2 && d.t > d.barked * .38 + .05) { d.barked++; d.woof = t; snd.bark(d.pitch); M.sq = Math.min(M.sq, .86); }
         if (d.t > .85) { d.st = 'chase'; d.t = 0; d.mouth = 0; }
       } else if (d.st === 'chase') {
-        const left = stepToward(d, M.x, M.y, CHASE_V(), dt);
-        if (Math.abs(M.x - d.x) > 3) d.dir = M.x > d.x ? 1 : -1;
+        const tg = hid ? spots[M.hidden] : M;
+        stepG(d, tg.X, tg.Z, CHASE_V(), dt);
+        if (Math.abs(tg.X - d.X) > .01) d.dir = tg.X > d.X ? 1 : -1;
         d.mouth = d.t % .24 < .12 ? 1 : 0;
-        if (st === 'play' && worldDist(d, M) < CATCH() / sf) caught(d);
-        else if (d.t > 1.25) { d.st = 'cool'; d.cool = 2; d.mouth = 0; pickWaypoint(d); }
+        if (hid) { if (gd(d, tg) < 44 * sf) { d.st = 'sniff'; d.t = 0; d.q = t; d.mouth = 0; d.spot = M.hidden; snd.sniff(); } }
+        else if (st === 'play' && M.vis > .5 && gd(d, M) < CATCH()) caught(d);
+        if (d.st === 'chase' && d.t > 1.5) { d.st = 'cool'; d.cool = 2; d.mouth = 0; pickWaypoint(d); }
+      } else if (d.st === 'sniff') {
+        d.v = 0;
+        if (d.t > 1.15 && d.t < 1.25 && !d.s2) { d.s2 = 1; snd.sniff(); }
+        if (seen && gd(d, M) < SIGHT() * .7) { d.s2 = 0; alertDog(d); }
+        else if (d.t > 2.2) { d.s2 = 0; d.st = 'cool'; d.cool = 3; pickWaypoint(d); }
       }
       if (d.st !== 'alert' && d.st !== 'chase') d.mouth = 0;
       d.phase += dt * (d.v / Math.max(1, W * .5)) * 9.5 * (d.st === 'chase' ? 1.1 : 1);
-      clampFloor(d);
+      clampG(d); place(d);
     }
   }
   function caught(d) {
     if (st !== 'play') return;
-    setState('home'); pressed = false; snd.squeak(); Seq.vib([20, 40, 20]);
-    for (const o of dogs) { o.st = 'cool'; o.cool = 2.6; o.mouth = 0; pickWaypoint(o); }
+    setState('home'); pressed = false; M.hidden = -1; snd.squeak(); Seq.vib([20, 40, 20]);
+    for (const o of dogs) { o.st = 'cool'; o.cool = 2.8; o.mouth = 0; pickWaypoint(o); }
     M.sq = .8;
   }
-  function updateMouse(dt) {
-    let want = 0, dx = 0, dy = 0, dist = 0;
-    if (st === 'play' || st === 'home') {
-      const tx = st === 'home' ? HOME.x : target.x, ty = st === 'home' ? HOME.y : target.y;
-      dx = tx - M.x; dy = (ty - M.y) / DEPTH; dist = Math.hypot(dx, dy);
-      const vmax = st === 'home' ? W * 1.15 : MOUSE_V();
-      want = dist > 2 ? Math.min(vmax, dist * 16) : 0;
-      M.sp = lerp(M.sp, want, Math.min(1, dt * 20));
-      if (dist > 1) {
-        const sc = scaleAt(M.y), step = Math.min(dist, M.sp * sc * dt);
-        M.x += dx / dist * step; M.y += dy / dist * step * DEPTH;
-        if (Math.abs(dx) > 5) M.face = dx > 0 ? 1 : -1;
-      }
-      clampFloor(M);
-      if (st === 'home' && dist < 6) { setState('play'); target.x = M.x; target.y = M.y; M.face = 1; snd.pop(); }
-    } else M.sp = lerp(M.sp, 0, Math.min(1, dt * 14));
-    M.walkAmt = clamp(M.sp / (W * .22), 0, 1);
-    if (M.sp > 6) { M.phase += dt * M.sp / Math.max(1, W * .5) * 13; const si = Math.floor(M.phase / Math.PI); if (si !== lastStep) { lastStep = si; snd.patter(); } }
+  function moveMouse(dt, tg, vmax) {
+    const d = gd(M, tg), want = d > 2 ? Math.min(vmax, d * 16) : 0;
+    M.sp = lerp(M.sp, want, Math.min(1, dt * 20));
+    if (d > 1) {
+      const step = Math.min(d, M.sp * dt), k = step / d;
+      if (Math.abs(tg.X - M.X) * W / 2 * M.Z > 5) M.face = tg.X > M.X ? 1 : -1;
+      M.X += (tg.X - M.X) * k; M.Z += (tg.Z - M.Z) * k;
+    }
+    return d;
   }
+  const emergeAt = (u, from, to) => { const e = easeInOut(u); M.X = lerp(from.X, to.X, e); M.Z = lerp(from.Z, to.Z, e); M.s = lerp(.55, 1, e); M.hop = Math.sin(Math.PI * u) * 10 * sf; M.face = to.X >= from.X ? 1 : -1; M.sp = 60; M.walkAmt = 1; };
 
   function update(dt) {
     t += dt; stT += dt; houseT += dt;
     updateDogs(dt);
-    let standT = 0, lookT = 0, earT = 0, pawsT = 0, sqT = 1;
+    let standT = 0, lookT = 0, earT = 0, sqT = 1;
     if (st === 'intro1') {
       M.vis = stT > .3 ? 1 : 0;
       if (stT < 1.15) {
-        const u = clamp((stT - .3) / .85, 0, 1), e = easeInOut(u);
-        M.x = lerp(HOLE.x + 6, HOME.x, e); M.y = lerp(HOLE.y - 6, HOME.y, e); M.s = lerp(.55, 1, e); M.hop = Math.sin(Math.PI * u) * 10 * sf; M.face = 1; M.sp = 60;
-        M.walkAmt = 1; M.phase += dt * 10;
+        const u = clamp((stT - .3) / .85, 0, 1); emergeAt(u, { X: HOLES[0].X, Z: S0 + .01 }, HOME()); M.phase += dt * 10;
         if (!ev.sq) { ev.sq = 1; snd.squeak(); }
       } else {
-        M.sp = 0; M.walkAmt = 0; M.hop = 0; M.s = 1;
-        if (stT < 1.75) {                                          // shake off the rain
-          const u = (stT - 1.15) / .6; sqT = 1 + Math.sin(u * 40) * .09; M.x += Math.sin(u * 44) * .35;
+        M.sp = 0; M.walkAmt = 0; M.hop = 0; M.s = 1; M.face = 1;
+        if (stT < 1.75) {
+          const u = (stT - 1.15) / .6; sqT = 1 + Math.sin(u * 40) * .09; M.X += Math.sin(u * 44) * .0008;
           if (!ev.sh) { ev.sh = 1; snd.shake(); spawnDrops(8); } if (stT > 1.4 && !ev.sh2) { ev.sh2 = 1; spawnDrops(6); }
-        } else { standT = .3; lookT = -18; earT = 1; }              // look around the new house
+        } else { standT = .3; lookT = -18; earT = 1; }
       }
       if (stT > 2.55) { setState('cut'); doFlash(); showCut(); snd.pop(); }
     } else if (st === 'cut') {
@@ -558,19 +568,49 @@ Seq.scenes.route = (root, done) => {
       if (stT > .9 && !ev.h) { ev.h = 1; snd.chime(); }
       if (stT > 1.7 && !ev.m) { ev.m = 1; snd.mew(); }
       if (stT > 3.4) { setState('back'); doFlash(); showRoom(); }
+      if (!ev.far) { ev.far = 1; dogs[0].X = .55; dogs[0].Z = .92; dogs[1].X = .15; dogs[1].Z = .86; dogs.forEach(d => { d.tX = d.X; d.tZ = d.Z; d.pause = 0; pickWaypoint(d); }); }
     } else if (st === 'back') {
-      M.vis = 1; if (stT > .45) { setState('play'); hintOn = true; houseT = 0; target.x = M.x; target.y = M.y; hint.classList.add('on'); }
+      M.vis = 1; if (stT > .45) { setState('play'); dogs.forEach(d => { d.cool = Math.max(d.cool, 2.5); }); hintOn = true; houseT = 0; target.X = M.X; target.Z = M.Z; target.spot = -1; hint.classList.add('on'); }
     } else if (st === 'play') {
       M.vis = 1;
-      if (hintOn && (houseT > 5 || (pressed && houseT > 1.2))) { hintOn = false; hint.classList.remove('on'); }
-      if (doorHit()) { setState('enter'); pressed = false; ev.x0 = M.x; ev.y0 = M.y; snd.slip(); Seq.vib([10, 30, 10]); for (const o of dogs) { o.st = 'cool'; o.cool = 5; o.mouth = 0; } }
+      if (hintOn && (houseT > 6 || (pressed && houseT > 2))) { hintOn = false; hint.classList.remove('on'); }
+      const tg = { X: target.X, Z: target.Z }; const d = moveMouse(dt, tg, MOUSE_V()); clampG(M);
+      if (target.spot >= 0 && d < 7 * sf) { const sp = spots[target.spot]; setState('hide'); ev = { i: target.spot, X0: M.X, Z0: M.Z, box: sp.type === 'box' }; snd.hop(); }
+      else if (doorHit()) { setState('enter'); pressed = false; ev = { X0: M.X, Z0: M.Z }; snd.slip(); Seq.vib([10, 30, 10]); for (const o of dogs) { o.st = 'cool'; o.cool = 5; o.mouth = 0; } }
+    } else if (st === 'hide') {
+      const sp = spots[ev.i], u = clamp(stT / .42, 0, 1), e = easeInOut(u); M.sp = 0; M.walkAmt = 0;
+      if (ev.box) { M.X = lerp(ev.X0, sp.X, e); M.Z = lerp(ev.Z0, sp.Z, e); M.hop = Math.sin(Math.PI * u) * 36 * sf; M.s = lerp(1, .72, e); sqT = 1 - .18 * Math.sin(Math.PI * u); }
+      else { M.X = sp.X; M.Z = lerp(ev.Z0, S0 + .012, e); M.s = lerp(1, .5, e); M.vis = 1 - clamp((u - .45) / .55, 0, 1); M.face = 1; }
+      if (u >= 1) { M.hidden = ev.i; M.vis = 0; setState('hidden'); target.spot = ev.i; wantOut = false; }
+    } else if (st === 'hidden') {
+      M.vis = 0; M.sp = 0; M.walkAmt = 0;
+      if (wantOut && (pressed || target.spot !== M.hidden)) { const sp = spots[M.hidden]; setState('unhide'); ev = { i: M.hidden, box: sp.type === 'box' }; M.hidden = -1; M.vis = 1; snd.hop(); }
+    } else if (st === 'unhide') {
+      const sp = spots[ev.i], u = clamp(stT / .38, 0, 1), e = easeInOut(u); M.sp = 0;
+      if (ev.box) { M.X = sp.X; M.Z = sp.Z; M.hop = Math.sin(Math.PI * u) * 36 * sf; M.s = lerp(.72, 1, e); sqT = 1 - .14 * Math.sin(Math.PI * u); M.X += (clamp(target.X, sp.X - .25, sp.X + .25) - sp.X) * e * .6; }
+      else { M.X = sp.X; M.Z = lerp(S0 + .012, S0 + .07, e); M.s = lerp(.5, 1, e); M.vis = clamp(u * 2, 0, 1); M.sp = 50; M.walkAmt = 1; M.phase += dt * 9; M.face = 1; }
+      if (u >= 1) { M.hop = 0; M.s = 1; setState('play'); }
+    } else if (st === 'home') {
+      M.vis = 1; const hf = HOLE_FRONT(); const d = moveMouse(dt, hf, W * 1.2);
+      if (d < 5 * sf) { setState('holeIn'); M.sp = 0; M.walkAmt = 0; M.face = 1; }
+    } else if (st === 'holeIn') {
+      const u = clamp(stT / .45, 0, 1), e = easeInOut(u); M.X = HOLES[0].X; M.Z = lerp(S0 + .05, S0 + .012, e); M.s = lerp(1, .5, e); M.vis = 1 - clamp((u - .45) / .55, 0, 1); M.sp = 40; M.walkAmt = 1; M.phase += dt * 9;
+      if (u >= 1) { M.vis = 0; setState('holeWait'); }
+    } else if (st === 'holeWait') {
+      M.vis = 0; if (stT > .6) { setState('reemerge'); snd.squeak(); }
+    } else if (st === 'reemerge') {
+      const u = clamp(stT / .85, 0, 1); M.vis = 1; emergeAt(u, { X: HOLES[0].X, Z: S0 + .01 }, HOME());
+      if (u >= 1) { M.hop = 0; M.s = 1; M.sp = 0; M.walkAmt = 0; target.X = M.X; target.Z = M.Z; target.spot = -1; setState('play'); snd.pop(); }
     } else if (st === 'enter') {
-      const u = clamp(stT / .85, 0, 1), e = easeInOut(u);
-      M.x = lerp(ev.x0, DOOR.x, e); M.y = lerp(ev.y0, yW + 3, e); M.sp = 70; M.walkAmt = 1; M.phase += dt * 9; M.face = M.x < DOOR.x ? 1 : (M.x > DOOR.x ? -1 : M.face);
-      M.s = lerp(1, .7, e); sqT = lerp(1, .22, easeInOut(clamp((u - .45) / .55, 0, 1))); M.vis = 1 - clamp((u - .8) / .2, 0, 1);
-      if (u >= 1 && !reported) { reported = true; M.vis = 0; done({ x: DOOR.x, y: yW - 4 }); }
+      const u = clamp(stT / .9, 0, 1), e = easeInOut(u);
+      M.X = lerp(ev.X0, 1.04, e); M.Z = lerp(ev.Z0, clamp(ev.Z0, D1 + .03, D2 - .03), e); M.sp = 70; M.walkAmt = 1; M.phase += dt * 9; M.face = 1;
+      M.s = lerp(1, .7, e); sqT = lerp(1, .22, easeInOut(clamp((u - .4) / .6, 0, 1))); M.vis = 1 - clamp((u - .8) / .2, 0, 1);
+      if (u >= 1 && !reported) { reported = true; M.vis = 0; const p = wallPt(1, (D1 + D2) / 2, DH * .4); done({ x: p.x, y: p.y }); }
     }
-    updateMouse(dt);
+    if (st !== 'enter' && st !== 'hide' && st !== 'unhide' && st !== 'home' && st !== 'holeIn' && st !== 'reemerge' && st !== 'intro1') M.walkAmt = clamp(M.sp / (W * .22), 0, 1);
+    else if (st === 'home') M.walkAmt = 1;
+    if (M.sp > 6) { M.phase += dt * M.sp / Math.max(1, W * .5) * 13; const si = Math.floor(M.phase / Math.PI); if (si !== lastStep) { lastStep = si; snd.patter(); } }
+    place(M);
     M.stand = lerp(M.stand, standT, Math.min(1, dt * 7)); M.look = lerp(M.look, lookT, Math.min(1, dt * 8)); M.ear = lerp(M.ear, earT, Math.min(1, dt * 10));
     M.sq = lerp(M.sq, sqT, Math.min(1, dt * 14));
     stepRain(winDrops, WIN, dt, sf); stepRain(ctDrops, CWIN, dt, sf * 1.6);
@@ -579,7 +619,7 @@ Seq.scenes.route = (root, done) => {
 
   /* ---------- render ---------- */
   function renderMouse() {
-    const sc = scaleAt(M.y) * sf * .82 * M.s, th = M.stand * 55, ph = M.phase, sw = Math.sin(ph) * 30 * M.walkAmt;
+    const sc = zScale(M.Z) * sf * .8 * M.s, th = M.stand * 55, ph = M.phase, sw = Math.sin(ph) * 30 * M.walkAmt;
     const sy = M.sq, sx = 1 / Math.sqrt(sy), bob = -Math.abs(Math.sin(ph)) * 2.4 * M.walkAmt, m = el.m;
     el.mouse.setAttribute('opacity', f2(M.vis));
     m.root.setAttribute('transform', `translate(${f2(M.x)} ${f2(M.y - M.hop + bob * sc)}) scale(${f2(M.face * sc)} ${f2(sc)})`);
@@ -595,18 +635,17 @@ Seq.scenes.route = (root, done) => {
     el.shM.setAttribute('opacity', f2(M.vis * .9));
   }
   function renderDog(d, i) {
-    const sc = scaleAt(d.y) * sf * .95, e = d.el, walk = clamp(d.v / (W * .3), 0, 1), sw = Math.sin(d.phase) * 36 * walk, bob = Math.abs(Math.sin(d.phase)) * 3 * walk;
-    const barking = d.st === 'alert' || (d.st === 'chase' && d.mouth);
+    const sc = zScale(d.Z) * sf * .95, e = d.el, walk = clamp(d.v / (W * .3), 0, 1), sw = Math.sin(d.phase) * 36 * walk, bob = Math.abs(Math.sin(d.phase)) * 3 * walk;
+    const barking = d.st === 'alert' || (d.st === 'chase' && d.mouth), sniff = d.st === 'sniff';
     e.root.setAttribute('transform', `translate(${f2(d.x)} ${f2(d.y - bob * sc)}) scale(${f2(d.dir * sc)} ${f2(sc)})`);
     e.bn.setAttribute('transform', `translate(-21 -16) rotate(${f2(sw)})`); e.bf.setAttribute('transform', `translate(-12 -16) rotate(${f2(-sw)})`);
     e.fn.setAttribute('transform', `translate(18 -16) rotate(${f2(-sw)})`); e.ff.setAttribute('transform', `translate(11 -16) rotate(${f2(sw)})`);
     e.tail.setAttribute('transform', `rotate(${f2(Math.sin(t * (barking ? 20 : 11) + i) * (barking ? 22 : 14))} -30 -34)`);
     d.ear = lerp(d.ear, -sw * .5 - walk * 8, .3);
     e.ear.setAttribute('transform', `rotate(${f2(d.ear)} 23 -56)`);
-    e.head.setAttribute('transform', `rotate(${barking ? (d.mouth ? -12 : -5) : f2(Math.sin(d.phase * 2) * 2 * walk)} 30 -34)`);
+    e.head.setAttribute('transform', `rotate(${sniff ? f2(18 + Math.sin(t * 14) * 4) : barking ? (d.mouth ? -12 : -5) : f2(Math.sin(d.phase * 2) * 2 * walk)} 30 -34)`);
     e.mo.setAttribute('opacity', d.mouth ? 1 : 0); e.ms.setAttribute('opacity', d.mouth ? 0 : 1);
     e.sh.setAttribute('cx', f2(d.x)); e.sh.setAttribute('cy', f2(d.y + 1)); e.sh.setAttribute('rx', f2(40 * sc)); e.sh.setAttribute('ry', f2(7.5 * sc));
-    // red "!!" above the head, only for a moment
     const ba = t - d.bang, hx = d.x + d.dir * 26 * sc, hy = d.y - 86 * sc;
     if (ba >= 0 && ba < 1.5) {
       const pop = easeOutBack(clamp(ba / .22, 0, 1)), fade = 1 - clamp((ba - 1.2) / .3, 0, 1), jig = Math.sin(ba * 40) * (ba < .5 ? 3 : 0);
@@ -619,21 +658,31 @@ Seq.scenes.route = (root, done) => {
       e.woof.setAttribute('opacity', f2(1 - clamp((wa - .38) / .17, 0, 1)));
       e.woof.parentNode.setAttribute('transform', `translate(${f2(d.x + d.dir * 66 * sc)} ${f2(d.y - 36 * sc)}) scale(${f2(d.dir * Math.max(.01, pop) * sc * .9)} ${f2(Math.max(.01, pop) * sc * .9)})`);
     } else e.woof.setAttribute('opacity', 0);
+    const qa = t - d.q;                                    // "?" while it sniffs at where the mouse hid
+    if (sniff && qa >= 0 && qa < 2.3) {
+      e.qm.setAttribute('opacity', f2(1 - clamp((qa - 2) / .3, 0, 1)));
+      e.qW.setAttribute('transform', `translate(${f2(hx)} ${f2(hy + Math.sin(qa * 6) * 3)}) scale(${f2(Math.max(.01, easeOutBack(clamp(qa / .2, 0, 1))) * sc * 1.5)})`);
+    } else e.qm.setAttribute('opacity', 0);
   }
   function renderRoom() {
     el.winRain.innerHTML = rainMarkup(winDrops, sf);
     renderMouse(); dogs.forEach(renderDog);
+    BOXES.forEach((b, i) => {
+      const p = proj(b.X, b.Z), sc = zScale(b.Z) * sf * .78, g = el.boxes[i];
+      g.g.setAttribute('transform', `translate(${f2(p.x)} ${f2(p.y)}) scale(${f2(sc)})`);
+      const on = M.hidden === 2 + i;
+      g.peek.setAttribute('opacity', on ? 1 : 0);
+      if (on) g.peek.setAttribute('transform', `translate(0 ${f2(Math.sin(t * 5) * .8)})`);
+    });
+    el.holeEyes.forEach((g, i) => g.setAttribute('opacity', M.hidden === i && (t % 2.6) > .16 ? 1 : 0));
     // depth order: whoever is lower on the screen is drawn in front
-    const order = [{ y: M.y, n: el.mouse }, { y: dogs[0].y, n: dogs[0].el.g }, { y: dogs[1].y, n: dogs[1].el.g }].sort((a, b) => a.y - b.y);
+    const order = [{ z: M.Z + (st === 'hide' || st === 'unhide' ? .004 : 0), n: el.mouse }, { z: dogs[0].Z, n: dogs[0].el.g }, { z: dogs[1].Z, n: dogs[1].el.g }, ...BOXES.map((b, i) => ({ z: b.Z, n: el.boxes[i].g }))].sort((a, b) => a.z - b.z);
     for (let i = 0; i < order.length; i++) if (el.actors.children[i] !== order[i].n) el.actors.appendChild(order[i].n);
-    // falling raindrops shaken off the mouse
     let dh = ''; for (const p of drops) dh += `<circle cx="${f1(p.x)}" cy="${f1(p.y)}" r="${f1(2.4 * sf)}" fill="#aaa4e0" opacity="${f2(1 - p.a / .7)}"/>`;
     el.drops.innerHTML = dh;
-    // the door's heart: bobs so the goal is easy to spot
-    const gh = (st === 'play' || st === 'back' || st === 'home') ? 1 : 0;
+    const gh = (st === 'play' || st === 'back' || st === 'hidden' || st === 'hide' || st === 'unhide') ? 1 : 0, gp = wallPt(1, (D1 + D2) / 2, DH + .13);
     el.goal.setAttribute('opacity', gh);
-    el.goal.setAttribute('transform', `translate(${f1(DOOR.x)} ${f1(yW - (yW - H * .03) * .78 - 20 + Math.sin(t * 4) * 4)}) scale(${f2(sf * (1 + .08 * Math.sin(t * 8)))})`);
-    if (st === 'home') {} 
+    el.goal.setAttribute('transform', `translate(${f1(gp.x)} ${f1(gp.y - 14 + Math.sin(t * 4) * 4)}) scale(${f2(sf * (1 + .08 * Math.sin(t * 8)))})`);
   }
   function renderCut() {
     el.ctRain.innerHTML = rainMarkup(ctDrops, Math.min(W / 210, H / 520) * 1.3);
