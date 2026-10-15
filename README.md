@@ -2,13 +2,13 @@
 
 Live site: https://ayleenvillalobos.github.io/project-2-Sequential-Interactions/
 
-## Sequential interaction prototype — a love letter, carried by a mouse
+## Mouse Messenger — a love letter, carried by a mouse
 
 One continuous, linear sequence built from the three interaction studies in `studies/`:
 
 | | Scene | Gesture (from the study) | Completes when |
 |---|---|---|---|
-| Opening | The sender cat holds out the letter | Tap the letter | The mouse takes it and hops into the hole |
+| Opening | Rainy purple night: a small tuxedo cat on a second-floor balcony drops the letter to the mouse below | Tap to begin (also turns sound on), then watch | The mouse grabs the letter ("Got it!") and carries it into the drain tunnel |
 | 1 | Trace the sneak route (Study 01) | Draw a path from the hole, around the dog | The mouse walks the route into the exit hole |
 | 2 | Freeze when the dog looks (Study 02) | Drag to sneak; hold **Hide** / Space / a second finger to freeze | The mouse slips into the hole on the right |
 | 3 | Fling the cheese to your love (Study 03) | Pull back on the letter and release | The kitty catches the letter → hearts → **Play again** |
