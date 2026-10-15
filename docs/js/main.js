@@ -21,9 +21,26 @@
 
   /* ---------- iris transition ---------- */
   const maxR = () => { const r = stage.getBoundingClientRect(); return Math.hypot(r.width, r.height) + 20; };
+  const irisCv = document.createElement('canvas'); irisCv.className = 'iriscv'; irisEl.appendChild(irisCv);
+  const ictx = irisCv.getContext('2d');
+  let ik = 3, iw = 0, ih = 0;
+  function irisFit() {
+    const W = stage.clientWidth, H = stage.clientHeight, dpr = Math.min(window.devicePixelRatio || 1, 3), kk = Math.max(2, Math.round(W * dpr / 170));
+    ik = kk / dpr; iw = Math.ceil(W / ik); ih = Math.ceil(H / ik);
+    irisCv.width = iw; irisCv.height = ih; irisCv.style.width = iw * ik + 'px'; irisCv.style.height = ih * ik + 'px';
+  }
+  irisFit(); addEventListener('resize', irisFit);
   function paintIris(x, y, r) {
-    irisEl.style.background = r >= maxR() - 1 ? 'none'
-      : `radial-gradient(circle at ${x.toFixed(1)}px ${y.toFixed(1)}px, transparent ${r.toFixed(1)}px, #1c1c1c ${(r + 1).toFixed(1)}px)`;
+    ictx.clearRect(0, 0, iw, ih);
+    if (r >= maxR() - 1) return;
+    ictx.fillStyle = '#0b0624';
+    for (let j = 0; j < ih; j++) {
+      const dy = (j + .5) * ik - y;
+      if (Math.abs(dy) >= r) { ictx.fillRect(0, j, iw, 1); continue; }
+      const half = Math.sqrt(r * r - dy * dy), l = Math.floor((x - half) / ik), rt = Math.ceil((x + half) / ik);
+      if (l > 0) ictx.fillRect(0, j, l, 1);
+      if (rt < iw) ictx.fillRect(rt, j, iw - rt, 1);
+    }
   }
   function iris(pt, from, to, ms, cb) {
     const t0 = performance.now(), x = pt.x, y = pt.y;

@@ -10,7 +10,7 @@ Seq.scenes.intro = (root, done) => {
 
   /* ---------- world layout (units; the wall base is y = 0, up is negative) ---------- */
   const TUN_X = -140, TUN_Y = 6, WALK_Y = 28;        // tunnel mouth, its floor, the mouse's walking line
-  const CAT_X = 58, SLAB_Y = -250, CAT_Y = SLAB_Y + 3, CAT_S = .95;   // the cat is small and chonky
+  const CAT_X = 58, SLAB_Y = -250, CAT_Y = SLAB_Y - 12, CAT_S = .95;   // the cat is small and chonky
   const MK = .85;                                                    // mouse art scale
   const LAND_X = 16, STOP_X = -26;
 
@@ -25,14 +25,23 @@ Seq.scenes.intro = (root, done) => {
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, RM = reduce ? .4 : 1;
   const f2 = n => n.toFixed(2);
 
+  /* scalloped ellipse path: gives fur tufts / fluffy cheeks */
+  function fluff(cx, cy, rx, ry, n, amp) {
+    const P = (a, k) => { const r = a * Math.PI / 180; return [cx + Math.cos(r) * rx * k, cy + Math.sin(r) * ry * k]; };
+    const step = 360 / n, kc = 1 + amp / ((rx + ry) / 2), p0 = P(0, 1);
+    let d = `M${p0[0].toFixed(1)} ${p0[1].toFixed(1)}`;
+    for (let i = 0; i < n; i++) { const c = P(i * step + step / 2, kc), q = P((i + 1) * step, 1); d += `Q${c[0].toFixed(1)} ${c[1].toFixed(1)} ${q[0].toFixed(1)} ${q[1].toFixed(1)}`; }
+    return d + 'Z';
+  }
+
   /* ---------- stars (seeded, so they never jump around) ---------- */
   const R = rng(7), stars = [];
   for (let i = 0; i < 110; i++) {
-    const x = -260 + R() * 520, y = -980 + R() * 520, r = .7 + R() * 1.5, d = (R() * 4).toFixed(1), du = (2.4 + R() * 3).toFixed(1);
+    const x = -260 + R() * 520, y = -980 + R() * 520, r = 1.5 + R() * 1.3, d = (R() * 4).toFixed(1), du = (2.4 + R() * 3).toFixed(1);
     stars.push(`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(2)}" fill="#fff" class="twk" style="animation-delay:-${d}s;animation-duration:${du}s"/>`);
   }
   for (let i = 0; i < 9; i++) {
-    const x = -230 + R() * 460, y = -900 + R() * 380, s = 3 + R() * 3.2, d = (R() * 4).toFixed(1);
+    const x = -230 + R() * 460, y = -900 + R() * 380, s = 4 + R() * 3, d = (R() * 4).toFixed(1);
     stars.push(`<path d="M${x} ${y - s * 2} Q${x} ${y} ${x + s * 2} ${y} Q${x} ${y} ${x} ${y + s * 2} Q${x} ${y} ${x - s * 2} ${y} Q${x} ${y} ${x} ${y - s * 2}Z" fill="#fff6d8" class="twk" style="animation-delay:-${d}s;animation-duration:3.4s"/>`);
   }
 
@@ -42,8 +51,10 @@ Seq.scenes.intro = (root, done) => {
     const r = a * Math.PI / 180, c = Math.cos(r), s = Math.sin(r);
     vouss += `<path d="M${f2(c * 28)} ${f2(-30 + s * 28)} L${f2(c * 44)} ${f2(-30 + s * 44)}" stroke="rgba(10,6,30,.55)" stroke-width="1.6"/>`;
   }
+  let siding = '';
+  for (let y = -472; y < 0; y += 14) siding += `M-320 ${y} H320`;
   let bars = '';
-  for (let x = -44; x <= 160; x += 11.2) bars += `<rect x="${x}" y="-282" width="3.6" height="30" rx="1" fill="url(#nBaluster)"/>`;
+  for (let x = -42; x <= 160; x += 16) bars += `<rect x="${x}" y="-266" width="2.8" height="14" rx="1" fill="url(#nBaluster)"/>`;
   let joints = '';
   for (let x = -380; x <= 380; x += 96) joints += `<path d="M${x} 0 L${x - 14} 50" stroke="rgba(10,6,30,.45)" stroke-width="1.4"/>`;
 
@@ -90,6 +101,7 @@ Seq.scenes.intro = (root, done) => {
       <clipPath id="nCatBodyClip"><ellipse cx="0" cy="-32" rx="48" ry="35"/></clipPath>
       <clipPath id="nMBodyClip"><ellipse cx="-5" cy="-19" rx="25" ry="18"/></clipPath>
       <clipPath id="nMHeadClip"><ellipse cx="19" cy="-26" rx="17.5" ry="15.5"/></clipPath>
+      <clipPath id="nMoonClip"><path clip-rule="evenodd" d="M-200 -690 H-60 V-540 H-200Z M-141 -620 a20 20 0 1 0 40 0 a20 20 0 1 0 -40 0Z"/></clipPath>
       <clipPath id="nHoleClip"><path d="M${TUN_X - 28} ${TUN_Y} V-30 A28 28 0 0 1 ${TUN_X + 28} -30 V${TUN_Y} Z"/></clipPath>
     </defs>
 
@@ -99,9 +111,7 @@ Seq.scenes.intro = (root, done) => {
       <ellipse cx="0" cy="-470" rx="700" ry="240" fill="url(#nHorizon)"/>
       <g class="stars">${stars.join('')}</g>
       <g class="moon">
-        <circle cx="-132" cy="-612" r="40" fill="#b9a3ff" opacity=".1"/>
-        <mask id="nMoonMask"><rect x="-200" y="-680" width="140" height="140" fill="#000"/><circle cx="-132" cy="-612" r="22" fill="#fff"/><circle cx="-121" cy="-620" r="20" fill="#000"/></mask>
-        <circle cx="-132" cy="-612" r="22" fill="#f1e9ff" mask="url(#nMoonMask)"/>
+        <circle cx="-132" cy="-612" r="23" fill="#f1e9ff" clip-path="url(#nMoonClip)"/>
       </g>
       <g class="clouds">
         <g class="cloud" data-s="9" data-a="22"><ellipse cx="-60" cy="-640" rx="120" ry="22" fill="#2b1a63" opacity=".55"/><ellipse cx="-10" cy="-652" rx="80" ry="20" fill="#34207a" opacity=".5"/></g>
@@ -112,7 +122,7 @@ Seq.scenes.intro = (root, done) => {
       <!-- house -->
       <g class="house">
         <rect x="-320" y="-486" width="640" height="486" fill="url(#nWall)"/>
-        <rect x="-320" y="-486" width="640" height="486" fill="url(#nSiding)"/>
+        <path d="${siding}" stroke="rgba(8,4,28,.45)" stroke-width="1.6" fill="none"/>
         <!-- roof -->
         <polygon points="-340,-474 -70,-566 70,-566 340,-474" fill="#120b2b"/>
         <polygon points="-340,-474 -70,-566 -60,-562 -326,-474" fill="#241a4d" opacity=".7"/>
@@ -142,7 +152,7 @@ Seq.scenes.intro = (root, done) => {
         <rect x="2" y="-446" width="112" height="196" rx="4" fill="#170f38"/>
         <rect x="9" y="-439" width="98" height="189" fill="url(#nGlass)"/>
         <path d="M58 -439 V-250 M9 -400 H107 M9 -330 H107" stroke="#170f38" stroke-width="4.5"/>
-        <path d="M9 -439 H20 V-250 H9Z M96 -439 H107 V-250 H96Z" fill="#3a1f55" opacity=".6"/>
+        <path d="M9 -439 H20 V-250 H9Z M96 -439 H107 V-250 H96Z" fill="#2b2256"/>
         <path d="M9 -439 L58 -439 L9 -330Z" fill="#fff" opacity=".12"/>
 
         <!-- balcony slab + shadow under it -->
@@ -164,69 +174,72 @@ Seq.scenes.intro = (root, done) => {
         <path d="M-320 -24 H320" stroke="rgba(255,255,255,.07)" stroke-width="2"/>
       </g>
 
-      <!-- railing (behind the cat) -->
-      <g class="rail">
-        <rect x="-50" y="-262" width="224" height="9" fill="#241c52"/>
-        ${bars}
-        <rect x="-54" y="-292" width="232" height="9" rx="2" fill="#3a3070"/>
-        <rect x="-54" y="-292" width="232" height="2.4" rx="1" fill="rgba(255,255,255,.3)"/>
-        <rect x="-56" y="-288" width="9" height="40" rx="2" fill="url(#nBaluster)"/>
-        <rect x="165" y="-288" width="9" height="40" rx="2" fill="url(#nBaluster)"/>
-        <rect x="-58" y="-296" width="13" height="7" rx="2" fill="#4a3f88"/><rect x="163" y="-296" width="13" height="7" rx="2" fill="#4a3f88"/>
-        <path d="M-52 -290 H172" stroke="rgba(255,255,255,.14)" stroke-width="1.2"/>
+      <!-- cushion for the cat to sit on -->
+      <g class="cushion">
+        <ellipse cx="${CAT_X}" cy="-256" rx="50" ry="10" fill="#c4577f" stroke="#0c0818" stroke-width="2.6"/>
+        <ellipse cx="${CAT_X}" cy="-260" rx="44" ry="7" fill="#ee86ab"/>
+        <path d="M${CAT_X - 30} -260 Q${CAT_X} -255 ${CAT_X + 30} -260" fill="none" stroke="#fbc3d6" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="3 3"/>
       </g>
 
-      <!-- the cat: small, chonky, tuxedo -->
-      <g class="cat" transform="translate(${CAT_X} ${CAT_Y}) scale(${CAT_S})">
-        <ellipse cx="0" cy="3" rx="60" ry="7" fill="rgba(5,2,15,.5)"/>
+      <!-- the cat: small, round, chonky tuxedo (chibi, outlined, cel-shaded) -->
+      <g class="cat" transform="translate(${CAT_X} ${CAT_Y}) scale(${CAT_S})" stroke-linejoin="round" stroke-linecap="round">
         <g class="cTail">
-          <path d="M40 -8 C 68 -8 78 -34 62 -46" fill="none" stroke="url(#nCatTail)" stroke-width="14" stroke-linecap="round"/>
-          <path d="M40 -12 C 64 -12 72 -32 60 -43" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="3" stroke-linecap="round"/>
+          <path d="M38 -8 C 66 -8 76 -32 60 -44" fill="none" stroke="#0c0818" stroke-width="17"/>
+          <path d="M38 -8 C 66 -8 76 -32 60 -44" fill="none" stroke="#2f2d49" stroke-width="11"/>
+          <path d="M42 -12 C 64 -12 70 -28 59 -38" fill="none" stroke="#4b4a78" stroke-width="3"/>
         </g>
         <g class="cBody">
-          <ellipse cx="-37" cy="-15" rx="17" ry="15" fill="url(#nCatBlack)"/>
-          <ellipse cx="37" cy="-15" rx="17" ry="15" fill="url(#nCatBlack)"/>
-          <ellipse cx="0" cy="-32" rx="48" ry="35" fill="url(#nCatBlack)"/>
-          <ellipse cx="-22" cy="-50" rx="20" ry="11" fill="url(#nSheen)"/>
-          <ellipse cx="0" cy="-26" rx="27" ry="26" fill="url(#nCatWhite)"/>
-          <ellipse cx="0" cy="-47" rx="31" ry="10" fill="url(#nAO)"/>
-          <ellipse cx="0" cy="-10" rx="30" ry="9" fill="url(#nAO)" opacity=".5"/>
-          <path d="M-20 -40 q-3 5 0 9 M3 -43 q3 6 0 11 M19 -36 q-3 5 -1 9" fill="none" stroke="rgba(120,125,170,.28)" stroke-width="1.3" stroke-linecap="round"/>
-          <ellipse cx="-45" cy="-4" rx="10" ry="5.5" fill="url(#nCatWhite)"/><ellipse cx="45" cy="-4" rx="10" ry="5.5" fill="url(#nCatWhite)"/>
-          <ellipse cx="-14" cy="-6" rx="12.5" ry="8.5" fill="url(#nCatWhite)"/><ellipse cx="14" cy="-6" rx="12.5" ry="8.5" fill="url(#nCatWhite)"/>
-          <path d="M-18 -2 V-8 M-11 -2 V-8 M11 -2 V-8 M18 -2 V-8" stroke="rgba(90,95,140,.4)" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M-41 0 C-49 -20 -45 -52 -27 -62 L27 -62 C45 -52 49 -20 41 0 C21 6 -21 6 -41 0Z" fill="#2f2d49" stroke="#0c0818" stroke-width="3"/>
+          <path d="M24 -58 C45 -50 47 -20 39 -2 C33 1 28 2 22 2 C35 -20 35 -44 24 -58Z" fill="#211f3a"/>
+          <path d="M-33 -50 C-40 -40 -41 -28 -38 -18" fill="none" stroke="#4b4a78" stroke-width="3.4"/>
+          <path d="${fluff(0, -28, 25, 28, 12, 2.8)}" fill="#ffffff" stroke="#0c0818" stroke-width="2.2"/>
+          <path d="M14 -48 C27 -34 24 -12 12 -2 C19 -14 20 -34 14 -48Z" fill="#dedcf0"/>
+          <ellipse cx="-37" cy="-3" rx="10" ry="6.5" fill="#fff" stroke="#0c0818" stroke-width="2.4"/>
+          <ellipse cx="37" cy="-3" rx="10" ry="6.5" fill="#fff" stroke="#0c0818" stroke-width="2.4"/>
+          <ellipse cx="-13" cy="-6" rx="11.5" ry="8.5" fill="#fff" stroke="#0c0818" stroke-width="2.4"/>
+          <ellipse cx="13" cy="-6" rx="11.5" ry="8.5" fill="#fff" stroke="#0c0818" stroke-width="2.4"/>
+          <path d="M-17 -2 V-7 M-10 -2 V-7 M10 -2 V-7 M17 -2 V-7" stroke="#8d8bb5" stroke-width="1.4"/>
         </g>
-        <ellipse cx="0" cy="-46" rx="34" ry="9" fill="url(#nAO)" opacity=".8"/>
-        <g class="cHead" transform="translate(0 -76)">
-          <path d="M-37 -8 Q-44 -38 -27 -44 Q-14 -36 -10 -25Z" fill="url(#nCatHead)"/>
-          <path d="M37 -8 Q44 -38 27 -44 Q14 -36 10 -25Z" fill="url(#nCatHead)"/>
-          <path d="M-32 -13 Q-36 -33 -27 -37 Q-19 -32 -16 -25Z" fill="url(#nEar)"/>
-          <path d="M-29 -20 q1 -7 3 -11 M-25 -19 q0 -6 2 -9" fill="none" stroke="rgba(255,235,240,.6)" stroke-width="1.1" stroke-linecap="round"/>
-          <path d="M32 -13 Q36 -33 27 -37 Q19 -32 16 -25Z" fill="url(#nEar)"/>
-          <path d="M29 -20 q-1 -7 -3 -11 M25 -19 q0 -6 -2 -9" fill="none" stroke="rgba(255,235,240,.6)" stroke-width="1.1" stroke-linecap="round"/>
-          <ellipse cx="0" cy="0" rx="42" ry="34" fill="url(#nCatHead)"/>
-          <ellipse cx="-31" cy="10" rx="13" ry="11" fill="url(#nCatHead)"/><ellipse cx="31" cy="10" rx="13" ry="11" fill="url(#nCatHead)"/>
-          <ellipse cx="-12" cy="-16" rx="24" ry="11" fill="url(#nSheen)"/>
-          <path d="M-4.5 -27 Q0 -33 4.5 -27 L7.5 -5 L-7.5 -5Z" fill="url(#nCatWhite)"/>
-          <ellipse cx="-9.5" cy="10" rx="12.5" ry="10.5" fill="url(#nCatWhite)"/><ellipse cx="9.5" cy="10" rx="12.5" ry="10.5" fill="url(#nCatWhite)"/>
-          <ellipse cx="0" cy="19" rx="10" ry="7" fill="url(#nCatWhite)"/>
-          <path d="M-38 12 L-47 14 L-39 18 L-45 23 L-35 21Z M38 12 L47 14 L39 18 L45 23 L35 21Z" fill="url(#nCatWhite)"/>
-          <ellipse cx="-27" cy="7" rx="7.5" ry="4.4" fill="#ff8fae" opacity=".5"/><ellipse cx="27" cy="7" rx="7.5" ry="4.4" fill="#ff8fae" opacity=".5"/>
-          <g class="cEyeL" transform="translate(-17 -3)"><g class="cEyeScale"><ellipse rx="10" ry="11" fill="#101a12"/><ellipse rx="8.6" ry="9.6" fill="url(#nCatEye)"/><ellipse class="cPupil" rx="5.6" ry="7" fill="#06070a"/><circle cx="-3.2" cy="-3.8" r="3.1" fill="#fff"/><circle cx="3.4" cy="3.6" r="1.5" fill="#fff" opacity=".9"/></g></g>
-          <g class="cEyeR" transform="translate(17 -3)"><g class="cEyeScale"><ellipse rx="10" ry="11" fill="#101a12"/><ellipse rx="8.6" ry="9.6" fill="url(#nCatEye)"/><ellipse class="cPupil" rx="5.6" ry="7" fill="#06070a"/><circle cx="-3.2" cy="-3.8" r="3.1" fill="#fff"/><circle cx="3.4" cy="3.6" r="1.5" fill="#fff" opacity=".9"/></g></g>
-          <g fill="rgba(110,115,160,.4)"><circle cx="-14" cy="12" r="1"/><circle cx="-10" cy="14" r="1"/><circle cx="-15" cy="16" r="1"/><circle cx="14" cy="12" r="1"/><circle cx="10" cy="14" r="1"/><circle cx="15" cy="16" r="1"/></g>
-          <path d="M-3.6 6.5 Q0 4.2 3.6 6.5 Q2.7 11 0 12 Q-2.7 11 -3.6 6.5Z" fill="#f09bb0"/><path d="M-2 6.4 Q0 5.5 2 6.4" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1" stroke-linecap="round"/>
-          <path class="cMouthShut" d="M0 12 Q-2.6 17 -7.5 14 M0 12 Q2.6 17 7.5 14" fill="none" stroke="#4a2c3a" stroke-width="1.5" stroke-linecap="round"/>
+        <g class="cHead" transform="translate(0 -66)">
+          <path d="M-39 -12 Q-45 -42 -27 -47 Q-13 -39 -9 -27Z" fill="#2f2d49" stroke="#0c0818" stroke-width="3"/>
+          <path d="M39 -12 Q45 -42 27 -47 Q13 -39 9 -27Z" fill="#2f2d49" stroke="#0c0818" stroke-width="3"/>
+          <path d="M-33 -16 Q-37 -36 -27 -40 Q-19 -35 -16 -27Z" fill="#ff9db9"/>
+          <path d="M33 -16 Q37 -36 27 -40 Q19 -35 16 -27Z" fill="#ff9db9"/>
+          <path d="M-30 -20 Q-31 -32 -27 -36" fill="none" stroke="#fff" stroke-width="1.4" opacity=".7"/>
+          <path d="${fluff(-40, 12, 9, 7, 6, 2.4)}" fill="#fff" stroke="#0c0818" stroke-width="2"/>
+          <path d="${fluff(40, 12, 9, 7, 6, 2.4)}" fill="#fff" stroke="#0c0818" stroke-width="2"/>
+          <ellipse cx="0" cy="0" rx="44" ry="36" fill="#2f2d49" stroke="#0c0818" stroke-width="3"/>
+          <path d="M-22 -27 Q-10 -34 4 -31" fill="none" stroke="#5a5990" stroke-width="3.4"/>
+          <path d="M-5 -34 Q0 -39 5 -34 L8 -6 L-8 -6Z" fill="#fff"/>
+          <ellipse cx="-10" cy="12" rx="14" ry="11.5" fill="#fff"/><ellipse cx="10" cy="12" rx="14" ry="11.5" fill="#fff"/>
+          <ellipse cx="0" cy="22" rx="11" ry="7" fill="#fff"/>
+          <path d="M-22 20 Q0 34 22 20 Q18 30 0 31 Q-18 30 -22 20Z" fill="#dedcf0" opacity=".7"/>
+          <ellipse cx="-30" cy="8" rx="8.5" ry="5.4" fill="#ff7fa3" opacity=".7"/><ellipse cx="30" cy="8" rx="8.5" ry="5.4" fill="#ff7fa3" opacity=".7"/>
+          <g class="cEyeL" transform="translate(-19 -2)"><g class="cEyeScale"><ellipse rx="10.5" ry="12.5" fill="#0c0818"/><ellipse class="cPupil" rx="7.6" ry="9.4" fill="#45b98d"/><path d="M-7 -4 Q0 -11 7 -4 Q0 -7 -7 -4Z" fill="#1d7c63"/><ellipse rx="3.5" ry="4.8" fill="#0c0818" opacity=".85"/><circle cx="-3.8" cy="-4.8" r="3.8" fill="#fff"/><circle cx="3.8" cy="4.4" r="1.9" fill="#fff"/></g></g>
+          <g class="cEyeR" transform="translate(19 -2)"><g class="cEyeScale"><ellipse rx="10.5" ry="12.5" fill="#0c0818"/><ellipse class="cPupil" rx="7.6" ry="9.4" fill="#45b98d"/><path d="M-7 -4 Q0 -11 7 -4 Q0 -7 -7 -4Z" fill="#1d7c63"/><ellipse rx="3.5" ry="4.8" fill="#0c0818" opacity=".85"/><circle cx="-3.8" cy="-4.8" r="3.8" fill="#fff"/><circle cx="3.8" cy="4.4" r="1.9" fill="#fff"/></g></g>
+          <path d="M-3.8 7 Q0 4.6 3.8 7 Q2.8 11.4 0 12.4 Q-2.8 11.4 -3.8 7Z" fill="#ff8fae" stroke="#0c0818" stroke-width="1.5"/>
+          <path class="cMouthShut" d="M0 12.4 Q-3 17.5 -7.4 14 M0 12.4 Q3 17.5 7.4 14" fill="none" stroke="#0c0818" stroke-width="1.9"/>
           <g class="cMouthOpen" opacity="0">
-            <path d="M-8 14 Q0 11.5 8 14 Q8 28 0 29 Q-8 28 -8 14Z" fill="#4a0f2a"/>
-            <path d="M-4.6 25 Q0 20 4.6 25 Q3.6 29 0 29 Q-3.6 29 -4.6 25Z" fill="#ec7f96"/>
+            <path d="M-8.5 14 Q0 11.5 8.5 14 Q8.5 28 0 29 Q-8.5 28 -8.5 14Z" fill="#5b1230" stroke="#0c0818" stroke-width="1.8"/>
+            <path d="M-4.8 25 Q0 20 4.8 25 Q3.8 29 0 29 Q-3.8 29 -4.8 25Z" fill="#ff7f9a"/>
           </g>
           <g class="cLetter"><g transform="translate(0 22) rotate(-6) scale(.2) translate(-80 -55)"><use href="#letterArt"/></g>
-            <path d="M-9 25 Q0 33 9 25 Q7.5 32 0 33 Q-7.5 32 -9 25Z" fill="url(#nCatWhite)"/></g>
-          <g stroke="rgba(235,235,255,.6)" stroke-width="1" stroke-linecap="round" fill="none">
-            <path d="M-26 10 Q-38 6 -52 8 M-26 14 Q-39 14 -52 19"/><path d="M26 10 Q38 6 52 8 M26 14 Q39 14 52 19"/>
+            <path d="M-9.5 25 Q0 33.5 9.5 25 Q8 32.5 0 33.5 Q-8 32.5 -9.5 25Z" fill="#fff" stroke="#0c0818" stroke-width="1.6"/></g>
+          <g stroke="#fff" stroke-width="1.2" fill="none" opacity=".85">
+            <path d="M-27 12 Q-39 8 -53 10 M-27 16 Q-40 16 -53 21"/><path d="M27 12 Q39 8 53 10 M27 16 Q40 16 53 21"/>
           </g>
         </g>
+      </g>
+
+      <!-- low iron fence (in FRONT of the cat) -->
+      <g class="rail">
+        <rect x="-52" y="-256" width="222" height="5" fill="#241c52"/>
+        ${bars}
+        <rect x="-54" y="-271" width="226" height="6" rx="2" fill="#3a3070"/>
+        <rect x="-54" y="-271" width="226" height="2" rx="1" fill="rgba(255,255,255,.3)"/>
+        <rect x="-56" y="-272" width="8" height="24" rx="2" fill="url(#nBaluster)"/>
+        <rect x="164" y="-272" width="8" height="24" rx="2" fill="url(#nBaluster)"/>
+        <rect x="-58" y="-278" width="12" height="6" rx="2" fill="#4a3f88"/><rect x="162" y="-278" width="12" height="6" rx="2" fill="#4a3f88"/>
       </g>
 
       <!-- sidewalk, curb, road -->
@@ -263,34 +276,38 @@ Seq.scenes.intro = (root, done) => {
       <!-- mouse + letter, clipped to the tunnel while the mouse is inside it -->
       <ellipse class="mShadow" cx="0" cy="0" rx="30" ry="5" fill="rgba(5,2,15,.5)"/>
       <g class="mClip">
-        <g class="mRoot">
+        <g class="mRoot" stroke-linejoin="round" stroke-linecap="round">
           <g class="mSquash">
-            <g class="mTail"><path d="M-27 -16 C-42 -14 -48 0 -62 -3 C-70 -5 -72 -14 -68 -20" fill="none" stroke="#e4a9b8" stroke-width="3" stroke-linecap="round"/></g>
-            <g class="mLegBF"><g class="mLegS"><rect x="-3" y="0" width="6" height="14" rx="3" fill="#7a7389"/><ellipse cx="1.5" cy="14.5" rx="5.2" ry="2.8" fill="#d99aad"/></g></g>
+            <g class="mTail"><path d="M-27 -16 C-42 -14 -48 0 -62 -3 C-70 -5 -72 -14 -68 -20" fill="none" stroke="#1b1033" stroke-width="5.6"/><path d="M-27 -16 C-42 -14 -48 0 -62 -3 C-70 -5 -72 -14 -68 -20" fill="none" stroke="#f4a6bd" stroke-width="2.8"/></g>
+            <g class="mLegBF"><g class="mLegS"><rect x="-3.2" y="0" width="6.4" height="13" rx="3.2" fill="#9a90b8" stroke="#1b1033" stroke-width="2"/><ellipse cx="1.6" cy="14" rx="5.6" ry="3.2" fill="#f4a6bd" stroke="#1b1033" stroke-width="2"/></g></g>
             <g class="mBody">
-              <g class="mLegFF"><g class="mLegS"><rect x="-3" y="0" width="6" height="14" rx="3" fill="#7a7389"/><ellipse cx="1.5" cy="14.5" rx="5.2" ry="2.8" fill="#d99aad"/></g></g>
-              <ellipse cx="-5" cy="-19" rx="25" ry="18" fill="url(#nMouse)"/>
-              <ellipse cx="-3" cy="-11" rx="19" ry="8" fill="#f1e9f1" opacity=".55"/>
-              <path d="M-24 -29 Q-10 -40 6 -35" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="2" stroke-linecap="round"/>
-              <g class="mLegFN"><g class="mLegS"><rect x="-3" y="0" width="6" height="14" rx="3" fill="url(#nLeg)"/><ellipse cx="1.5" cy="14.5" rx="5.2" ry="2.8" fill="#e8a9b9"/></g></g>
-              <ellipse cx="13" cy="-13" rx="15" ry="6" fill="url(#nAO)" opacity=".7"/>
+              <g class="mLegFF"><g class="mLegS"><rect x="-3.2" y="0" width="6.4" height="13" rx="3.2" fill="#9a90b8" stroke="#1b1033" stroke-width="2"/><ellipse cx="1.6" cy="14" rx="5.6" ry="3.2" fill="#f4a6bd" stroke="#1b1033" stroke-width="2"/></g></g>
+              <ellipse cx="-5" cy="-19" rx="25" ry="18" fill="#b6adcf" stroke="#1b1033" stroke-width="2.8"/>
+              <path d="M-20 -9 Q-5 -2 14 -9 Q10 -4 -4 -2 Q-16 -3 -20 -9Z" fill="#9a90b8"/>
+              <ellipse cx="-3" cy="-12" rx="17" ry="7" fill="#f8e9f0"/>
+              <path d="M-24 -28 Q-10 -39 5 -35" fill="none" stroke="#dcd5ee" stroke-width="3"/>
+              <g class="mLegFN"><g class="mLegS"><rect x="-3.2" y="0" width="6.4" height="13" rx="3.2" fill="#b6adcf" stroke="#1b1033" stroke-width="2"/><ellipse cx="1.6" cy="14" rx="5.6" ry="3.2" fill="#f4a6bd" stroke="#1b1033" stroke-width="2"/></g></g>
+              <!-- messenger's red scarf -->
+              <path d="M2 -21 Q14 -8 26 -17 L25 -9 Q12 0 1 -12Z" fill="#e5475c" stroke="#1b1033" stroke-width="2.2"/>
+              <path d="M2 -14 Q12 -3 25 -11 L25 -9 Q12 0 1 -12Z" fill="#b92a44"/>
+              <path d="M5 -10 L-6 -3 L-1 -14Z" fill="#e5475c" stroke="#1b1033" stroke-width="2"/>
               <g class="mHead">
-                <ellipse cx="33" cy="-22" rx="9" ry="6.4" fill="url(#nMouseHead)"/>
-                <ellipse cx="19" cy="-26" rx="17.5" ry="15.5" fill="url(#nMouseHead)"/>
-                <path d="M6 -33 q4 -3 9 -2" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.6" stroke-linecap="round"/>
-                <g class="mEar"><circle cx="8" cy="-41" r="11.5" fill="#8d869a"/><circle cx="8.5" cy="-40.5" r="8" fill="url(#nMouseEar)"/><path d="M5 -44 q3 -3 7 -2 M4 -40 q4 -2 8 0" fill="none" stroke="rgba(255,235,240,.45)" stroke-width="1" stroke-linecap="round"/></g>
-                <ellipse class="mEyeOpen" cx="25" cy="-29" rx="4.3" ry="5" fill="#0d0a14"/>
-                <circle class="mEyeShine" cx="26.7" cy="-31.2" r="1.9" fill="#fff"/>
-                <circle class="mEyeShine" cx="23.6" cy="-26.8" r=".9" fill="#fff" opacity=".85"/>
-                <path class="mEyeHappy" d="M20.8 -28.5 Q25 -34.5 29.2 -28.5" fill="none" stroke="#0d0a14" stroke-width="1.9" stroke-linecap="round" opacity="0"/>
-                <ellipse class="mBlush" cx="27.5" cy="-20.5" rx="4.6" ry="3" fill="#f58fae" opacity=".4"/>
-                <rect x="34.6" y="-17.4" width="3.1" height="4" rx="1.1" fill="#fffaf0" stroke="rgba(60,40,60,.35)" stroke-width=".5"/><rect x="37.9" y="-17.6" width="3.1" height="4" rx="1.1" fill="#fffaf0" stroke="rgba(60,40,60,.35)" stroke-width=".5"/>
-                <circle cx="39.2" cy="-23" r="3.3" fill="#e9879f"/><circle cx="38.3" cy="-24" r="1" fill="#fff" opacity=".75"/>
-                <path class="mSmile" d="M31.5 -16.5 Q36 -12.5 39.5 -17" fill="none" stroke="#3a2536" stroke-width="1.3" stroke-linecap="round" opacity="0"/>
-                <g stroke="rgba(255,255,255,.6)" stroke-width=".9" stroke-linecap="round" fill="none"><path d="M36 -21 L50 -28 M37 -20 L52 -21 M36 -19 L50 -14"/></g>
+                <path d="M4 -24 C4 -42 31 -44 38 -34 C43 -32 50 -28 50 -22.5 C50 -17.5 44 -14 38 -13 C31 -8 4 -8 4 -24Z" fill="#c9c0df" stroke="#1b1033" stroke-width="2.8"/>
+                <path d="M9 -35 Q16 -40 25 -38" fill="none" stroke="#ece7f8" stroke-width="3"/>
+                <g class="mEar"><circle cx="8" cy="-41" r="12.5" fill="#b6adcf" stroke="#1b1033" stroke-width="2.8"/><circle cx="8.5" cy="-40.5" r="8.4" fill="#f48fae"/><path d="M4 -45 q4 -4 9 -2" fill="none" stroke="#ffd0de" stroke-width="2"/></g>
+                <ellipse class="mEyeOpen" cx="27" cy="-28.5" rx="5" ry="6" fill="#0d0a18"/>
+                <circle class="mEyeShine" cx="29" cy="-31" r="2.3" fill="#fff"/>
+                <circle class="mEyeShine" cx="25.2" cy="-25.4" r="1.1" fill="#fff"/>
+                <path d="M21.5 -33.5 Q27 -38.5 32.5 -33.5" fill="none" stroke="#1b1033" stroke-width="1.8"/>
+                <path class="mEyeHappy" d="M22 -28 Q27 -35 32 -28" fill="none" stroke="#1b1033" stroke-width="2.2" opacity="0"/>
+                <ellipse class="mBlush" cx="28.5" cy="-19.5" rx="5" ry="3.2" fill="#ff7fa3" opacity=".6"/>
+                <rect x="38" y="-17.2" width="3.4" height="4.4" rx="1.2" fill="#fffaf0" stroke="#1b1033" stroke-width="1.2"/><rect x="41.5" y="-17.4" width="3.4" height="4.4" rx="1.2" fill="#fffaf0" stroke="#1b1033" stroke-width="1.2"/>
+                <circle cx="49" cy="-23" r="3.6" fill="#ff8fae" stroke="#1b1033" stroke-width="1.8"/><circle cx="48" cy="-24" r="1" fill="#fff"/>
+                <path class="mSmile" d="M36 -17.5 Q40.5 -13.5 44.5 -18" fill="none" stroke="#1b1033" stroke-width="1.6" opacity="0"/>
+                <g stroke="#fff" stroke-width="1" fill="none" opacity=".85"><path d="M40 -22 L55 -29 M41 -20.5 L57 -21.5 M40 -19 L55 -13"/></g>
               </g>
             </g>
-            <g class="mLegBN"><g class="mLegS"><rect x="-3" y="0" width="6.4" height="14" rx="3" fill="url(#nLeg)"/><ellipse cx="1.8" cy="14.5" rx="5.6" ry="2.8" fill="#e8a9b9"/></g></g>
+            <g class="mLegBN"><g class="mLegS"><rect x="-3.4" y="0" width="6.8" height="13" rx="3.4" fill="#b6adcf" stroke="#1b1033" stroke-width="2"/><ellipse cx="1.7" cy="14" rx="5.8" ry="3.2" fill="#f4a6bd" stroke="#1b1033" stroke-width="2"/></g></g>
           </g>
         </g>
         <g class="letterW" visibility="hidden"><g class="letterG"><use href="#letterArt"/></g></g>
@@ -305,11 +322,10 @@ Seq.scenes.intro = (root, done) => {
       <g class="sparks"></g>
     </g>
   </svg>
-  <canvas class="rain"></canvas>
-  <div class="bubble">Got it!</div>
-  <div class="hint">Tap to begin · sound on</div>`;
+  <div class="bubble" data-px-ui>Got it!</div>
+  <div class="hint" data-px-ui>Tap to begin · sound on</div>`;
 
-  const svg = root.querySelector('svg'), cvs = root.querySelector('canvas'), ctx = cvs.getContext('2d');
+  const svg = root.querySelector('svg');
   const bubble = root.querySelector('.bubble'), hint = root.querySelector('.hint');
   const q = s => root.querySelector(s), qa = s => [...root.querySelectorAll(s)];
   const el = {
@@ -317,7 +333,7 @@ Seq.scenes.intro = (root, done) => {
     cMouthShut: q('.cMouthShut'), cMouthOpen: q('.cMouthOpen'), cEyes: qa('.cEyeScale'), cPupils: qa('.cPupil'),
     mShadow: q('.mShadow'), mClip: q('.mClip'), mRoot: q('.mRoot'), mSquash: q('.mSquash'), mBody: q('.mBody'), mHead: q('.mHead'), mEar: q('.mEar'), mTail: q('.mTail'),
     legBN: q('.mLegBN'), legBF: q('.mLegBF'), legFN: q('.mLegFN'), legFF: q('.mLegFF'),
-    eyeOpen: q('.mEyeOpen'), eyeShine: q('.mEyeShine'), eyeHappy: q('.mEyeHappy'), blush: q('.mBlush'), smile: q('.mSmile'),
+    eyeOpen: q('.mEyeOpen'), eyeShines: qa('.mEyeShine'), eyeHappy: q('.mEyeHappy'), blush: q('.mBlush'), smile: q('.mSmile'),
     letterW: q('.letterW'), letterG: q('.letterG'), qs: qa('.q'), sparks: q('.sparks'), clouds: qa('.cloud'), trickle: q('.trickle')
   };
   const SP = [];
@@ -402,8 +418,6 @@ Seq.scenes.intro = (root, done) => {
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
     z0 = Math.min(W / 430, H / 760);
     wide = { x: 0, y: 122 - (H / 2) / z0, z: z0 };
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    cvs.width = Math.round(W * dpr); cvs.height = Math.round(H * dpr); cvs.style.width = W + 'px'; cvs.style.height = H + 'px'; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
   const toScreen = (wx, wy) => ({ x: (wx - cam.x.v) * cam.z.v + W / 2, y: (wy - cam.y.v) * cam.z.v + H / 2 });
   const closeCam = () => { const z = z0 * 2.35; return { x: M.x + 6, y: WALK_Y - .17 * H / z, z }; };
@@ -421,7 +435,7 @@ Seq.scenes.intro = (root, done) => {
     const x = px * c + py * s, y = -px * s + py * c;
     return { x: M.x + M.face * (-14 + x) * M.s * MK, y: M.y + y * M.s * MK - M.hop };
   }
-  function catMouth() { return { x: CAT_X, y: CAT_Y - (76 - 20) * CAT_S + C.bob * CAT_S }; }
+  function catMouth() { return { x: CAT_X, y: CAT_Y - (66 - 22) * CAT_S + C.bob * CAT_S }; }
   function catMeow(kind) { C.kind = kind; C.mewT = t; }
 
   /* ---------- input: only the first tap does anything ---------- */
@@ -440,25 +454,26 @@ Seq.scenes.intro = (root, done) => {
     const near = Math.random() < .42;
     return { x: Math.random() * (W + 160) - 20, y: initial ? Math.random() * H : -30 - Math.random() * 120, vy: (near ? 1150 : 800) * (.9 + Math.random() * .2), len: near ? 22 : 12, near, land: H * (.68 + Math.random() * .34) };
   }
-  function seedRain() { drops = []; const n = reduce ? 80 : 170; for (let i = 0; i < n; i++) drops.push(newDrop(true)); }
+  function seedRain() { drops = []; const n = reduce ? 60 : 120; for (let i = 0; i < n; i++) drops.push(newDrop(true)); }
   const WIND = -.14;
-  function drawRain(dt) {
-    ctx.clearRect(0, 0, W, H);
-    for (const pass of [false, true]) {
-      ctx.beginPath(); ctx.lineWidth = pass ? 1.5 : 1; ctx.strokeStyle = pass ? 'rgba(220,208,255,.45)' : 'rgba(190,176,245,.24)';
-      for (const d of drops) if (d.near === pass) { ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - WIND * d.len * -1, d.y - d.len); }
-      ctx.stroke();
-    }
+  function rainStep(dt) {
     for (const d of drops) {
       d.y += d.vy * dt; d.x += WIND * d.vy * dt;
-      if (d.y >= d.land) { if (splashes.length < 60) splashes.push({ x: d.x, y: d.land, a: 0, near: d.near }); Object.assign(d, newDrop(false), { x: Math.random() * (W + 160) - 20 }); }
+      if (d.y >= d.land) { if (splashes.length < 50) splashes.push({ x: d.x, y: d.land, a: 0, near: d.near }); Object.assign(d, newDrop(false), { x: Math.random() * (W + 160) - 20 }); }
     }
-    ctx.lineWidth = 1;
-    for (let i = splashes.length - 1; i >= 0; i--) {
-      const sp = splashes[i]; sp.a += dt * 3.2;
-      if (sp.a >= 1) { splashes.splice(i, 1); continue; }
-      ctx.strokeStyle = `rgba(215,200,255,${(.5 * (1 - sp.a)).toFixed(3)})`;
-      ctx.beginPath(); ctx.ellipse(sp.x, sp.y, 2 + sp.a * (sp.near ? 11 : 7), .8 + sp.a * (sp.near ? 3.4 : 2.2), 0, 0, 6.3); ctx.stroke();
+    for (let i = splashes.length - 1; i >= 0; i--) { splashes[i].a += dt * 3; if (splashes[i].a >= 1) splashes.splice(i, 1); }
+  }
+  function rainPixels(c, info) {
+    const k = info.k;
+    for (const d of drops) {
+      const x = Math.floor(d.x / k), y = Math.floor(d.y / k), len = Math.max(2, Math.round(d.len / k));
+      c.fillStyle = d.near ? '#cdc9f0' : '#6c63b6';
+      if (len >= 4) { c.fillRect(x, y, 1, len >> 1); c.fillRect(x - 1, y + (len >> 1), 1, len - (len >> 1)); } else c.fillRect(x, y, 1, len);
+    }
+    for (const sp of splashes) {
+      const x = Math.floor(sp.x / k), y = Math.floor(sp.y / k), r = 1 + Math.floor(sp.a * (sp.near ? 3 : 2));
+      c.fillStyle = sp.near ? '#cdc9f0' : '#8981cd';
+      c.fillRect(x - r, y, 1, 1); c.fillRect(x + r, y, 1, 1); if (sp.a < .45) c.fillRect(x, y - 1, 1, 1);
     }
   }
 
@@ -572,7 +587,7 @@ Seq.scenes.intro = (root, done) => {
     el.clouds.forEach(c => { c._p = (c._p || 0) + dt; });
     // trickle
     el.trickle.setAttribute('stroke-dashoffset', f2(-t * 10));
-    drawRain(dt);
+    rainStep(dt);
   }
 
   /* ---------- render ---------- */
@@ -594,8 +609,8 @@ Seq.scenes.intro = (root, done) => {
     el.legBF.setAttribute('transform', `translate(-8 -14) rotate(${f2(-sw)})`);
     el.legFN.setAttribute('transform', `translate(20 -14) rotate(${f2(M.paws > .02 ? arm - sw * (1 - M.paws) : -sw)}) scale(1 ${f2(reach)})`);
     el.legFF.setAttribute('transform', `translate(16 -14) rotate(${f2(M.paws > .02 ? arm + 14 * M.paws + sw * (1 - M.paws) : sw)}) scale(1 ${f2(reach)})`);
-    el.eyeOpen.setAttribute('opacity', f2(1 - M.happy)); el.eyeShine.setAttribute('opacity', f2(1 - M.happy));
-    el.eyeHappy.setAttribute('opacity', f2(M.happy)); el.blush.setAttribute('opacity', f2(.4 + M.happy * .5)); el.smile.setAttribute('opacity', f2(M.happy));
+    el.eyeOpen.setAttribute('opacity', f2(1 - M.happy)); el.eyeShines.forEach(e => e.setAttribute('opacity', f2(1 - M.happy)));
+    el.eyeHappy.setAttribute('opacity', f2(M.happy)); el.blush.setAttribute('opacity', f2(.6 + M.happy * .35)); el.smile.setAttribute('opacity', f2(M.happy));
     el.mShadow.setAttribute('cx', f2(M.x)); el.mShadow.setAttribute('cy', f2(M.y + 1)); el.mShadow.setAttribute('rx', f2(30 * s * MK * (1 - Math.min(M.hop / 40, .3))));
     el.mShadow.setAttribute('opacity', M.clip ? 0 : f2(.9 * M.dim));
   }
@@ -610,15 +625,15 @@ Seq.scenes.intro = (root, done) => {
     // clouds
     el.clouds.forEach(c => c.setAttribute('transform', `translate(${f2(Math.sin(c._p / (+c.dataset.s) ) * +c.dataset.a)} 0)`));
     // cat
-    el.cTail.setAttribute('transform', `rotate(${f2(Math.sin(t * 1.5) * 6 * RM + (C.kind === 'clear' ? C.mew * 6 : 0))} 40 -8)`);
+    el.cTail.setAttribute('transform', `rotate(${f2(Math.sin(t * 1.5) * 6 * RM + (C.kind === 'clear' ? C.mew * 6 : 0))} 38 -8)`);
     el.cBody.setAttribute('transform', `scale(1 ${f2(1 + .012 * Math.sin(t * 2.1) * RM)})`);
-    el.cHead.setAttribute('transform', `translate(${f2(C.jig * 1.6)} ${f2(-76 + C.bob + C.lean * 3)}) rotate(${f2(C.tilt + C.lean * 4)} 0 22)`);
+    el.cHead.setAttribute('transform', `translate(${f2(C.jig * 1.6)} ${f2(-66 + C.bob + C.lean * 3)}) rotate(${f2(C.tilt + C.lean * 4)} 0 22)`);
     const blinkS = C.blink ? .1 : (C.mew > .4 ? .5 : 1);
     el.cEyes.forEach(e => e.setAttribute('transform', `scale(1 ${f2(blinkS)})`));
     // pupils look at the mouse
     const tgt = st === 'wait' ? { x: -40, y: 140 } : { x: M.x, y: M.y - 12 };
-    const dx = tgt.x - CAT_X, dy = tgt.y - (CAT_Y - 76 * CAT_S), dl = Math.hypot(dx, dy) || 1;
-    el.cPupils.forEach(p => p.setAttribute('transform', `translate(${f2(dx / dl * 2.2)} ${f2(dy / dl * 1.8)})`));
+    const dx = tgt.x - CAT_X, dy = tgt.y - (CAT_Y - 66 * CAT_S), dl = Math.hypot(dx, dy) || 1;
+    el.cPupils.forEach(p => p.setAttribute('transform', `translate(${f2(dx / dl * 2.6)} ${f2(dy / dl * 2.2)})`));
     el.cMouthOpen.setAttribute('opacity', f2(clamp(C.mew * 1.4, 0, 1)));
     el.cMouthOpen.setAttribute('transform', `translate(0 12) scale(1 ${f2(clamp(C.mew, .1, 1))}) translate(0 -12)`);
     el.cMouthShut.setAttribute('opacity', C.mew > .15 ? 0 : (C.letterIn ? 0 : 1));
@@ -649,6 +664,8 @@ Seq.scenes.intro = (root, done) => {
     if (st === 'wait') hint.classList.add('on');
   }
 
+  const px = new Seq.Pixel(root, { bg: '#0b0624' });
+  px.overlays.push(rainPixels);
   layout(); seedRain();
   cam.x.v = wide.x; cam.y.v = wide.y; cam.z.v = wide.z;
   const ro = new ResizeObserver(() => { layout(); if (st === 'wait' || (cam.z.v === cam.z.v && !['pickup', 'gotit', 'fall'].includes(st))) { cam.x.v = wide.x; cam.y.v = wide.y; cam.z.v = wide.z; cam.x.vel = cam.y.vel = cam.z.vel = 0; } });
@@ -658,9 +675,9 @@ Seq.scenes.intro = (root, done) => {
   let last = performance.now();
   return {
     entry: { x: W / 2, y: H / 2 },
-    frame(now) { const dt = clamp((now - last) / 1000, 0, 1 / 30); last = now; update(dt); render(); },
+    frame(now) { const dt = clamp((now - last) / 1000, 0, 1 / 30); last = now; update(dt); render(); px.render(now); },
     destroy() {
-      ro.disconnect(); removeEventListener('keydown', onKey);
+      ro.disconnect(); px.destroy(); removeEventListener('keydown', onKey);
       clearTimeout(dripT); clearTimeout(thunderT);
       if (rainNodes) rainNodes.forEach(n => { try { n.stop(); } catch (e) {} });
       rainNodes = null;

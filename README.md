@@ -13,6 +13,8 @@ One continuous, linear sequence built from the three interaction studies in `stu
 | 2 | Freeze when the dog looks (Study 02) | Drag to sneak; hold **Hide** / Space / a second finger to freeze | The mouse slips into the hole on the right |
 | 3 | Fling the cheese to your love (Study 03) | Pull back on the letter and release | The kitty catches the letter → hearts → **Play again** |
 
+Every scene is drawn in a pixel-art look: `docs/js/pixel.js` rasterizes the live scene into a tiny canvas each frame, snaps it to one shared palette with a little dithering, and scales it up with hard edges.
+
 The same letter travels through every scene. Failing inside a step only restarts that step
 (as in the studies); the reset button (top-left) restarts the whole sequence.
 
