@@ -16,7 +16,8 @@
     '#2a2845', '#3a3860', '#4b4a78', '#5d5c8c', '#75749f', '#908fb5', '#aeadcb', '#c6c4dc', '#dedcf0',
     '#5a2f2a', '#8a4a30', '#c46a38', '#f0954a', '#ffbb62', '#ffd98a', '#fff1bd',
     '#5b1230', '#8c2447', '#b92a44', '#e5475c', '#c4577f', '#ff7fa3', '#ff9db9', '#ffc4d6',
-    '#1d7c63', '#45b98d', '#8fe0b4', '#f4d35e'
+    '#1d7c63', '#45b98d', '#8fe0b4', '#f4d35e',
+    '#6b3a22', '#a8643a', '#d9965a', '#e8c08a', '#f7e3b0', '#2f5d4a', '#4f9a6a', '#b06a3c'
   ];
   const PAL = HEX.map(h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]);
   const lut = new Int16Array(32768).fill(-1);
