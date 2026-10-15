@@ -10,7 +10,7 @@ Seq.scenes.intro = (root, done) => {
 
   /* ---------- world layout (units; the wall base is y = 0, up is negative) ---------- */
   const TUN_X = -140, TUN_Y = 6, WALK_Y = 28;        // tunnel mouth, its floor, the mouse's walking line
-  const CAT_X = 58, SLAB_Y = -250, CAT_Y = SLAB_Y - 12, CAT_S = .95;   // the cat is small and chonky
+  const CAT_X = 58, SLAB_Y = -250, CAT_Y = SLAB_Y - 12, CAT_S = .66;   // the cat is small and chonky
   const MK = .85;                                                    // mouse art scale
   const LAND_X = 16, STOP_X = -26;
 
@@ -181,52 +181,44 @@ Seq.scenes.intro = (root, done) => {
         <path d="M${CAT_X - 30} -260 Q${CAT_X} -255 ${CAT_X + 30} -260" fill="none" stroke="#fbc3d6" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="3 3"/>
       </g>
 
-      <!-- the cat: small, round, chonky tuxedo (chibi, outlined, cel-shaded) -->
+      <!-- the cat: a small, squishy Pusheen-style tuxedo loaf with big brown eyes -->
       <g class="cat" transform="translate(${CAT_X} ${CAT_Y}) scale(${CAT_S})" stroke-linejoin="round" stroke-linecap="round">
         <g class="cTail">
-          <path d="M38 -8 C 66 -8 76 -32 60 -44" fill="none" stroke="#0c0818" stroke-width="17"/>
-          <path d="M38 -8 C 66 -8 76 -32 60 -44" fill="none" stroke="#2f2d49" stroke-width="11"/>
-          <path d="M42 -12 C 64 -12 70 -28 59 -38" fill="none" stroke="#4b4a78" stroke-width="3"/>
+          <path d="M38 -10 C 62 -10 68 -32 52 -42" fill="none" stroke="#0c0818" stroke-width="15"/>
+          <path d="M38 -10 C 62 -10 68 -32 52 -42" fill="none" stroke="#2f2d49" stroke-width="9.5"/>
+          <path d="M42 -13 C 60 -13 64 -28 53 -37" fill="none" stroke="#4b4a78" stroke-width="2.6"/>
         </g>
         <g class="cBody">
-          <path d="M-41 0 C-49 -20 -45 -52 -27 -62 L27 -62 C45 -52 49 -20 41 0 C21 6 -21 6 -41 0Z" fill="#2f2d49" stroke="#0c0818" stroke-width="3"/>
-          <path d="M24 -58 C45 -50 47 -20 39 -2 C33 1 28 2 22 2 C35 -20 35 -44 24 -58Z" fill="#211f3a"/>
-          <path d="M-33 -50 C-40 -40 -41 -28 -38 -18" fill="none" stroke="#4b4a78" stroke-width="3.4"/>
-          <path d="${fluff(0, -28, 25, 28, 12, 2.8)}" fill="#ffffff" stroke="#0c0818" stroke-width="2.2"/>
-          <path d="M14 -48 C27 -34 24 -12 12 -2 C19 -14 20 -34 14 -48Z" fill="#dedcf0"/>
-          <ellipse cx="-37" cy="-3" rx="10" ry="6.5" fill="#fff" stroke="#0c0818" stroke-width="2.4"/>
-          <ellipse cx="37" cy="-3" rx="10" ry="6.5" fill="#fff" stroke="#0c0818" stroke-width="2.4"/>
-          <ellipse cx="-13" cy="-6" rx="11.5" ry="8.5" fill="#fff" stroke="#0c0818" stroke-width="2.4"/>
-          <ellipse cx="13" cy="-6" rx="11.5" ry="8.5" fill="#fff" stroke="#0c0818" stroke-width="2.4"/>
-          <path d="M-17 -2 V-7 M-10 -2 V-7 M10 -2 V-7 M17 -2 V-7" stroke="#8d8bb5" stroke-width="1.4"/>
+          <ellipse cx="0" cy="-26" rx="45" ry="28" fill="#2f2d49" stroke="#0c0818" stroke-width="3"/>
+          <path d="M28 -46 C47 -40 49 -16 37 -4 C30 -2 24 -2 19 -4 C35 -16 35 -34 28 -46Z" fill="#211f3a"/>
+          <ellipse cx="0" cy="-19" rx="27" ry="19" fill="#fff" stroke="#0c0818" stroke-width="2.4"/>
+          <path d="M14 -33 C24 -26 24 -12 14 -4 C19 -13 19 -24 14 -33Z" fill="#dedcf0"/>
+          <ellipse cx="-39" cy="-23" rx="9" ry="13" transform="rotate(14 -39 -23)" fill="#2f2d49" stroke="#0c0818" stroke-width="2.6"/>
+          <ellipse cx="39" cy="-23" rx="9" ry="13" transform="rotate(-14 39 -23)" fill="#2f2d49" stroke="#0c0818" stroke-width="2.6"/>
+          <ellipse cx="-42" cy="-12" rx="7" ry="5.6" fill="#fff" stroke="#0c0818" stroke-width="2.2"/><ellipse cx="42" cy="-12" rx="7" ry="5.6" fill="#fff" stroke="#0c0818" stroke-width="2.2"/>
+          <ellipse cx="-16" cy="-3" rx="12" ry="6" fill="#fff" stroke="#0c0818" stroke-width="2.4"/><ellipse cx="16" cy="-3" rx="12" ry="6" fill="#fff" stroke="#0c0818" stroke-width="2.4"/>
         </g>
-        <g class="cHead" transform="translate(0 -66)">
-          <path d="M-39 -12 Q-45 -42 -27 -47 Q-13 -39 -9 -27Z" fill="#2f2d49" stroke="#0c0818" stroke-width="3"/>
-          <path d="M39 -12 Q45 -42 27 -47 Q13 -39 9 -27Z" fill="#2f2d49" stroke="#0c0818" stroke-width="3"/>
-          <path d="M-33 -16 Q-37 -36 -27 -40 Q-19 -35 -16 -27Z" fill="#ff9db9"/>
-          <path d="M33 -16 Q37 -36 27 -40 Q19 -35 16 -27Z" fill="#ff9db9"/>
-          <path d="M-30 -20 Q-31 -32 -27 -36" fill="none" stroke="#fff" stroke-width="1.4" opacity=".7"/>
-          <path d="${fluff(-40, 12, 9, 7, 6, 2.4)}" fill="#fff" stroke="#0c0818" stroke-width="2"/>
-          <path d="${fluff(40, 12, 9, 7, 6, 2.4)}" fill="#fff" stroke="#0c0818" stroke-width="2"/>
-          <ellipse cx="0" cy="0" rx="44" ry="36" fill="#2f2d49" stroke="#0c0818" stroke-width="3"/>
-          <path d="M-22 -27 Q-10 -34 4 -31" fill="none" stroke="#5a5990" stroke-width="3.4"/>
-          <path d="M-5 -34 Q0 -39 5 -34 L8 -6 L-8 -6Z" fill="#fff"/>
-          <ellipse cx="-10" cy="12" rx="14" ry="11.5" fill="#fff"/><ellipse cx="10" cy="12" rx="14" ry="11.5" fill="#fff"/>
-          <ellipse cx="0" cy="22" rx="11" ry="7" fill="#fff"/>
-          <path d="M-22 20 Q0 34 22 20 Q18 30 0 31 Q-18 30 -22 20Z" fill="#dedcf0" opacity=".7"/>
-          <ellipse cx="-30" cy="8" rx="8.5" ry="5.4" fill="#ff7fa3" opacity=".7"/><ellipse cx="30" cy="8" rx="8.5" ry="5.4" fill="#ff7fa3" opacity=".7"/>
-          <g class="cEyeL" transform="translate(-19 -2)"><g class="cEyeScale"><ellipse rx="10.5" ry="12.5" fill="#0c0818"/><ellipse class="cPupil" rx="7.6" ry="9.4" fill="#45b98d"/><path d="M-7 -4 Q0 -11 7 -4 Q0 -7 -7 -4Z" fill="#1d7c63"/><ellipse rx="3.5" ry="4.8" fill="#0c0818" opacity=".85"/><circle cx="-3.8" cy="-4.8" r="3.8" fill="#fff"/><circle cx="3.8" cy="4.4" r="1.9" fill="#fff"/></g></g>
-          <g class="cEyeR" transform="translate(19 -2)"><g class="cEyeScale"><ellipse rx="10.5" ry="12.5" fill="#0c0818"/><ellipse class="cPupil" rx="7.6" ry="9.4" fill="#45b98d"/><path d="M-7 -4 Q0 -11 7 -4 Q0 -7 -7 -4Z" fill="#1d7c63"/><ellipse rx="3.5" ry="4.8" fill="#0c0818" opacity=".85"/><circle cx="-3.8" cy="-4.8" r="3.8" fill="#fff"/><circle cx="3.8" cy="4.4" r="1.9" fill="#fff"/></g></g>
-          <path d="M-3.8 7 Q0 4.6 3.8 7 Q2.8 11.4 0 12.4 Q-2.8 11.4 -3.8 7Z" fill="#ff8fae" stroke="#0c0818" stroke-width="1.5"/>
-          <path class="cMouthShut" d="M0 12.4 Q-3 17.5 -7.4 14 M0 12.4 Q3 17.5 7.4 14" fill="none" stroke="#0c0818" stroke-width="1.9"/>
+        <g class="cHead" transform="translate(0 -52)">
+          <path d="M-35 -10 Q-39 -31 -26 -34 Q-14 -29 -12 -21Z" fill="#2f2d49" stroke="#0c0818" stroke-width="3"/>
+          <path d="M35 -10 Q39 -31 26 -34 Q14 -29 12 -21Z" fill="#2f2d49" stroke="#0c0818" stroke-width="3"/>
+          <path d="M-30 -14 Q-32 -27 -25 -29 Q-18 -26 -17 -21Z" fill="#ff9db9"/><path d="M30 -14 Q32 -27 25 -29 Q18 -26 17 -21Z" fill="#ff9db9"/>
+          <ellipse cx="0" cy="0" rx="43" ry="30" fill="#2f2d49" stroke="#0c0818" stroke-width="3"/>
+          <path d="M-25 -17 Q-12 -25 2 -22" fill="none" stroke="#5a5990" stroke-width="3.4"/>
+          <path d="M-4 -28 Q0 -32 4 -28 L6 -6 L-6 -6Z" fill="#fff"/>
+          <ellipse cx="-9" cy="10" rx="13" ry="9.5" fill="#fff"/><ellipse cx="9" cy="10" rx="13" ry="9.5" fill="#fff"/><ellipse cx="0" cy="16" rx="9.5" ry="5.6" fill="#fff"/>
+          <ellipse cx="-30" cy="7" rx="7" ry="4.2" fill="#ff7fa3" opacity=".7"/><ellipse cx="30" cy="7" rx="7" ry="4.2" fill="#ff7fa3" opacity=".7"/>
+          <g class="cEyeL" transform="translate(-18 -2)"><g class="cEyeScale"><ellipse rx="7.6" ry="8.6" fill="#0c0818"/><ellipse class="cPupil" rx="5.8" ry="6.9" fill="#a8643a"/><ellipse cx="0" cy="-2.6" rx="5.2" ry="3.6" fill="#6b3a22"/><ellipse cx="0" cy="1" rx="2.7" ry="3.6" fill="#0c0818"/><circle cx="-2.3" cy="-2.8" r="2.6" fill="#fff"/><circle cx="2.4" cy="3" r="1.3" fill="#fff"/></g></g>
+          <g class="cEyeR" transform="translate(18 -2)"><g class="cEyeScale"><ellipse rx="7.6" ry="8.6" fill="#0c0818"/><ellipse class="cPupil" rx="5.8" ry="6.9" fill="#a8643a"/><ellipse cx="0" cy="-2.6" rx="5.2" ry="3.6" fill="#6b3a22"/><ellipse cx="0" cy="1" rx="2.7" ry="3.6" fill="#0c0818"/><circle cx="-2.3" cy="-2.8" r="2.6" fill="#fff"/><circle cx="2.4" cy="3" r="1.3" fill="#fff"/></g></g>
+          <path d="M-3.2 6 Q0 4 3.2 6 Q2.4 9.4 0 10.2 Q-2.4 9.4 -3.2 6Z" fill="#ff8fae" stroke="#0c0818" stroke-width="1.3"/>
+          <path class="cMouthShut" d="M0 10.2 Q-2.6 14.4 -6.4 11.8 M0 10.2 Q2.6 14.4 6.4 11.8" fill="none" stroke="#0c0818" stroke-width="1.7"/>
           <g class="cMouthOpen" opacity="0">
-            <path d="M-8.5 14 Q0 11.5 8.5 14 Q8.5 28 0 29 Q-8.5 28 -8.5 14Z" fill="#5b1230" stroke="#0c0818" stroke-width="1.8"/>
-            <path d="M-4.8 25 Q0 20 4.8 25 Q3.8 29 0 29 Q-3.8 29 -4.8 25Z" fill="#ff7f9a"/>
+            <path d="M-7 11 Q0 9 7 11 Q7 23 0 24 Q-7 23 -7 11Z" fill="#5b1230" stroke="#0c0818" stroke-width="1.8"/>
+            <path d="M-4 20 Q0 16 4 20 Q3 24 0 24 Q-3 24 -4 20Z" fill="#ff7f9a"/>
           </g>
-          <g class="cLetter"><g transform="translate(0 22) rotate(-6) scale(.2) translate(-80 -55)"><use href="#letterArt"/></g>
-            <path d="M-9.5 25 Q0 33.5 9.5 25 Q8 32.5 0 33.5 Q-8 32.5 -9.5 25Z" fill="#fff" stroke="#0c0818" stroke-width="1.6"/></g>
+          <g class="cLetter"><g transform="translate(0 17) rotate(-6) scale(.2) translate(-80 -55)"><use href="#letterArt"/></g>
+            <path d="M-8 19 Q0 26.5 8 19 Q6.5 26 0 27 Q-6.5 26 -8 19Z" fill="#fff" stroke="#0c0818" stroke-width="1.5"/></g>
           <g stroke="#fff" stroke-width="1.2" fill="none" opacity=".85">
-            <path d="M-27 12 Q-39 8 -53 10 M-27 16 Q-40 16 -53 21"/><path d="M27 12 Q39 8 53 10 M27 16 Q40 16 53 21"/>
+            <path d="M-26 9 Q-36 6 -48 8 M-26 13 Q-37 13 -48 18"/><path d="M26 9 Q36 6 48 8 M26 13 Q37 13 48 18"/>
           </g>
         </g>
       </g>
@@ -435,7 +427,7 @@ Seq.scenes.intro = (root, done) => {
     const x = px * c + py * s, y = -px * s + py * c;
     return { x: M.x + M.face * (-14 + x) * M.s * MK, y: M.y + y * M.s * MK - M.hop };
   }
-  function catMouth() { return { x: CAT_X, y: CAT_Y - (66 - 22) * CAT_S + C.bob * CAT_S }; }
+  function catMouth() { return { x: CAT_X, y: CAT_Y - (52 - 17) * CAT_S + C.bob * CAT_S }; }
   function catMeow(kind) { C.kind = kind; C.mewT = t; }
 
   /* ---------- input: only the first tap does anything ---------- */
@@ -627,18 +619,18 @@ Seq.scenes.intro = (root, done) => {
     // cat
     el.cTail.setAttribute('transform', `rotate(${f2(Math.sin(t * 1.5) * 6 * RM + (C.kind === 'clear' ? C.mew * 6 : 0))} 38 -8)`);
     el.cBody.setAttribute('transform', `scale(1 ${f2(1 + .012 * Math.sin(t * 2.1) * RM)})`);
-    el.cHead.setAttribute('transform', `translate(${f2(C.jig * 1.6)} ${f2(-66 + C.bob + C.lean * 3)}) rotate(${f2(C.tilt + C.lean * 4)} 0 22)`);
+    el.cHead.setAttribute('transform', `translate(${f2(C.jig * 1.6)} ${f2(-52 + C.bob + C.lean * 3)}) rotate(${f2(C.tilt + C.lean * 4)} 0 16)`);
     const blinkS = C.blink ? .1 : (C.mew > .4 ? .5 : 1);
     el.cEyes.forEach(e => e.setAttribute('transform', `scale(1 ${f2(blinkS)})`));
     // pupils look at the mouse
     const tgt = st === 'wait' ? { x: -40, y: 140 } : { x: M.x, y: M.y - 12 };
-    const dx = tgt.x - CAT_X, dy = tgt.y - (CAT_Y - 66 * CAT_S), dl = Math.hypot(dx, dy) || 1;
-    el.cPupils.forEach(p => p.setAttribute('transform', `translate(${f2(dx / dl * 2.6)} ${f2(dy / dl * 2.2)})`));
+    const dx = tgt.x - CAT_X, dy = tgt.y - (CAT_Y - 52 * CAT_S), dl = Math.hypot(dx, dy) || 1;
+    el.cPupils.forEach(p => p.setAttribute('transform', `translate(${f2(dx / dl * 1.9)} ${f2(dy / dl * 1.6)})`));
     el.cMouthOpen.setAttribute('opacity', f2(clamp(C.mew * 1.4, 0, 1)));
-    el.cMouthOpen.setAttribute('transform', `translate(0 12) scale(1 ${f2(clamp(C.mew, .1, 1))}) translate(0 -12)`);
+    el.cMouthOpen.setAttribute('transform', `translate(0 10) scale(1 ${f2(clamp(C.mew, .1, 1))}) translate(0 -10)`);
     el.cMouthShut.setAttribute('opacity', C.mew > .15 ? 0 : (C.letterIn ? 0 : 1));
     el.cLetter.setAttribute('opacity', C.letterIn ? 1 : 0);
-    el.cLetter.setAttribute('transform', `translate(${f2(C.jig * 1.2)} ${f2(C.jig * .8)}) rotate(${f2(C.jig * 4)} 0 22)`);
+    el.cLetter.setAttribute('transform', `translate(${f2(C.jig * 1.2)} ${f2(C.jig * .8)}) rotate(${f2(C.jig * 4)} 0 17)`);
     renderMouse(); renderLetter();
     // question marks
     const h = headWorld(), rel = [[-26, -52, -12], [22, -60, 10], [-2, -78, 0]];
