@@ -376,9 +376,9 @@ Seq.scenes.intro = (root, done) => {
   let rainNodes = null, dripT = 0, thunderT = 0;
   function drip() {
     if (!rainNodes) return;
-    const f = 1500 + Math.random() * 1900; tone('sine', f, f * .55, .05, .012);
-    if (Math.random() < .25) noise(.05, .014, 'bandpass', 3000, 2);
-    dripT = setTimeout(drip, 110 + Math.random() * 380);
+    const f = 1500 + Math.random() * 1900; tone('sine', f, f * .55, .06, .02);
+    if (Math.random() < .2) noise(.05, .01, 'bandpass', 3000, 2);
+    dripT = setTimeout(drip, 350 + Math.random() * 900);
   }
   function thunder() {
     if (!ok() || !rainNodes) return; const ac = AU.ac, t0 = ac.currentTime;
@@ -393,13 +393,13 @@ Seq.scenes.intro = (root, done) => {
     const src = ac.createBufferSource(); src.buffer = AU.nbuf; src.loop = true;
     const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 700;
     const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 7500;
-    const g = ac.createGain(); g.gain.setValueAtTime(.0001, ac.currentTime); g.gain.linearRampToValueAtTime(.065, ac.currentTime + 1.2);
+    const g = ac.createGain(); g.gain.setValueAtTime(.0001, ac.currentTime); g.gain.linearRampToValueAtTime(.012, ac.currentTime + 1.2);
     const src2 = ac.createBufferSource(); src2.buffer = AU.nbuf; src2.loop = true; src2.playbackRate.value = .5;
     const lp2 = ac.createBiquadFilter(); lp2.type = 'lowpass'; lp2.frequency.value = 420;
-    const g2 = ac.createGain(); g2.gain.value = .035;
+    const g2 = ac.createGain(); g2.gain.value = 0;
     src.connect(hp).connect(lp).connect(g).connect(out.get()); src2.connect(lp2).connect(g2).connect(out.get());
     src.start(); src2.start(); rainNodes = [src, src2];
-    drip(); thunderT = setTimeout(thunder, 5500);
+    drip();
   }
 
   /* ---------- camera ---------- */
@@ -446,7 +446,7 @@ Seq.scenes.intro = (root, done) => {
     const near = Math.random() < .42;
     return { x: Math.random() * (W + 160) - 20, y: initial ? Math.random() * H : -30 - Math.random() * 120, vy: (near ? 1150 : 800) * (.9 + Math.random() * .2), len: near ? 22 : 12, near, land: H * (.68 + Math.random() * .34) };
   }
-  function seedRain() { drops = []; const n = reduce ? 60 : 120; for (let i = 0; i < n; i++) drops.push(newDrop(true)); }
+  function seedRain() { drops = []; const n = reduce ? 18 : 36; for (let i = 0; i < n; i++) drops.push(newDrop(true)); }
   const WIND = -.14;
   function rainStep(dt) {
     for (const d of drops) {

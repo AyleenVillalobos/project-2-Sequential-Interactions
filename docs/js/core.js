@@ -40,6 +40,21 @@ window.Seq = (() => {
     };
   };
 
+  /* a meow: a gliding saw through two vowel-like formants, played into `dest` (a scene's output node) */
+  Seq.meow = (dest, pitch, dur, peak = .2, delay = 0) => {
+    const ac = audio.ac; if (!ac || !dest) return; const t0 = ac.currentTime + delay;
+    const o = ac.createOscillator(); o.type = 'sawtooth';
+    o.frequency.setValueAtTime(pitch * .85, t0); o.frequency.linearRampToValueAtTime(pitch * 1.32, t0 + dur * .32); o.frequency.linearRampToValueAtTime(pitch * .72, t0 + dur);
+    const vib = ac.createOscillator(), vg = ac.createGain(); vib.frequency.value = 6.5; vg.gain.value = pitch * .018; vib.connect(vg).connect(o.frequency);
+    const mix = ac.createGain(), g = ac.createGain(), f1 = ac.createBiquadFilter(), f2 = ac.createBiquadFilter();
+    f1.type = f2.type = 'bandpass'; f1.Q.value = 4; f2.Q.value = 6;
+    f1.frequency.setValueAtTime(650, t0); f1.frequency.linearRampToValueAtTime(1000, t0 + dur * .4); f1.frequency.linearRampToValueAtTime(640, t0 + dur);
+    f2.frequency.setValueAtTime(1700, t0); f2.frequency.linearRampToValueAtTime(2500, t0 + dur * .4); f2.frequency.linearRampToValueAtTime(1800, t0 + dur);
+    g.gain.setValueAtTime(.0001, t0); g.gain.exponentialRampToValueAtTime(peak, t0 + .05); g.gain.setValueAtTime(peak, t0 + dur * .6); g.gain.exponentialRampToValueAtTime(.0001, t0 + dur);
+    o.connect(f1); o.connect(f2); f1.connect(mix); f2.connect(mix); mix.connect(g); g.connect(dest);
+    o.start(t0); vib.start(t0); o.stop(t0 + dur + .05); vib.stop(t0 + dur + .05);
+  };
+
   Seq.vib = p => { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} };
 
   document.addEventListener('visibilitychange', () => {
