@@ -65,6 +65,8 @@ Seq.scenes.fling = (root, done) => {
         <path d="M-8 -60 q-6 -7 0 -10 q4 -2 6 2 q2 -4 6 -2 q6 3 0 10 q-3 4 -6 7 q-3 -3 -6 -7z" fill="#fff" opacity=".9" transform="translate(5 -1) scale(.8)"/>
         <path d="M-25 -44 Q0 -34 25 -44" fill="none" stroke="${PINK2}" stroke-width="3"/>
         <g class="oHead" transform="translate(2 -92)">
+          <path d="M-40 -50 C-56 -20 -50 12 -30 18 C-22 6 -32 -16 -30 -44Z" fill="${HAIR}" stroke="${OL}" stroke-width="3"/>
+          <circle cx="-24" cy="-90" r="13" fill="${HAIR}" stroke="${OL}" stroke-width="3"/><path d="M-34 -84 q10 8 20 0" fill="none" stroke="#ff7fa3" stroke-width="4.4"/>
           <ellipse cx="0" cy="-33" rx="39" ry="35" fill="${SK}" stroke="${OL}" stroke-width="3.2"/>
           <circle cx="-34" cy="-28" r="8.5" fill="${SK}" stroke="${OL}" stroke-width="2.8"/><circle cx="-34" cy="-27" r="3.6" fill="${SKD}"/>
           <circle cx="-34" cy="-14" r="5.2" fill="none" stroke="#f4d35e" stroke-width="2.4"/>
@@ -73,7 +75,11 @@ Seq.scenes.fling = (root, done) => {
           <path d="M-6 -84 q10 -6 20 -3 M14 -66 q10 4 16 12" fill="none" stroke="${HAIR2}" stroke-width="2.6"/>
           <ellipse cx="12" cy="-30" rx="4.4" ry="6.8" fill="${OL}"/><circle cx="13.6" cy="-33" r="1.9" fill="#fff"/><circle cx="11" cy="-26.5" r="1" fill="#fff"/>
           <ellipse cx="31" cy="-30" rx="4.4" ry="6.8" fill="${OL}"/><circle cx="32.6" cy="-33" r="1.9" fill="#fff"/><circle cx="30" cy="-26.5" r="1" fill="#fff"/>
-          <path d="M5 -43 q7 -4 14 -1 M24 -44 q7 -4 14 0" fill="none" stroke="${OL}" stroke-width="2.4"/>
+          <path d="M7 -26 l-5 -3 M7 -32 l-5 -5 M26 -26 l-5 -3 M26 -32 l-5 -5 M37 -34 l4 -4 M37 -28 l5 -2" fill="none" stroke="${OL}" stroke-width="2"/>
+          <path d="M5 -44 q7 -3 14 0 M24 -44 q7 -3 14 0" fill="none" stroke="${OL}" stroke-width="2"/>
+          <circle cx="12" cy="-30" r="12.5" fill="rgba(255,255,255,.2)" stroke="${OL}" stroke-width="2.8"/><circle cx="31" cy="-30" r="12.5" fill="rgba(255,255,255,.2)" stroke="${OL}" stroke-width="2.8"/>
+          <path d="M24 -32 q-.5 -2 -1 0 M-.5 -31 L-30 -30" fill="none" stroke="${OL}" stroke-width="2.4"/>
+          <path d="M5 -37 q3 -4 7 -4" fill="none" stroke="#fff" stroke-width="1.8" opacity=".8"/>
           <ellipse cx="7" cy="-17" rx="5" ry="3.2" fill="#ff7fa3" opacity=".55"/><ellipse cx="36" cy="-17" rx="4" ry="3" fill="#ff7fa3" opacity=".55"/>
           <path d="M19 -21 q3 3 6 0" fill="none" stroke="${SKD}" stroke-width="2.2"/>
           <path d="M14 -12 Q22 -5 30 -12" fill="#7a2c3c" stroke="${OL}" stroke-width="2.2"/><path d="M17 -11 Q22 -8 27 -11" fill="#fff" />
