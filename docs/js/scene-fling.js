@@ -37,7 +37,8 @@ Seq.scenes.fling = (root, done) => {
     src.connect(fl).connect(g).connect(out.get()); src.start(t0, Math.random() * .5, dur + .05);
   }
   const snd = {
-    mew(p = 1) { tone('sine', 620 * p, 900 * p, .12, .06); tone('sine', 900 * p, 560 * p, .18, .055, .1); },
+    mew(p = 1) { Seq.meow(out.get(), 600 * p, .4, .2); },
+    mewBig() { Seq.meow(out.get(), 680, .6, .26); Seq.meow(out.get(), 740, .4, .2, .7); },
     squeak() { tone('sine', 1900, 2700, .07, .05); tone('sine', 2300, 3000, .06, .035, .07); },
     step() { noise(.05, .05, 'lowpass', 700, .8); },
     patter() { noise(.04, .04, 'bandpass', 1800 + Math.random() * 500, 1.3); },
@@ -217,7 +218,7 @@ Seq.scenes.fling = (root, done) => {
   function startJump(big) { if (K.h > 1) return; K.vh = (big ? 560 : 380 + Math.random() * 140) * sf; K.jt = .4 + Math.random() * .8; K.sqy = 1.18; }
   function updateKitty(dt) {
     if (K.mode === 'held' || K.mode === 'hop') return;
-    K.mewT -= dt; if (K.mewT < 0) { K.mewT = 1.5 + Math.random() * 1.5; if (st === 'game' && K.mode !== 'catch') snd.mew(.95 + Math.random() * .2); }
+    K.mewT -= dt; if (K.mewT < 0) { K.mewT = 1.5 + Math.random() * 1.5; if (st === 'game' && K.mode !== 'catch') snd.mew(.95 + Math.random() * .25); }
     if (K.mode === 'catch') { K.h = Math.max(0, K.h + K.vh * dt); K.vh -= 1700 * sf * dt; if (K.h <= 0) { K.h = 0; if (stT < 1.6) K.vh = 330 * sf; else K.vh = 0; } return; }
     if (K.mode === 'pause') { K.pt -= dt; if (K.pt <= 0) pickRun(); }
     else {
@@ -246,7 +247,7 @@ Seq.scenes.fling = (root, done) => {
   function resetLetter() { Lt.mode = 'hand'; Lt.rot = 0; Lt.vx = Lt.vy = 0; Lt.bounced = false; M.joy = 0; }
   function bounceOff(dir) { Lt.vx = dir * Math.abs(Lt.vx) * .4 + dir * 60 * sf; Lt.vy = Math.abs(Lt.vy) * .15; Lt.vr = dir * 9; Lt.bounced = true; snd.clank(); shake = .35; }
   function catchIt() {
-    Lt.mode = 'caught'; K.mode = 'catch'; K.vh = 380 * sf; setState('win'); snd.catchS(); Seq.vib([20, 40, 20]);
+    Lt.mode = 'caught'; K.mode = 'catch'; K.vh = 380 * sf; setState('win'); snd.catchS(); snd.mewBig(); Seq.vib([20, 40, 20]);
     for (let i = 0; i < 16; i++) hearts.push({ x: K.x + (Math.random() - .5) * 40 * sf, y: yU - 60 * sf, vx: (Math.random() - .5) * 220 * sf, vy: -(120 + Math.random() * 220) * sf, a: 0, s: .8 + Math.random() * .8, life: 1.6 + Math.random() });
   }
   function updateLetter(dt) {
@@ -337,7 +338,7 @@ Seq.scenes.fling = (root, done) => {
       const T = stT + .25, s = updateOwner(dt, T);
       M.vis = 0;
       // the kitty rides in the owner's arms, then hops out onto the landing
-      if (s.hold && !s.putdown) { K.mode = 'held'; }
+      if (s.hold && !s.putdown) { K.mode = 'held'; if (!K.pm) { K.pm = 1; snd.mewBig(); } }
       if (s.putdown) {
         const u = clamp((T - s.t0 - .2) / .5, 0, 1);
         if (u <= 0) K.mode = 'held';
