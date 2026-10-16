@@ -373,7 +373,7 @@ Seq.scenes.route = (root, done) => {
     spots.forEach((s, i) => { const d = Math.hypot(px_ - s.cx, py_ - s.cy); if (d < s.r && d < bd) { bd = d; best = i; } });
     if (best >= 0) { target.spot = best; target.X = spots[best].X; target.Z = spots[best].Z; return; }
     target.spot = -1;
-    const g = unproj(px_, py_ - 8 * sf);
+    const g = unproj(px_, py_ + 10 * sf);                 // the mouse's feet sit just below the fingertip, so its body is right under your finger
     target.X = g.X; target.Z = g.Z; clampG(target);
   }
   const onDown = e => {
@@ -499,7 +499,7 @@ Seq.scenes.route = (root, done) => {
       M.vis = 1;
       if ((tabbyT -= dt) < 0) { tabbyT = 5 + Math.random() * 3; Seq.meow(out.get(), 660, .5, .16); }
       if (hintOn && (houseT > 6 || (pressed && houseT > 2))) { hintOn = false; hint.classList.remove('on'); }
-      const tg = { X: target.X, Z: target.Z }; const d = moveMouse(dt, tg, MOUSE_V()); clampG(M);
+      const tg = { X: target.X, Z: target.Z }; const d = moveMouse(dt, tg, pressed ? MOUSE_V() * 1.9 : MOUSE_V()); clampG(M);   // while a finger is down the mouse sticks to it
       if (target.spot >= 0 && d < 7 * sf) { const sp = spots[target.spot]; setState('hide'); ev = { i: target.spot, X0: M.X, Z0: M.Z, box: sp.type === 'box' }; snd.hop(); }
       else if (exitHit()) { setState('enter'); pressed = false; ev = { X0: M.X, Z0: M.Z }; snd.slip(); Seq.vib([10, 30, 10]); for (const o of dogs) { o.st = 'cool'; o.cool = 5; o.mouth = 0; } }
     } else if (st === 'hide') {
@@ -644,6 +644,7 @@ Seq.scenes.route = (root, done) => {
   }
   function render() { renderRoom(); renderTabby(); renderCam(); }
 
+  root.__mouse = () => ({ x: M.x, y: M.y, st, tx: target.X, tz: target.Z });
   /* ---------- go ---------- */
   layout(); indoorRain(); update(.016); render();
   const ro = new ResizeObserver(() => { layout(); }); ro.observe(root);
