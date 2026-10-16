@@ -50,28 +50,33 @@ Seq.scenes.fling = (root, done) => {
   };
 
   /* ---------- art ---------- */
+  /* the owner: a Tomodachi-Life style character: big round head, tiny features, cool outfit */
   function ownerMarkup() {
-    const SK = '#c98f5e', HD = '#ff7fa3', HD2 = '#e0608a', PANT = '#1c1a26', HAIR = '#15101c';
-    const leg = (cls, x) => `<g class="${cls}"><rect x="${x}" y="-48" width="14" height="46" rx="7" fill="${PANT}" stroke="${OL}" stroke-width="3"/><path d="M${x - 3} -18 h19 v10 q10 1 12 8 v3 h-31z" fill="#1a1620" stroke="${OL}" stroke-width="3"/><rect x="${x - 4}" y="-5" width="35" height="7" rx="2.5" fill="#f1ece0" stroke="${OL}" stroke-width="2.6"/><path d="M${x - 2} -7 h31" stroke="#f4d35e" stroke-width="2"/><path d="M${x + 1} -15 h13 M${x + 1} -11 h13" stroke="#f4d35e" stroke-width="1.6"/></g>`;
-    const arm = cls => `<g class="${cls}" transform="translate(2 -102)"><path d="M0 0 L0 38" stroke="${OL}" stroke-width="17" fill="none"/><path d="M0 0 L0 38" stroke="${HD}" stroke-width="11" fill="none"/><circle cx="0" cy="40" r="8" fill="${SK}" stroke="${OL}" stroke-width="2.6"/></g>`;
+    const SK = '#c98f5e', SKD = '#a8703f', PINK = '#ff7fa3', PINK2 = '#e0608a', PANT = '#1c1a26', HAIR = '#15101c', HAIR2 = '#4b4466';
+    const leg = (cls, x) => `<g class="${cls}"><rect x="${x}" y="-42" width="15" height="40" rx="7" fill="${PANT}" stroke="${OL}" stroke-width="3"/><path d="M${x + 7.5} -38 V-10" stroke="#f1ece0" stroke-width="2.4"/><path d="M${x - 3} -19 h19 v10 q10 1 12 8 v3 h-31z" fill="#1a1620" stroke="${OL}" stroke-width="3"/><rect x="${x - 4}" y="-5" width="35" height="7" rx="2.5" fill="#f1ece0" stroke="${OL}" stroke-width="2.6"/><path d="M${x - 2} -7 h31" stroke="#f4d35e" stroke-width="2"/><path d="M${x + 1} -16 h13 M${x + 1} -12 h13" stroke="#f4d35e" stroke-width="1.6"/></g>`;
+    const arm = cls => `<g class="${cls}" transform="translate(4 -84)"><path d="M0 0 L0 15" stroke="${OL}" stroke-width="19" fill="none"/><path d="M0 0 L0 15" stroke="${PINK}" stroke-width="13" fill="none"/><path d="M0 14 L0 36" stroke="${OL}" stroke-width="14" fill="none"/><path d="M0 14 L0 36" stroke="${SK}" stroke-width="8" fill="none"/><circle cx="0" cy="39" r="7" fill="${SK}" stroke="${OL}" stroke-width="2.6"/></g>`;
     const back = `<g class="oRoot" stroke-linejoin="round" stroke-linecap="round">
-      ${leg('oLegB', -6)}
+      ${leg('oLegB', -8)}
       ${arm('oArmB')}
       <g class="oBody">
-        <rect x="-27" y="-120" width="54" height="78" rx="20" fill="${HD}" stroke="${OL}" stroke-width="3"/>
-        <rect x="-14" y="-74" width="32" height="17" rx="7" fill="${HD2}"/>
-        <path d="M-20 -118 Q0 -104 22 -118" fill="none" stroke="#ffc4d6" stroke-width="4"/>
-        <g class="oHead" transform="translate(0 -122)">
-          <path d="M-26 -34 Q-44 -22 -30 -8 Q-24 -24 -22 -30Z" fill="${HAIR}" stroke="${OL}" stroke-width="2.6"/>
-          <circle cx="0" cy="-34" r="32" fill="${SK}" stroke="${OL}" stroke-width="3"/>
-          <path d="M-4 -64 C-34 -64 -37 -20 -26 -2 C-14 -8 -6 -22 -2 -40Z" fill="${HAIR}" stroke="${OL}" stroke-width="3"/>
-          <circle cx="-21" cy="-66" r="13" fill="${HAIR}" stroke="${OL}" stroke-width="3"/>
-          <path d="M-33 -34 C-36 -72 33 -76 33 -36 C24 -56 -4 -58 -22 -48 C-26 -44 -30 -40 -33 -34Z" fill="${HAIR}" stroke="${OL}" stroke-width="3"/>
-          <path d="M-12 -60 q-4 -8 4 -9" fill="none" stroke="#e5475c" stroke-width="5"/>
-          <ellipse cx="14" cy="-30" rx="4.2" ry="5.4" fill="${OL}"/><circle cx="15.4" cy="-32.4" r="1.7" fill="#fff"/>
-          <ellipse cx="22" cy="-17" rx="6" ry="4" fill="#ff7fa3" opacity=".7"/>
-          <path d="M10 -14 Q17 -8 25 -14" fill="none" stroke="${OL}" stroke-width="2.4"/>
-          <path d="M31 -26 q4 2 1 5" fill="none" stroke="${OL}" stroke-width="2"/>
+        <rect x="-25" y="-92" width="50" height="56" rx="17" fill="${PINK}" stroke="${OL}" stroke-width="3"/>
+        <path d="M-17 -88 Q0 -76 19 -88" fill="none" stroke="${PINK2}" stroke-width="3.4"/>
+        <path d="M-12 -82 Q2 -62 16 -82" fill="none" stroke="#f4d35e" stroke-width="2.2"/><circle cx="2" cy="-63" r="3" fill="#f4d35e" stroke="${OL}" stroke-width="1.6"/>
+        <path d="M-8 -60 q-6 -7 0 -10 q4 -2 6 2 q2 -4 6 -2 q6 3 0 10 q-3 4 -6 7 q-3 -3 -6 -7z" fill="#fff" opacity=".9" transform="translate(5 -1) scale(.8)"/>
+        <path d="M-25 -44 Q0 -34 25 -44" fill="none" stroke="${PINK2}" stroke-width="3"/>
+        <g class="oHead" transform="translate(2 -92)">
+          <ellipse cx="0" cy="-33" rx="39" ry="35" fill="${SK}" stroke="${OL}" stroke-width="3.2"/>
+          <circle cx="-34" cy="-28" r="8.5" fill="${SK}" stroke="${OL}" stroke-width="2.8"/><circle cx="-34" cy="-27" r="3.6" fill="${SKD}"/>
+          <circle cx="-34" cy="-14" r="5.2" fill="none" stroke="#f4d35e" stroke-width="2.4"/>
+          <path d="M-42 -34 C-52 -64 -30 -88 4 -86 C34 -88 52 -62 41 -40 C37 -52 32 -56 22 -56 C26 -48 12 -52 4 -46 C-4 -58 -22 -54 -30 -38 C-32 -32 -37 -28 -42 -34Z" fill="${HAIR}" stroke="${OL}" stroke-width="3"/>
+          <path d="M-12 -80 C-6 -100 26 -98 30 -80 C18 -88 4 -86 -12 -80Z" fill="${HAIR}" stroke="${OL}" stroke-width="3"/>
+          <path d="M-6 -84 q10 -6 20 -3 M14 -66 q10 4 16 12" fill="none" stroke="${HAIR2}" stroke-width="2.6"/>
+          <ellipse cx="12" cy="-30" rx="4.4" ry="6.8" fill="${OL}"/><circle cx="13.6" cy="-33" r="1.9" fill="#fff"/><circle cx="11" cy="-26.5" r="1" fill="#fff"/>
+          <ellipse cx="31" cy="-30" rx="4.4" ry="6.8" fill="${OL}"/><circle cx="32.6" cy="-33" r="1.9" fill="#fff"/><circle cx="30" cy="-26.5" r="1" fill="#fff"/>
+          <path d="M5 -43 q7 -4 14 -1 M24 -44 q7 -4 14 0" fill="none" stroke="${OL}" stroke-width="2.4"/>
+          <ellipse cx="7" cy="-17" rx="5" ry="3.2" fill="#ff7fa3" opacity=".55"/><ellipse cx="36" cy="-17" rx="4" ry="3" fill="#ff7fa3" opacity=".55"/>
+          <path d="M19 -21 q3 3 6 0" fill="none" stroke="${SKD}" stroke-width="2.2"/>
+          <path d="M14 -12 Q22 -5 30 -12" fill="#7a2c3c" stroke="${OL}" stroke-width="2.2"/><path d="M17 -11 Q22 -8 27 -11" fill="#fff" />
         </g>
       </g>
       ${leg('oLegF', 2)}
@@ -79,6 +84,7 @@ Seq.scenes.fling = (root, done) => {
     return { back, front: `<g class="oFront" stroke-linejoin="round" stroke-linecap="round">${arm('oArmF')}</g>` };
   }
   const OWN = ownerMarkup();
+  const BANG = `<g transform="translate(-11 0) rotate(-8)"><path d="M-4 -26 h8 l-2 20 h-4Z" fill="#e5475c" stroke="${OL}" stroke-width="2.4" stroke-linejoin="round"/><circle cx="0" cy="1" r="3.8" fill="#e5475c" stroke="${OL}" stroke-width="2.2"/></g><g transform="translate(11 -4) rotate(8) scale(1.2)"><path d="M-4 -26 h8 l-2 20 h-4Z" fill="#e5475c" stroke="${OL}" stroke-width="2.4" stroke-linejoin="round"/><circle cx="0" cy="1" r="3.8" fill="#e5475c" stroke="${OL}" stroke-width="2.2"/></g>`;
   const heartPath = '<path d="M0 6 q-10 -10 -12 -3 q0 7 12 14 q12 -7 12 -14 q-2 -7 -12 3z" fill="#ff7fa3" stroke="#0c0818" stroke-width="2.2" stroke-linejoin="round"/>';
 
   /* ---------- geometry ---------- */
@@ -134,7 +140,8 @@ Seq.scenes.fling = (root, done) => {
     <g class="ownerF">${OWN.front}</g>
     <g class="ghost"></g>
     <g class="lt"><use href="#letterArt" transform="translate(-80 -55)"/></g>
-    <g class="fx"></g>`;
+    <g class="fx"></g>
+    <g class="bangK" opacity="0">${BANG}</g>`;
   }
   function gateMarkup() {
     const bw = 6 * sf, rt = 7 * sf, o = `stroke="${OL}" stroke-width="2.4"`;
@@ -177,12 +184,12 @@ Seq.scenes.fling = (root, done) => {
     const r = root.getBoundingClientRect();
     W = Math.max(1, r.width); H = Math.max(1, r.height); sf = W / 390;
     sv.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    yG = H * .87; yU = H * .58; fx = W * .15; tx = W * .4; rise = (yG - yU) / nSt; run = (tx - fx) / nSt;
-    gx = tx + 2 * sf; gw = 24 * sf; gH = 128 * sf; kMin = gx + gw + 34 * sf; kMax = W - 34 * sf; hx = W * .05; mx = W * .1; kStart = W * .76; G = 1250 * sf;
+    yG = H * .88; yU = H * .62; fx = W * .2; tx = W * .5; rise = (yG - yU) / nSt; run = (tx - fx) / nSt;
+    gx = tx + 2 * sf; gw = 24 * sf; gH = 128 * sf; kMin = gx + gw + 30 * sf; kMax = W - 30 * sf; hx = W * .045; mx = W * .1; kStart = W * .8; G = 1250 * sf;
     rails = [gH * RAILF[0], gH * RAILF[1], gH].map(v => yU - v);
     sv.innerHTML = bgMarkup();
     const q = s => sv.querySelector(s);
-    el = { gate: q('.gate'), shO: q('.shO'), shM: q('.shM'), shK: q('.shK'), shL: q('.shL'), mouse: q('.mouseA'), owner: q('.ownerA'), ownerF: q('.ownerF'), kit: q('.kitA'), kitS: q('.kitS'), ghost: q('.ghost'), lt: q('.lt'), fx: q('.fx'), hEyes: q('.hEyes') };
+    el = { gate: q('.gate'), shO: q('.shO'), shM: q('.shM'), shK: q('.shK'), shL: q('.shL'), mouse: q('.mouseA'), owner: q('.ownerA'), ownerF: q('.ownerF'), kit: q('.kitA'), kitS: q('.kitS'), ghost: q('.ghost'), lt: q('.lt'), fx: q('.fx'), bang: q('.bangK'), hEyes: q('.hEyes') };
     el.gate.innerHTML = gateMarkup();
     const m = s => el.mouse.querySelector(s);
     el.m = { root: m('.mRoot'), squash: m('.mSquash'), body: m('.mBody'), head: m('.mHead'), ear: m('.mEar'), tail: m('.mTail'), bn: m('.mLegBN'), bf: m('.mLegBF'), fn: m('.mLegFN'), ff: m('.mLegFF'), letter: m('.mLetter') };
@@ -224,7 +231,7 @@ Seq.scenes.fling = (root, done) => {
 
   /* ---------- the letter ---------- */
   const LH = 9 * sf;
-  const handPos = () => { const sc = .85 * sf * M.s; return { x: M.x + M.face * -6 * sc, y: M.y + sc * (-50 - M.stand * 10) }; };
+  const handPos = () => { const sc = .75 * sf * M.s; return { x: M.x + M.face * -6 * sc, y: M.y + sc * (-50 - M.stand * 10) }; };
   function launch(x, y, vx, vy) {
     Object.assign(Lt, { mode: 'fly', x, y, vx, vy, vr: (vx >= 0 ? 1 : -1) * 6, rot: 0, bounced: false, restT: 0 });
     Lt.ghost = Lt.trail; Lt.trail = []; tries++;
@@ -330,9 +337,9 @@ Seq.scenes.fling = (root, done) => {
         if (u <= 0) K.mode = 'held';
         else { if (K.mode === 'held') { K.mode = 'hop'; snd.pop(); } K.hopU = u; }
       }
-      if (K.mode === 'held') { K.x = O.x + O.face * 34 * sf; K.h = (yU - (O.y - 98 * sf)) + (yU - yU); K.heldY = O.y - 92 * sf - O.bob; }
+      if (K.mode === 'held') { K.x = O.x + O.face * 40 * sf; K.heldY = O.y - 40 * sf - O.bob; }
       else if (K.mode === 'hop') {
-        const u = K.hopU, a = { x: O.x + O.face * 34 * sf, y: O.y - 92 * sf }, b = { x: kStart, y: yU };
+        const u = K.hopU, a = { x: O.x + O.face * 40 * sf, y: O.y - 40 * sf }, b = { x: kStart, y: yU };
         K.x = lerp(a.x, b.x, u); K.heldY = lerp(a.y, b.y, u) - Math.sin(Math.PI * u) * 50 * sf; if (u >= 1) { K.mode = 'pause'; K.pt = .3; K.x = b.x; K.h = 0; K.heldY = null; K.jt = .3; }
       }
       if (s.closing) { const u = clamp((T - s.t0) / s.dur, 0, 1); gateOpen = lerp(.12, 1, easeInOut(u)); if (u > .8 && !K.latched) { K.latched = 1; snd.latch(); } }
@@ -360,7 +367,7 @@ Seq.scenes.fling = (root, done) => {
 
   /* ---------- render ---------- */
   function renderMouse() {
-    const m = el.m, sc = .85 * sf * M.s, ph = M.phase, sy = M.sq, sx = 1 / Math.sqrt(sy), th = M.stand * 55;
+    const m = el.m, sc = .75 * sf * M.s, ph = M.phase, sy = M.sq, sx = 1 / Math.sqrt(sy), th = M.stand * 55;
     el.mouse.setAttribute('opacity', f2(M.vis));
     m.root.setAttribute('transform', `translate(${f2(M.x)} ${f2(M.y - M.hop)}) scale(${f2(M.face * sc)} ${f2(sc)})`);
     m.squash.setAttribute('transform', `scale(${f2(sx)} ${f2(sy)})`);
@@ -374,19 +381,19 @@ Seq.scenes.fling = (root, done) => {
     el.shM.setAttribute('cx', f2(M.x)); el.shM.setAttribute('cy', f2(M.y + 1)); el.shM.setAttribute('rx', f2(36 * sc * (1 - Math.min(M.hop / 60, .3)))); el.shM.setAttribute('ry', f2(6 * sc)); el.shM.setAttribute('opacity', f2(M.vis * .9));
   }
   function renderOwner() {
-    const o = el.o, sc = .7 * sf, vis = st === 'intro' ? 1 : 0, sw = Math.sin(O.phase) * 28 * O.walk;
+    const o = el.o, sc = .58 * sf, vis = st === 'intro' ? 1 : 0, sw = Math.sin(O.phase) * 28 * O.walk;
     el.owner.setAttribute('opacity', vis); el.ownerF.setAttribute('opacity', vis);
     const tr = `translate(${f2(O.x)} ${f2(O.y - (O.bob || 0))}) scale(${f2(O.face * sc)} ${f2(sc)})`;
     o.root.setAttribute('transform', tr); el.ownerF.firstElementChild.setAttribute('transform', tr);
-    o.legA.setAttribute('transform', `rotate(${f2(sw)} 10 -48)`); o.legB.setAttribute('transform', `rotate(${f2(-sw)} 4 -48)`);
+    o.legA.setAttribute('transform', `rotate(${f2(sw)} 10 -40)`); o.legB.setAttribute('transform', `rotate(${f2(-sw)} 0 -40)`);
     o.body.setAttribute('transform', `translate(0 ${f2(Math.sin(O.phase * 2) * 1.2 * O.walk)})`);
-    o.head.setAttribute('transform', `translate(0 -122) rotate(${f2(Math.sin(O.phase) * 3 * O.walk)})`);
-    const holdAng = O.hold ? -78 : 0; const swing = O.hold ? 0 : -sw * .9;
-    o.armB.setAttribute('transform', `translate(2 -102) rotate(${f2(holdAng + swing)})`); o.armF.setAttribute('transform', `translate(2 -102) rotate(${f2(holdAng + (O.hold ? -6 : sw * .9))})`);
+    o.head.setAttribute('transform', `translate(2 -92) rotate(${f2(Math.sin(O.phase) * 3 * O.walk)})`);
+    const holdAng = O.hold ? -80 : 0; const swing = O.hold ? 0 : -sw * .9;
+    o.armB.setAttribute('transform', `translate(4 -84) rotate(${f2(holdAng + swing)})`); o.armF.setAttribute('transform', `translate(4 -84) rotate(${f2(holdAng + (O.hold ? -4 : sw * .9))})`);
     el.shO.setAttribute('cx', f2(O.x)); el.shO.setAttribute('cy', f2(O.y + 1)); el.shO.setAttribute('rx', f2(30 * sc)); el.shO.setAttribute('ry', f2(6 * sc)); el.shO.setAttribute('opacity', vis);
   }
   function renderKitty() {
-    const ks = .5 * sf, c = el.k, held = K.mode === 'held' || (K.mode === 'hop' && K.heldY != null), jump = K.h > 2;
+    const ks = (K.mode === 'held' ? .36 : .44) * sf, c = el.k, held = K.mode === 'held' || (K.mode === 'hop' && K.heldY != null), jump = K.h > 2;
     const ky = held ? K.heldY : yU - K.h;
     const wob = K.mode === 'run' && !jump ? Math.sin(t * 22) * 2.2 : 0, bob = K.mode === 'run' && !jump ? Math.abs(Math.sin(t * 15)) * 3 * sf : 0;
     const kx = held ? K.x : K.x;
@@ -398,9 +405,16 @@ Seq.scenes.fling = (root, done) => {
     const lookx = st === 'game' ? clamp((M.x - K.x) / W, -1, 1) : 0;
     c.head.setAttribute('transform', `translate(0 -66) rotate(${f2((excited ? Math.sin(t * 9) * 3 : 0) + (K.mode === 'catch' ? -4 : 0))} 0 22)`);
     const blink = (t % 2.6) < .11 && !excited;
-    c.eyes.forEach(e => e.setAttribute('transform', `scale(${excited ? 1.12 : 1} ${blink ? .1 : excited ? 1.12 : 1})`));
+    c.eyes.forEach(e => e.setAttribute('transform', `scale(${excited || held ? 1.12 : 1} ${blink ? .1 : (excited || held) ? 1.12 : 1})`));
     c.pupils.forEach(p => p.setAttribute('transform', `translate(${f2(lookx * 3.2)} ${f2(-.4)})`));
     el.shK.setAttribute('cx', f2(kx)); el.shK.setAttribute('cy', f2((held ? yU : yU) + 2)); el.shK.setAttribute('rx', f2(34 * sf * (1 - Math.min(K.h / (220 * sf), .4)))); el.shK.setAttribute('ry', f2(6 * sf)); el.shK.setAttribute('opacity', held ? 0 : .8);
+  }
+  function renderBang() {
+    const on = K.mode === 'held' && st === 'intro', k = el.bang;
+    if (on) { K.bt = (K.bt || 0) + 1 / 60; } else K.bt = 0;
+    const pop = on ? easeOutBack(clamp(K.bt / .25, 0, 1)) : 0, jig = Math.sin(t * 26) * 2.2 * sf;
+    k.setAttribute('opacity', on ? 1 : 0);
+    k.setAttribute('transform', `translate(${f2(K.x + jig + O.face * 6 * sf)} ${f2((K.heldY || yU) - 62 * sf - Math.abs(Math.sin(t * 9)) * 4 * sf)}) scale(${f2(Math.max(.01, pop) * sf * 1.15)})`);
   }
   function renderGate() {
     const sx = Math.max(.05, gateOpen), shk = shake > 0 ? Math.sin(t * 60) * 3 * sf * shake : 0;
@@ -418,7 +432,7 @@ Seq.scenes.fling = (root, done) => {
     let h = ''; for (const p of hearts) { const s = p.s * sf * (1 + .1 * Math.sin(p.a * 8)); h += `<g transform="translate(${f1(p.x)} ${f1(p.y)}) scale(${f2(s)})" opacity="${f2(1 - clamp((p.a - p.life * .6) / (p.life * .4), 0, 1))}">${heartPath}</g>`; }
     el.fx.innerHTML = h;
   }
-  function render() { renderMouse(); renderOwner(); renderKitty(); renderGate(); renderLetter(); }
+  function render() { renderMouse(); renderOwner(); renderKitty(); renderBang(); renderGate(); renderLetter(); }
 
   /* ---------- go ---------- */
   layout(); K.x = kStart; update(.016); render();
