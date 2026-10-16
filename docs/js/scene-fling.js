@@ -101,6 +101,22 @@ Seq.scenes.fling = (root, done) => {
 
   function bgMarkup() {
     const w = W, h = H, slab = 16 * sf;
+    // the roof: a gable over the whole house, so the wall stops at the ceiling instead of running off the top
+    const yC = yU - 230 * sf, rh = Math.min(210 * sf, yC - 70), yT = yC - rh;
+    let roof = `<rect x="0" y="0" width="${w}" height="${f1(yC)}" fill="#1d1049"/>`;
+    for (let i = 0; i < 14; i++) roof += `<circle cx="${f1((i * 97 % 390) * sf)}" cy="${f1(8 + (i * 53 % Math.max(10, yT - 10)))}" r="${i % 3 ? 1.3 : 1.9}" fill="#fff"/>`;
+    roof += `<circle cx="${f1(w * .13)}" cy="${f1(Math.max(26, yT * .5))}" r="${f1(15 * sf)}" fill="#f1e9ff"/><circle cx="${f1(w * .13 + 7 * sf)}" cy="${f1(Math.max(26, yT * .5) - 5 * sf)}" r="${f1(14 * sf)}" fill="#1d1049"/>`;
+    roof += `<rect x="${f1(w * .74)}" y="${f1(yT + rh * .1)}" width="${f1(34 * sf)}" height="${f1(rh * .6)}" fill="#6b3a22" stroke="${OL}" stroke-width="2.8"/><rect x="${f1(w * .74 - 4 * sf)}" y="${f1(yT + rh * .1)}" width="${f1(42 * sf)}" height="${f1(8 * sf)}" fill="#8a4a30" stroke="${OL}" stroke-width="2.6"/>`;
+    roof += `<polygon points="${f1(-6 * sf)},${f1(yC + 2)} ${f1(w / 2)},${f1(yT)} ${f1(w + 6 * sf)},${f1(yC + 2)}" fill="#5638a6" stroke="${OL}" stroke-width="3.2" stroke-linejoin="round"/>`;
+    const rows = 7;
+    for (let i = 0; i < rows; i++) {
+      const ya = yT + rh * (i / rows), yb = yT + rh * ((i + 1) / rows), xa = w / 2 - (w / 2 + 6 * sf) * (i / rows), xb = w / 2 - (w / 2 + 6 * sf) * ((i + 1) / rows);
+      roof += `<polygon points="${f1(xa)},${f1(ya)} ${f1(w - xa)},${f1(ya)} ${f1(w - xb)},${f1(yb)} ${f1(xb)},${f1(yb)}" fill="${i % 2 ? '#6c63b6' : '#5638a6'}" stroke="${OL}" stroke-width="2"/>`;
+      let sh = ''; for (let x = xb + (i % 2 ? 0 : 12 * sf); x < w - xb; x += 24 * sf) sh += `M${f1(x)} ${f1(ya)}V${f1(yb)}`;
+      roof += `<path d="${sh}" stroke="rgba(12,8,24,.45)" stroke-width="1.6"/>`;
+    }
+    roof += `<rect x="${f1(-6 * sf)}" y="${f1(yC - 2)}" width="${f1(w + 12 * sf)}" height="${f1(12 * sf)}" fill="#2b2260" stroke="${OL}" stroke-width="2.8"/><rect x="0" y="${f1(yC + 10 * sf)}" width="${w}" height="${f1(4 * sf)}" fill="rgba(0,0,0,.3)"/>`;
+    roof += `<circle cx="${f1(w / 2)}" cy="${f1(yT + rh * .42)}" r="${f1(20 * sf)}" fill="#1d1049" stroke="${OL}" stroke-width="3"/><circle cx="${f1(w / 2)}" cy="${f1(yT + rh * .42)}" r="${f1(14 * sf)}" fill="#ffd98a"/><path d="M${f1(w / 2 - 14 * sf)} ${f1(yT + rh * .42)}h${f1(28 * sf)}M${f1(w / 2)} ${f1(yT + rh * .42 - 14 * sf)}v${f1(28 * sf)}" stroke="${OL}" stroke-width="2.4"/>`;
     let paper = '', planks = '', steps = '', posts = '';
     for (let x = 10 * sf; x < w; x += 24 * sf) paper += `M${f1(x)} 0V${f1(yG)}`;
     for (let x = 0; x < w; x += 58 * sf) planks += `M${f1(x)} ${f1(yG)}V${h}`;
@@ -126,6 +142,7 @@ Seq.scenes.fling = (root, done) => {
     return `
     <rect width="${w}" height="${h}" fill="#322a6b"/>
     <path d="${paper}" stroke="rgba(0,0,0,.16)" stroke-width="1.6" fill="none"/>
+    ${roof}
     <rect x="0" y="${f1(yG - 12 * sf)}" width="${w}" height="${f1(12 * sf)}" fill="#dedcf0"/>
     <rect x="0" y="${f1(yG)}" width="${w}" height="${f1(h - yG)}" fill="#a8643a"/><path d="${planks}" stroke="rgba(30,12,8,.45)" stroke-width="2" fill="none"/>
     <rect x="0" y="${f1(yG)}" width="${w}" height="3" fill="${OL}"/>
