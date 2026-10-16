@@ -32,7 +32,7 @@ Seq.scenes.route = (root, done) => {
   }
 
   /* ---------- sound (shared context; this scene's own bus) ---------- */
-  const AU = Seq.audio, out = Seq.sceneOut(.85);
+  const AU = Seq.audio, out = Seq.sceneOut(1);
   const ok = () => AU.ac && out.get();
   function tone(type, f0, f1, dur, vol, delay = 0, lp) {
     if (!ok()) return; const ac = AU.ac, t0 = ac.currentTime + delay, o = ac.createOscillator(), g = ac.createGain();
@@ -48,7 +48,7 @@ Seq.scenes.route = (root, done) => {
     src.connect(fl).connect(g).connect(out.get()); src.start(t0, Math.random() * .5, dur + .05);
   }
   const snd = {
-    bark(p, v = 1) { noise(.1, .18 * v, 'bandpass', 800 * p, .9); tone('sawtooth', 400 * p, 210 * p, .14, .24 * v, 0, 1900); tone('square', 150 * p, 92 * p, .14, .09 * v); },
+    bark(p, v = 1) { noise(.1, .26 * v, 'bandpass', 800 * p, .9); tone('sawtooth', 400 * p, 210 * p, .15, .34 * v, 0, 2000); tone('square', 150 * p, 92 * p, .15, .14 * v); tone('sawtooth', 380 * p, 200 * p, .12, .26 * v, .17, 2000); },
     squeak() { tone('sine', 1900, 2700, .07, .05); tone('sine', 2300, 3000, .06, .035, .07); },
     patter() { noise(.04, .045, 'bandpass', 1800 + Math.random() * 500, 1.3); },
     shake() { noise(.14, .05, 'bandpass', 2600, .8); },
@@ -257,7 +257,7 @@ Seq.scenes.route = (root, done) => {
   const target = { X: 0, Z: 0, spot: -1 };
   const mkDog = (pal, X, Z, pitch) => ({ pal, X, Z, x: 0, y: 0, dir: 1, st: 'patrol', t: 0, tX: X, tZ: Z, pause: 0, v: 0, phase: Math.random() * 6, cool: 0, mouth: 0, bang: -9, woof: -9, q: -9, barked: 0, pitch, ear: 0, spot: -1, ang: 0, scan: 0, nb: 0, stuck: 0, mvX: 0, mvZ: 0 });
   const dogs = [mkDog(DOG_A, .6, .86, 1), mkDog(DOG_B, -.4, .88, .9)];
-  let st = 'intro1', stT = 0, t = 0, reported = false, hintOn = false, ev = {}, drops = [], lastStep = 0, houseT = 0, pressed = false, wantOut = false;
+  let tabbyT = 3, st = 'intro1', stT = 0, t = 0, reported = false, hintOn = false, ev = {}, drops = [], lastStep = 0, houseT = 0, pressed = false, wantOut = false;
   const setState = n => { st = n; stT = 0; ev = {}; };
   const HOLE_FRONT = () => ({ X: HOLES[0].X, Z: S0 + .05 }), HOME = () => ({ X: -.68, Z: S0 + .13 });
   extra();
@@ -373,7 +373,7 @@ Seq.scenes.route = (root, done) => {
     spots.forEach((s, i) => { const d = Math.hypot(px_ - s.cx, py_ - s.cy); if (d < s.r && d < bd) { bd = d; best = i; } });
     if (best >= 0) { target.spot = best; target.X = spots[best].X; target.Z = spots[best].Z; return; }
     target.spot = -1;
-    const g = unproj(px_, py_ - 12 * sf);
+    const g = unproj(px_, py_ - 8 * sf);
     target.X = g.X; target.Z = g.Z; clampG(target);
   }
   const onDown = e => {
@@ -390,7 +390,7 @@ Seq.scenes.route = (root, done) => {
   root.addEventListener('pointerup', onUp); root.addEventListener('pointercancel', onUp);
 
   /* ---------- tuning ---------- */
-  const MOUSE_V = () => W * .5, DOG_V = () => W * .2, CHASE_V = () => W * .3;
+  const MOUSE_V = () => W * .62, DOG_V = () => W * .6, CHASE_V = () => W * .74;
   const SIGHT = () => W * .42, CATCH = () => 17 * sf, CONE = 38 * Math.PI / 180;
   const exitHit = () => Math.abs(M.X - EXIT.X) < .08 && M.Z < ROOMZ + .045 && M.Z > ROOMZ;
   // can dog d see the mouse? it has to be inside the cone it is facing, in range, with no furniture in between
@@ -458,8 +458,8 @@ Seq.scenes.route = (root, done) => {
     M.sq = .8;
   }
   function moveMouse(dt, tg, vmax) {
-    const d = gd(M, tg), want = d > 2 ? Math.min(vmax, d * 16) : 0;
-    M.sp = lerp(M.sp, want, Math.min(1, dt * 20));
+    const d = gd(M, tg), want = d > 2 ? Math.min(vmax, Math.max(vmax * .35, d * 18)) : 0;
+    M.sp = lerp(M.sp, want, Math.min(1, dt * 40));
     if (d > 1) {
       const step = Math.min(d, M.sp * dt), k = step / d;
       if (Math.abs(tg.X - M.X) * hw > 5) M.face = tg.X > M.X ? 1 : -1;
@@ -497,6 +497,7 @@ Seq.scenes.route = (root, done) => {
       M.vis = 1; if (stT > .45) { setState('play'); dogs.forEach(d => { d.cool = Math.max(d.cool, 2.5); }); hintOn = true; houseT = 0; target.X = M.X; target.Z = M.Z; target.spot = -1; hint.classList.add('on'); }
     } else if (st === 'play') {
       M.vis = 1;
+      if ((tabbyT -= dt) < 0) { tabbyT = 5 + Math.random() * 3; Seq.meow(out.get(), 660, .5, .16); }
       if (hintOn && (houseT > 6 || (pressed && houseT > 2))) { hintOn = false; hint.classList.remove('on'); }
       const tg = { X: target.X, Z: target.Z }; const d = moveMouse(dt, tg, MOUSE_V()); clampG(M);
       if (target.spot >= 0 && d < 7 * sf) { const sp = spots[target.spot]; setState('hide'); ev = { i: target.spot, X0: M.X, Z0: M.Z, box: sp.type === 'box' }; snd.hop(); }
