@@ -12,21 +12,21 @@ Seq.art = (() => {
 
   const MOUSE = `<g class="mRoot" stroke-linejoin="round" stroke-linecap="round">
           <g class="mSquash">
-            <g class="mTail"><path d="M-27 -16 C-42 -14 -48 0 -62 -3 C-70 -5 -72 -14 -68 -20" fill="none" stroke="#1b1033" stroke-width="5.6"/><path d="M-27 -16 C-42 -14 -48 0 -62 -3 C-70 -5 -72 -14 -68 -20" fill="none" stroke="#f4a6bd" stroke-width="2.8"/></g>
-            <g class="mLegBF"><g class="mLegS"><rect x="-3.2" y="0" width="6.4" height="13" rx="3.2" fill="#9a90b8" stroke="#1b1033" stroke-width="2"/><ellipse cx="1.6" cy="14" rx="5.6" ry="3.2" fill="#f4a6bd" stroke="#1b1033" stroke-width="2"/></g></g>
+            <g class="mTail"><path d="M-35 -14 C-50 -12 -56 2 -70 -1 C-78 -3 -80 -12 -76 -18" fill="none" stroke="#1b1033" stroke-width="5.6"/><path d="M-35 -14 C-50 -12 -56 2 -70 -1 C-78 -3 -80 -12 -76 -18" fill="none" stroke="#f4a6bd" stroke-width="2.8"/></g>
+            <g class="mLegBF"><g class="mLegS"><rect x="-4.2" y="0" width="8.4" height="13" rx="4.2" fill="#9a90b8" stroke="#1b1033" stroke-width="2"/><ellipse cx="1.6" cy="14" rx="6.4" ry="3.4" fill="#f4a6bd" stroke="#1b1033" stroke-width="2"/></g></g>
             <g class="mBody">
-              <g class="mLegFF"><g class="mLegS"><rect x="-3.2" y="0" width="6.4" height="13" rx="3.2" fill="#9a90b8" stroke="#1b1033" stroke-width="2"/><ellipse cx="1.6" cy="14" rx="5.6" ry="3.2" fill="#f4a6bd" stroke="#1b1033" stroke-width="2"/></g></g>
-              <ellipse cx="-5" cy="-19" rx="25" ry="18" fill="#b6adcf" stroke="#1b1033" stroke-width="2.8"/>
-              <path d="M-20 -9 Q-5 -2 14 -9 Q10 -4 -4 -2 Q-16 -3 -20 -9Z" fill="#9a90b8"/>
-              <ellipse cx="-3" cy="-12" rx="17" ry="7" fill="#f8e9f0"/>
-              <path d="M-24 -28 Q-10 -39 5 -35" fill="none" stroke="#dcd5ee" stroke-width="3"/>
-              <g class="mLegFN"><g class="mLegS"><rect x="-3.2" y="0" width="6.4" height="13" rx="3.2" fill="#b6adcf" stroke="#1b1033" stroke-width="2"/><ellipse cx="1.6" cy="14" rx="5.6" ry="3.2" fill="#f4a6bd" stroke="#1b1033" stroke-width="2"/></g></g>
+              <g class="mLegFF"><g class="mLegS"><rect x="-4.2" y="0" width="8.4" height="13" rx="4.2" fill="#9a90b8" stroke="#1b1033" stroke-width="2"/><ellipse cx="1.6" cy="14" rx="6.4" ry="3.4" fill="#f4a6bd" stroke="#1b1033" stroke-width="2"/></g></g>
+              <ellipse cx="-4" cy="-27" rx="35" ry="27" fill="#b6adcf" stroke="#1b1033" stroke-width="2.8"/>
+              <path d="M-34 -10 Q-6 1 26 -10 Q19 -2 -4 -1 Q-27 -2 -34 -10Z" fill="#9a90b8"/>
+              <ellipse cx="-1" cy="-15" rx="26" ry="12" fill="#f8e9f0"/>
+              <path d="M-33 -42 Q-15 -58 8 -52" fill="none" stroke="#dcd5ee" stroke-width="3.4"/>
+              <g class="mLegFN"><g class="mLegS"><rect x="-4.2" y="0" width="8.4" height="13" rx="4.2" fill="#b6adcf" stroke="#1b1033" stroke-width="2"/><ellipse cx="1.6" cy="14" rx="6.4" ry="3.4" fill="#f4a6bd" stroke="#1b1033" stroke-width="2"/></g></g>
               <!-- messenger's red scarf -->
               <path d="M2 -21 Q14 -8 26 -17 L25 -9 Q12 0 1 -12Z" fill="#e5475c" stroke="#1b1033" stroke-width="2.2"/>
               <path d="M2 -14 Q12 -3 25 -11 L25 -9 Q12 0 1 -12Z" fill="#b92a44"/>
               <path d="M5 -10 L-6 -3 L-1 -14Z" fill="#e5475c" stroke="#1b1033" stroke-width="2"/>
               <g class="mHead">
-                <path d="M4 -24 C4 -42 31 -44 38 -34 C43 -32 50 -28 50 -22.5 C50 -17.5 44 -14 38 -13 C31 -8 4 -8 4 -24Z" fill="#c9c0df" stroke="#1b1033" stroke-width="2.8"/>
+                <path d="M2 -24 C1 -45 32 -47 39 -35 C45 -33 51 -28 51 -22.5 C51 -16.5 45 -12 38 -11 C30 -4 2 -4 2 -24Z" fill="#c9c0df" stroke="#1b1033" stroke-width="2.8"/>
                 <path d="M9 -35 Q16 -40 25 -38" fill="none" stroke="#ece7f8" stroke-width="3"/>
                 <g class="mEar"><circle cx="8" cy="-41" r="12.5" fill="#b6adcf" stroke="#1b1033" stroke-width="2.8"/><circle cx="8.5" cy="-40.5" r="8.4" fill="#f48fae"/><path d="M4 -45 q4 -4 9 -2" fill="none" stroke="#ffd0de" stroke-width="2"/></g>
                 <ellipse class="mEyeOpen" cx="27" cy="-28.5" rx="5" ry="6" fill="#0d0a18"/>
@@ -41,7 +41,7 @@ Seq.art = (() => {
                 <g stroke="#fff" stroke-width="1" fill="none" opacity=".85"><path d="M40 -22 L55 -29 M41 -20.5 L57 -21.5 M40 -19 L55 -13"/></g>
               </g>
             </g>
-            <g class="mLegBN"><g class="mLegS"><rect x="-3.4" y="0" width="6.8" height="13" rx="3.4" fill="#b6adcf" stroke="#1b1033" stroke-width="2"/><ellipse cx="1.7" cy="14" rx="5.8" ry="3.2" fill="#f4a6bd" stroke="#1b1033" stroke-width="2"/></g></g>
+            <g class="mLegBN"><g class="mLegS"><rect x="-4.4" y="0" width="8.8" height="13" rx="4.4" fill="#b6adcf" stroke="#1b1033" stroke-width="2"/><ellipse cx="1.7" cy="14" rx="6.6" ry="3.4" fill="#f4a6bd" stroke="#1b1033" stroke-width="2"/></g></g>
           </g>
         </g>`;
   const mouseMarkup = MOUSE.replace(/<\/g>\s*$/, LETTER + '</g>');
