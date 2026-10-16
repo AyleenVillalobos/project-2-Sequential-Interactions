@@ -266,42 +266,9 @@ Seq.scenes.intro = (root, done) => {
       </g>
 
       <!-- mouse + letter, clipped to the tunnel while the mouse is inside it -->
-      <ellipse class="mShadow" cx="0" cy="0" rx="30" ry="5" fill="rgba(5,2,15,.5)"/>
+      <ellipse class="mShadow" cx="0" cy="0" rx="36" ry="5" fill="rgba(5,2,15,.5)"/>
       <g class="mClip">
-        <g class="mRoot" stroke-linejoin="round" stroke-linecap="round">
-          <g class="mSquash">
-            <g class="mTail"><path d="M-27 -16 C-42 -14 -48 0 -62 -3 C-70 -5 -72 -14 -68 -20" fill="none" stroke="#1b1033" stroke-width="5.6"/><path d="M-27 -16 C-42 -14 -48 0 -62 -3 C-70 -5 -72 -14 -68 -20" fill="none" stroke="#f4a6bd" stroke-width="2.8"/></g>
-            <g class="mLegBF"><g class="mLegS"><rect x="-3.2" y="0" width="6.4" height="13" rx="3.2" fill="#9a90b8" stroke="#1b1033" stroke-width="2"/><ellipse cx="1.6" cy="14" rx="5.6" ry="3.2" fill="#f4a6bd" stroke="#1b1033" stroke-width="2"/></g></g>
-            <g class="mBody">
-              <g class="mLegFF"><g class="mLegS"><rect x="-3.2" y="0" width="6.4" height="13" rx="3.2" fill="#9a90b8" stroke="#1b1033" stroke-width="2"/><ellipse cx="1.6" cy="14" rx="5.6" ry="3.2" fill="#f4a6bd" stroke="#1b1033" stroke-width="2"/></g></g>
-              <ellipse cx="-5" cy="-19" rx="25" ry="18" fill="#b6adcf" stroke="#1b1033" stroke-width="2.8"/>
-              <path d="M-20 -9 Q-5 -2 14 -9 Q10 -4 -4 -2 Q-16 -3 -20 -9Z" fill="#9a90b8"/>
-              <ellipse cx="-3" cy="-12" rx="17" ry="7" fill="#f8e9f0"/>
-              <path d="M-24 -28 Q-10 -39 5 -35" fill="none" stroke="#dcd5ee" stroke-width="3"/>
-              <g class="mLegFN"><g class="mLegS"><rect x="-3.2" y="0" width="6.4" height="13" rx="3.2" fill="#b6adcf" stroke="#1b1033" stroke-width="2"/><ellipse cx="1.6" cy="14" rx="5.6" ry="3.2" fill="#f4a6bd" stroke="#1b1033" stroke-width="2"/></g></g>
-              <!-- messenger's red scarf -->
-              <path d="M2 -21 Q14 -8 26 -17 L25 -9 Q12 0 1 -12Z" fill="#e5475c" stroke="#1b1033" stroke-width="2.2"/>
-              <path d="M2 -14 Q12 -3 25 -11 L25 -9 Q12 0 1 -12Z" fill="#b92a44"/>
-              <path d="M5 -10 L-6 -3 L-1 -14Z" fill="#e5475c" stroke="#1b1033" stroke-width="2"/>
-              <g class="mHead">
-                <path d="M4 -24 C4 -42 31 -44 38 -34 C43 -32 50 -28 50 -22.5 C50 -17.5 44 -14 38 -13 C31 -8 4 -8 4 -24Z" fill="#c9c0df" stroke="#1b1033" stroke-width="2.8"/>
-                <path d="M9 -35 Q16 -40 25 -38" fill="none" stroke="#ece7f8" stroke-width="3"/>
-                <g class="mEar"><circle cx="8" cy="-41" r="12.5" fill="#b6adcf" stroke="#1b1033" stroke-width="2.8"/><circle cx="8.5" cy="-40.5" r="8.4" fill="#f48fae"/><path d="M4 -45 q4 -4 9 -2" fill="none" stroke="#ffd0de" stroke-width="2"/></g>
-                <ellipse class="mEyeOpen" cx="27" cy="-28.5" rx="5" ry="6" fill="#0d0a18"/>
-                <circle class="mEyeShine" cx="29" cy="-31" r="2.3" fill="#fff"/>
-                <circle class="mEyeShine" cx="25.2" cy="-25.4" r="1.1" fill="#fff"/>
-                <path d="M21.5 -33.5 Q27 -38.5 32.5 -33.5" fill="none" stroke="#1b1033" stroke-width="1.8"/>
-                <path class="mEyeHappy" d="M22 -28 Q27 -35 32 -28" fill="none" stroke="#1b1033" stroke-width="2.2" opacity="0"/>
-                <ellipse class="mBlush" cx="28.5" cy="-19.5" rx="5" ry="3.2" fill="#ff7fa3" opacity=".6"/>
-                <rect x="38" y="-17.2" width="3.4" height="4.4" rx="1.2" fill="#fffaf0" stroke="#1b1033" stroke-width="1.2"/><rect x="41.5" y="-17.4" width="3.4" height="4.4" rx="1.2" fill="#fffaf0" stroke="#1b1033" stroke-width="1.2"/>
-                <circle cx="49" cy="-23" r="3.6" fill="#ff8fae" stroke="#1b1033" stroke-width="1.8"/><circle cx="48" cy="-24" r="1" fill="#fff"/>
-                <path class="mSmile" d="M36 -17.5 Q40.5 -13.5 44.5 -18" fill="none" stroke="#1b1033" stroke-width="1.6" opacity="0"/>
-                <g stroke="#fff" stroke-width="1" fill="none" opacity=".85"><path d="M40 -22 L55 -29 M41 -20.5 L57 -21.5 M40 -19 L55 -13"/></g>
-              </g>
-            </g>
-            <g class="mLegBN"><g class="mLegS"><rect x="-3.4" y="0" width="6.8" height="13" rx="3.4" fill="#b6adcf" stroke="#1b1033" stroke-width="2"/><ellipse cx="1.7" cy="14" rx="5.8" ry="3.2" fill="#f4a6bd" stroke="#1b1033" stroke-width="2"/></g></g>
-          </g>
-        </g>
+        ${Seq.art.MOUSE}
         <g class="letterW" visibility="hidden"><g class="letterG"><use href="#letterArt"/></g></g>
       </g>
 
@@ -603,7 +570,7 @@ Seq.scenes.intro = (root, done) => {
     el.legFF.setAttribute('transform', `translate(16 -14) rotate(${f2(M.paws > .02 ? arm + 14 * M.paws + sw * (1 - M.paws) : sw)}) scale(1 ${f2(reach)})`);
     el.eyeOpen.setAttribute('opacity', f2(1 - M.happy)); el.eyeShines.forEach(e => e.setAttribute('opacity', f2(1 - M.happy)));
     el.eyeHappy.setAttribute('opacity', f2(M.happy)); el.blush.setAttribute('opacity', f2(.6 + M.happy * .35)); el.smile.setAttribute('opacity', f2(M.happy));
-    el.mShadow.setAttribute('cx', f2(M.x)); el.mShadow.setAttribute('cy', f2(M.y + 1)); el.mShadow.setAttribute('rx', f2(30 * s * MK * (1 - Math.min(M.hop / 40, .3))));
+    el.mShadow.setAttribute('cx', f2(M.x)); el.mShadow.setAttribute('cy', f2(M.y + 1)); el.mShadow.setAttribute('rx', f2(36 * s * MK * (1 - Math.min(M.hop / 40, .3))));
     el.mShadow.setAttribute('opacity', M.clip ? 0 : f2(.9 * M.dim));
   }
   function renderLetter() {
