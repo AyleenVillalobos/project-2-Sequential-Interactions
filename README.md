@@ -10,7 +10,7 @@ One continuous, linear sequence built from the three interaction studies in `stu
 |---|---|---|---|
 | Opening | Rainy purple night: a small tuxedo cat on a second-floor balcony drops the letter to the mouse below | Tap to begin (also turns sound on), then watch | The mouse grabs the letter ("Got it!") and carries it into the drain tunnel |
 | 1 | Sneak past the dogs (a flat, top-down living room, replaces the old trace-the-route and freeze pages) | Drag your finger anywhere and the mouse runs there; tap a cardboard box or the hole to hide in it | The mouse slips into the gold mouse hole beside the locked door of the tabby's closed room |
-| 2 | Fling the cheese to your love (Study 03) | Pull back on the letter and release | The kitty catches the letter → hearts → **Play again** |
+| 2 | Swipe the letter to your love: the tabby's owner carries it up the stairs and shuts it behind a baby gate; then a basketball-style toss | Put a finger down, swipe up and let go (speed and direction set the throw) | The excited kitty, who keeps running and jumping around, catches the letter → hearts → **Play again** |
 
 In page 1 the camera zooms in on the tabby waiting in its closed room, then pulls back to the mouse. The room is a flat top-down plan with walls as borders, furniture and a divider wall that block the way and the dogs' sight. Two fast dogs patrol, each with a visible vision cone (like Spy Mouse). When one sees the mouse, red "!!" pops up, it barks and chases; if it catches the mouse, the mouse runs back into the mouse hole and starts over. Hide in a box or hole and the dogs lose you and sniff around until they give up.
 

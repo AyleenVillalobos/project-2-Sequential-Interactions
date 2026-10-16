@@ -13,7 +13,7 @@
   const ORDER = ['intro', 'route', 'fling'];
   const TITLES = {
     route: '1 · Sneak past the dogs',
-    fling: '2 · Fling the cheese to your love'
+    fling: '2 · Swipe the letter to your love'
   };
 
   let idx = -1, scene = null, root = null, busy = false, titleTimer = 0, irisAnim = null;
