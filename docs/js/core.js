@@ -8,6 +8,11 @@ window.Seq = (() => {
 
   Seq.audioInit = () => {
     try {
+      // iPhones mute Web Audio when the ringer switch is off; asking for "playback" (and looping a silent clip) makes the sounds play anyway
+      try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+      if (!audio.keep) {
+        try { const a = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAABErAAABAAgAZGF0YQAAAAA='); a.loop = true; a.volume = .01; a.setAttribute('playsinline', ''); a.play().catch(() => {}); audio.keep = a; } catch (e) {}
+      }
       if (!audio.ac) {
         const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
         const ac = new C();

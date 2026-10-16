@@ -296,17 +296,24 @@ Seq.scenes.fling = (root, done) => {
   };
   const onMove = e => {
     if (drag !== e.pointerId || Lt.mode !== 'drag') return;
-    const p = pt(e); Lt.x = p.x; Lt.y = p.y; samples.push({ x: p.x, y: p.y, t: performance.now() }); if (samples.length > 8) samples.shift(); e.preventDefault();
+    const p = pt(e); Lt.x = p.x; Lt.y = p.y; samples.push({ x: p.x, y: p.y, t: performance.now() }); if (samples.length > 16) samples.shift(); e.preventDefault();
   };
   const onUp = e => {
     if (drag !== e.pointerId) return; drag = null;
     if (Lt.mode !== 'drag') return;
-    const now = performance.now(), last = samples[samples.length - 1]; let first = samples[0];
-    for (const s of samples) if (now - s.t <= 130) { first = s; break; }
-    const dtm = Math.max(1, last.t - first.t) / 1000, vx = (last.x - first.x) / dtm, vy = (last.y - first.y) / dtm, sp = Math.hypot(vx, vy);
+    const now = performance.now(), last = samples[samples.length - 1];
+    // the fastest stretch of the last ~170 ms counts, so a flick that slows down as the finger lifts still throws
+    let vx = 0, vy = 0, sp = 0, dtm = 0;
+    for (const f of samples) {
+      if (now - f.t > 170 || last.t - f.t < 20) continue;
+      const d_ = (last.t - f.t) / 1000, ax = (last.x - f.x) / d_, ay = (last.y - f.y) / d_, s_ = Math.hypot(ax, ay);
+      if (s_ > sp) { sp = s_; vx = ax; vy = ay; dtm = d_; }
+    }
     M.stand = 0;
-    if (sp > 380 && vy < -120 && dtm > .012) {
+    if (sp > 240 && vy < -70 && dtm > .015) {
       const k = clamp(sp * .62, 480 * sf, 1500 * sf) / sp;
+      // a bit of aim-assist: a mostly upward swipe keeps its sideways part but never flips backwards
+      if (vx < -60) { vx = -60; }
       launch(last.x, last.y, vx * k, vy * k);
     } else Lt.mode = 'back';
   };
