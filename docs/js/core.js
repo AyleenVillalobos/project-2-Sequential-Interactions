@@ -60,6 +60,26 @@ window.Seq = (() => {
     o.start(t0); vib.start(t0); o.stop(t0 + dur + .05); vib.stop(t0 + dur + .05);
   };
 
+  /* a dog's bark: a short noise snap plus a saw that drops in pitch through two formants, twice ("wuf-wuf") */
+  Seq.bark = (dest, pitch = 1, vol = 1, delay = 0) => {
+    const ac = audio.ac; if (!ac || !dest) return;
+    const one = (t0, k) => {
+      const o = ac.createOscillator(); o.type = 'sawtooth';
+      o.frequency.setValueAtTime(380 * pitch * k, t0); o.frequency.exponentialRampToValueAtTime(175 * pitch * k, t0 + .13);
+      const f1 = ac.createBiquadFilter(), f2 = ac.createBiquadFilter(), mix = ac.createGain(), g = ac.createGain();
+      f1.type = f2.type = 'bandpass'; f1.Q.value = 3; f2.Q.value = 4;
+      f1.frequency.setValueAtTime(720, t0); f1.frequency.linearRampToValueAtTime(480, t0 + .13);
+      f2.frequency.setValueAtTime(1350, t0); f2.frequency.linearRampToValueAtTime(950, t0 + .13);
+      g.gain.setValueAtTime(.0001, t0); g.gain.exponentialRampToValueAtTime(.55 * vol * k, t0 + .008); g.gain.exponentialRampToValueAtTime(.0001, t0 + .16);
+      o.connect(f1); o.connect(f2); f1.connect(mix); f2.connect(mix); mix.connect(g); g.connect(dest);
+      o.start(t0); o.stop(t0 + .2);
+      const n = ac.createBufferSource(); n.buffer = audio.nbuf; const nf = ac.createBiquadFilter(); nf.type = 'bandpass'; nf.frequency.value = 1000 * pitch; nf.Q.value = .8;
+      const ng = ac.createGain(); ng.gain.setValueAtTime(.0001, t0); ng.gain.exponentialRampToValueAtTime(.3 * vol * k, t0 + .006); ng.gain.exponentialRampToValueAtTime(.0001, t0 + .09);
+      n.connect(nf).connect(ng).connect(dest); n.start(t0, Math.random() * .5, .12);
+    };
+    one(ac.currentTime + delay, 1); one(ac.currentTime + delay + .19, .85);
+  };
+
   Seq.vib = p => { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} };
 
   document.addEventListener('visibilitychange', () => {

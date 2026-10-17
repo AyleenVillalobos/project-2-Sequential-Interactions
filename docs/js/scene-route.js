@@ -48,7 +48,7 @@ Seq.scenes.route = (root, done) => {
     src.connect(fl).connect(g).connect(out.get()); src.start(t0, Math.random() * .5, dur + .05);
   }
   const snd = {
-    bark(p, v = 1) { noise(.1, .26 * v, 'bandpass', 800 * p, .9); tone('sawtooth', 400 * p, 210 * p, .15, .34 * v, 0, 2000); tone('square', 150 * p, 92 * p, .15, .14 * v); tone('sawtooth', 380 * p, 200 * p, .12, .26 * v, .17, 2000); },
+    bark(p, v = 1) { Seq.bark(out.get(), p, v); },
     squeak() { tone('sine', 1900, 2700, .07, .05); tone('sine', 2300, 3000, .06, .035, .07); },
     patter() { noise(.04, .045, 'bandpass', 1800 + Math.random() * 500, 1.3); },
     shake() { noise(.14, .05, 'bandpass', 2600, .8); },
@@ -255,7 +255,7 @@ Seq.scenes.route = (root, done) => {
   /* ---------- state ---------- */
   const M = { X: 0, Z: 0, x: 0, y: 0, face: 1, phase: 0, sp: 0, walkAmt: 0, sq: 1, hop: 0, stand: 0, look: 0, ear: 0, s: 1, vis: 0, hidden: -1 };
   const target = { X: 0, Z: 0, spot: -1 };
-  const mkDog = (pal, X, Z, pitch) => ({ pal, X, Z, x: 0, y: 0, dir: 1, st: 'patrol', t: 0, tX: X, tZ: Z, pause: 0, v: 0, phase: Math.random() * 6, cool: 0, mouth: 0, bang: -9, woof: -9, q: -9, barked: 0, pitch, ear: 0, spot: -1, ang: 0, scan: 0, nb: 0, stuck: 0, mvX: 0, mvZ: 0 });
+  const mkDog = (pal, X, Z, pitch) => ({ pal, X, Z, x: 0, y: 0, dir: 1, st: 'patrol', t: 0, tX: X, tZ: Z, pause: 0, v: 0, phase: Math.random() * 6, cool: 0, mouth: 0, bang: -9, woof: -9, q: -9, barked: 0, pitch, ear: 0, spot: -1, ang: 0, scan: 0, nb: 1.2 + Math.random() * 2, stuck: 0, mvX: 0, mvZ: 0 });
   const dogs = [mkDog(DOG_A, .6, .86, 1), mkDog(DOG_B, -.4, .88, .9)];
   let tabbyT = 3, st = 'intro1', stT = 0, t = 0, reported = false, hintOn = false, ev = {}, drops = [], lastStep = 0, houseT = 0, pressed = false, wantOut = false;
   const setState = n => { st = n; stT = 0; ev = {}; };
@@ -423,7 +423,7 @@ Seq.scenes.route = (root, done) => {
           if (left < 6 || d.stuck > .3) { d.pause = left < 6 && Math.random() < .4 ? .2 + Math.random() * .5 : 0; pickWaypoint(d); }
         }
         if (d.st === 'cool' && d.cool <= 0) d.st = 'patrol';
-        if (st === 'play' && t > d.nb && Math.random() < dt * .22) { d.nb = t + 2; d.woof = t; snd.bark(d.pitch * .95, .6); }
+        if (st === 'play' && t > d.nb) { d.nb = t + 1.8 + Math.random() * 2.4; d.woof = t; snd.bark(d.pitch * .95, .75); }
         if (seen && d.st === 'patrol' && d.cool <= 0 && sees(d)) alertDog(d);
       } else if (d.st === 'alert') {
         d.v = 0; d.dir = M.x > d.x ? 1 : -1; turnTo(d, Math.atan2(M.y - d.y, M.x - d.x), Math.min(1, dt * 10));
