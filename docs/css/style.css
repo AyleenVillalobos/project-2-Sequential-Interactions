@@ -207,3 +207,28 @@ html, body {
   pointer-events: none; opacity: 0; transition: opacity .4s ease; z-index: 6;
 }
 .sc-room .hint.on, .sc-toss .hint.on { opacity: 1; animation: hintp 1.8s ease-in-out infinite; }
+
+/* ---- tool panel (live tweaks) ---- */
+#tweakBtn {
+  position: absolute; right: 14px; top: calc(14px + env(safe-area-inset-top, 0px)); width: 46px; height: 46px; padding: 0;
+  display: grid; place-items: center; cursor: pointer; z-index: 35; touch-action: manipulation;
+  font-family: var(--px-font); border-radius: 0; border: 3px solid var(--px-ink); background: var(--px-paper); color: var(--px-accent); box-shadow: 3px 3px 0 var(--px-ink);
+}
+#tweakBtn:active { box-shadow: 1px 1px 0 var(--px-ink); transform: translate(2px, 2px); }
+#tweaks {
+  position: absolute; top: 0; right: 0; bottom: 0; width: min(88%, 330px); z-index: 60; display: flex; flex-direction: column;
+  background: var(--px-paper); color: var(--px-ink); border-left: 4px solid var(--px-ink); box-shadow: -6px 0 0 rgba(11, 6, 36, .3);
+  font-family: var(--px-font); transform: translateX(110%); transition: transform .22s ease; touch-action: manipulation;
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+#tweaks.open { transform: none; }
+#tweaks header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 3px solid var(--px-ink); font-weight: 800; text-transform: uppercase; letter-spacing: .06em; font-size: 14px; color: var(--px-accent); }
+#tweaks header button { width: 34px; height: 34px; font: 800 22px/1 var(--px-font); border: 3px solid var(--px-ink); background: var(--px-paper); color: var(--px-accent); border-radius: 0; cursor: pointer; box-shadow: 2px 2px 0 var(--px-ink); }
+#tweaks .rows { flex: 1; overflow-y: auto; padding: 4px 14px 14px; -webkit-overflow-scrolling: touch; }
+#tweaks .grp { margin: 16px 0 6px; font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--px-accent); border-bottom: 2px dashed var(--px-ink); padding-bottom: 4px; }
+#tweaks .trow { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; align-items: center; padding: 6px 0; font-size: 13px; font-weight: 700; }
+#tweaks .trow output { font-variant-numeric: tabular-nums; color: var(--px-accent); }
+#tweaks .trow input[type=range] { grid-column: 1 / -1; width: 100%; height: 28px; margin: 0; accent-color: var(--px-accent); touch-action: pan-y; }
+#tweaks footer { padding: 10px 14px 14px; border-top: 3px solid var(--px-ink); display: grid; gap: 8px; font-size: 11px; opacity: .85; }
+#tweaks footer button { justify-self: start; font: 800 13px var(--px-font); text-transform: uppercase; letter-spacing: .05em; padding: 8px 14px; border: 3px solid var(--px-ink); background: var(--px-paper); color: var(--px-accent); border-radius: 0; cursor: pointer; box-shadow: 3px 3px 0 var(--px-ink); }
+#tweaks button:focus-visible, #tweakBtn:focus-visible, #tweaks input:focus-visible { outline: 3px solid var(--px-accent); outline-offset: 2px; }

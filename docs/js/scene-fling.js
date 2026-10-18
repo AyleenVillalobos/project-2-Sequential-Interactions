@@ -48,6 +48,7 @@ Seq.scenes.fling = (root, done) => {
     const ac = AU.ac, n = ac.createBufferSource(); n.buffer = AU.nbuf; const f = ac.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 7000;
     const g = ac.createGain(); g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(.0001, t0 + .04); n.connect(f).connect(g).connect(MU.bus); n.start(t0, Math.random(), .06);
   }
+  Seq.tweaks.onChange(() => { if (MU.on) musicLevel(MU.level); });
   function musicTick() {
     const ac = AU.ac; if (!ac || !MU.on) return;
     const lv = MU.level, bpm = 96 + 8 * Math.min(lv, 8), sd = 60 / bpm / 2;
@@ -63,7 +64,7 @@ Seq.scenes.fling = (root, done) => {
   }
   function musicLevel(n) {
     MU.level = n; if (!MU.bus) return; const ac = AU.ac;
-    MU.bus.gain.cancelScheduledValues(ac.currentTime); MU.bus.gain.linearRampToValueAtTime(.16 + .05 * Math.min(n, 8), ac.currentTime + .5);
+    MU.bus.gain.cancelScheduledValues(ac.currentTime); MU.bus.gain.linearRampToValueAtTime((.16 + .05 * Math.min(n, 8)) * Seq.tweaks.get('music'), ac.currentTime + .5);
   }
   function musicStart() {
     if (!ok() || MU.on) return; const ac = AU.ac;
@@ -79,7 +80,7 @@ Seq.scenes.fling = (root, done) => {
   function happySong() {
     if (!ok()) return; const ac = AU.ac, t0 = ac.currentTime + .05, B = .15;
     const mel = [[523, 1], [659, 1], [784, 1], [1047, 2], [988, 1], [1047, 1], [1175, 2], [1319, 2], [1175, 1], [1047, 1], [988, 1], [784, 1], [880, 2], [1047, 1], [1319, 1], [1568, 4]];
-    let at = 0; const bus = ac.createGain(); bus.gain.value = .9; bus.connect(out.get());
+    let at = 0; const bus = ac.createGain(); bus.gain.value = .9 * Seq.tweaks.get('music'); bus.connect(out.get());
     const mt = (type, f, w, d, v) => { const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(.0001, t0 + w); g.gain.exponentialRampToValueAtTime(v, t0 + w + .015); g.gain.exponentialRampToValueAtTime(.0001, t0 + w + d); o.connect(g); g.connect(bus); o.start(t0 + w); o.stop(t0 + w + d + .03); };
     for (const [f, n] of mel) { mt('triangle', f, at * B, n * B * .95, .16); mt('sine', f * 2, at * B, n * B * .6, .05); at += n; }
     [[130.8, 0], [196, 4], [174.6, 8], [196, 12], [130.8, 16]].forEach(([f, st_]) => { mt('triangle', f, st_ * B, 4 * B, .22); mt('sine', f * 2, st_ * B + B, 3 * B, .06); });
@@ -281,9 +282,9 @@ Seq.scenes.fling = (root, done) => {
   function pickRun() {
     let nx = lerp(kMin, kMax, Math.random());
     for (let i = 0; i < 12 && Math.abs(nx - K.x) < 50 * sf; i++) nx = lerp(kMin, kMax, Math.random());
-    K.tx = nx; K.speed = (240 + Math.random() * 140) * sf; K.mode = 'run'; K.jt = Math.min(K.jt, .25 + Math.random() * .6);
+    K.tx = nx; K.speed = (240 + Math.random() * 140) * sf * Seq.tweaks.get('kitty'); K.mode = 'run'; K.jt = Math.min(K.jt, (.25 + Math.random() * .6) / Seq.tweaks.get('kitty'));
   }
-  function startJump(big) { if (K.h > 1) return; K.vh = (big ? 560 : 380 + Math.random() * 140) * sf; K.jt = .4 + Math.random() * .8; K.sqy = 1.18; }
+  function startJump(big) { if (K.h > 1) return; K.vh = (big ? 560 : 380 + Math.random() * 140) * sf; K.jt = (.4 + Math.random() * .8) / Seq.tweaks.get('kitty'); K.sqy = 1.18; }
   function updateKitty(dt) {
     if (K.mode === 'held' || K.mode === 'hop') return;
     K.mewT -= dt; if (K.mewT < 0) { K.mewT = 1.5 + Math.random() * 1.5; if (st === 'game' && K.mode !== 'catch') snd.mew(.95 + Math.random() * .25); }
@@ -379,7 +380,7 @@ Seq.scenes.fling = (root, done) => {
     }
     M.stand = 0;
     if (sp > 240 && vy < -70 && dtm > .015) {
-      const k = clamp(sp * .62, 480 * sf, 1500 * sf) / sp;
+      const k = clamp(sp * .62 * Seq.tweaks.get('power'), 480 * sf, 1500 * sf) / sp;
       // a bit of aim-assist: a mostly upward swipe keeps its sideways part but never flips backwards
       if (vx < -60) { vx = -60; }
       launch(last.x, last.y, vx * k, vy * k);

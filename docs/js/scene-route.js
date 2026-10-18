@@ -48,7 +48,7 @@ Seq.scenes.route = (root, done) => {
     src.connect(fl).connect(g).connect(out.get()); src.start(t0, Math.random() * .5, dur + .05);
   }
   const snd = {
-    bark(p, v = 1) { Seq.bark(out.get(), p, v); },
+    bark(p, v = 1) { if (TW('dogBark') > .02) Seq.bark(out.get(), p, v * TW('dogBark')); },
     squeak() { tone('sine', 1900, 2700, .07, .05); tone('sine', 2300, 3000, .06, .035, .07); },
     patter() { noise(.04, .045, 'bandpass', 1800 + Math.random() * 500, 1.3); },
     shake() { noise(.14, .05, 'bandpass', 2600, .8); },
@@ -390,8 +390,9 @@ Seq.scenes.route = (root, done) => {
   root.addEventListener('pointerup', onUp); root.addEventListener('pointercancel', onUp);
 
   /* ---------- tuning ---------- */
-  const MOUSE_V = () => W * .62, DOG_V = () => W * .6, CHASE_V = () => W * .74;
-  const SIGHT = () => W * .42, CATCH = () => 17 * sf, CONE = 38 * Math.PI / 180;
+  const TW = k => Seq.tweaks.get(k);
+  const MOUSE_V = () => W * .62 * TW('mouseSpeed'), DOG_V = () => W * .6 * TW('dogSpeed'), CHASE_V = () => W * .74 * TW('dogSpeed');
+  const SIGHT = () => W * .42 * TW('dogSight'), CATCH = () => 17 * sf, CONE = 38 * Math.PI / 180;
   const exitHit = () => Math.abs(M.X - EXIT.X) < .08 && M.Z < ROOMZ + .045 && M.Z > ROOMZ;
   // can dog d see the mouse? it has to be inside the cone it is facing, in range, with no furniture in between
   function sees(d, k = 1) {

@@ -17,7 +17,7 @@ window.Seq = (() => {
         const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
         const ac = new C();
         const comp = ac.createDynamicsCompressor();
-        const master = ac.createGain(); master.gain.value = 1;
+        const master = ac.createGain(); master.gain.value = Seq.tweaks ? Seq.tweaks.get('vol') : 1;
         master.connect(comp); comp.connect(ac.destination);
         const nbuf = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate);
         const d = nbuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -79,6 +79,33 @@ window.Seq = (() => {
     };
     one(ac.currentTime + delay, 1); one(ac.currentTime + delay + .19, .85);
   };
+
+  /* Tweaks: values the tool panel changes live. Saved on this device. */
+  Seq.tweaks = (() => {
+    const defs = [
+      { k: 'vol', g: 'Sound', label: 'Master volume', min: 0, max: 1.5, step: .05, def: 1 },
+      { k: 'music', g: 'Sound', label: 'Throw-game music', min: 0, max: 1.5, step: .05, def: 1 },
+      { k: 'rain', g: 'Opening', label: 'Rain amount', min: 0, max: 3, step: .1, def: 1 },
+      { k: 'dogSpeed', g: 'Dogs', label: 'Dog speed', min: .3, max: 2, step: .05, def: 1 },
+      { k: 'dogSight', g: 'Dogs', label: 'Dog sight range', min: .5, max: 1.6, step: .05, def: 1 },
+      { k: 'dogBark', g: 'Dogs', label: 'Bark volume', min: 0, max: 2, step: .05, def: 1 },
+      { k: 'mouseSpeed', g: 'Mouse', label: 'Mouse speed', min: .5, max: 1.6, step: .05, def: 1 },
+      { k: 'kitty', g: 'Kitty', label: 'Kitty speed and jumps', min: .3, max: 2, step: .05, def: 1 },
+      { k: 'power', g: 'Kitty', label: 'Throw power', min: .6, max: 1.5, step: .05, def: 1 }
+    ];
+    const KEY = 'mouse-messenger-tweaks'; let vals = {}; const subs = [];
+    try { vals = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { vals = {}; }
+    const def = k => defs.find(d => d.k === k);
+    const api = {
+      defs,
+      get: k => { const v = vals[k]; return typeof v === 'number' ? v : (def(k) ? def(k).def : 1); },
+      set(k, v) { vals[k] = v; try { localStorage.setItem(KEY, JSON.stringify(vals)); } catch (e) {} api.apply(); subs.forEach(f => f(k, v)); },
+      reset() { vals = {}; try { localStorage.removeItem(KEY); } catch (e) {} api.apply(); subs.forEach(f => f()); },
+      apply() { if (audio.master) { try { audio.master.gain.value = api.get('vol'); } catch (e) {} } },
+      onChange(f) { subs.push(f); }
+    };
+    return api;
+  })();
 
   Seq.vib = p => { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} };
 
