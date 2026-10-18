@@ -10,6 +10,25 @@
   const replayBtn = document.getElementById('replay');
   const resetBtn = document.getElementById('reset');
 
+  /* ---------- tool panel: live tweaks, saved on this device ---------- */
+  const tBtn = document.getElementById('tweakBtn'), tPanel = document.getElementById('tweaks'), tRows = tPanel.querySelector('.rows');
+  let lastG = '';
+  for (const d of Seq.tweaks.defs) {
+    if (d.g !== lastG) { lastG = d.g; const h = document.createElement('div'); h.className = 'grp'; h.textContent = d.g; tRows.appendChild(h); }
+    const row = document.createElement('label'); row.className = 'trow'; row.htmlFor = 'tw-' + d.k;
+    row.innerHTML = `<span>${d.label}</span><output></output><input id="tw-${d.k}" type="range" min="${d.min}" max="${d.max}" step="${d.step}">`;
+    const inp = row.querySelector('input'), out = row.querySelector('output');
+    const show = () => { inp.value = Seq.tweaks.get(d.k); out.textContent = '×' + Number(inp.value).toFixed(2).replace(/\.?0+$/, ''); };
+    inp.addEventListener('input', () => { Seq.tweaks.set(d.k, parseFloat(inp.value)); out.textContent = '×' + Number(inp.value).toFixed(2).replace(/\.?0+$/, ''); });
+    Seq.tweaks.onChange(show); show(); tRows.appendChild(row);
+  }
+  const setPanel = open => { tPanel.classList.toggle('open', open); tPanel.setAttribute('aria-hidden', open ? 'false' : 'true'); tBtn.setAttribute('aria-expanded', open ? 'true' : 'false'); if (open) tPanel.querySelector('input').focus({ preventScroll: true }); };
+  tBtn.addEventListener('click', () => { Seq.audioInit(); setPanel(!tPanel.classList.contains('open')); });
+  document.getElementById('tweakClose').addEventListener('click', () => { setPanel(false); tBtn.focus({ preventScroll: true }); });
+  document.getElementById('tweakReset').addEventListener('click', () => Seq.tweaks.reset());
+  addEventListener('keydown', e => { if (e.key === 'Escape') setPanel(false); });
+  for (const b of [tBtn, tPanel]) b.addEventListener('pointerdown', e => e.stopPropagation());
+
   const ORDER = ['intro', 'route', 'fling'];
   const TITLES = {
     route: '1 · Sneak past the dogs',

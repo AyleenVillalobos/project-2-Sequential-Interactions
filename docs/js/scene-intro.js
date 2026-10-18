@@ -376,9 +376,9 @@ Seq.scenes.intro = (root, done) => {
   let rainNodes = null, dripT = 0, thunderT = 0;
   function drip() {
     if (!rainNodes) return;
-    const f = 1500 + Math.random() * 1900; tone('sine', f, f * .55, .06, .02);
+    const f = 1500 + Math.random() * 1900; if (Seq.tweaks.get('rain') > .05) tone('sine', f, f * .55, .06, .02);
     if (Math.random() < .2) noise(.05, .01, 'bandpass', 3000, 2);
-    dripT = setTimeout(drip, 350 + Math.random() * 900);
+    dripT = setTimeout(drip, (350 + Math.random() * 900) / Math.max(.25, Seq.tweaks.get('rain')));
   }
   function thunder() {
     if (!ok() || !rainNodes) return; const ac = AU.ac, t0 = ac.currentTime;
@@ -446,19 +446,20 @@ Seq.scenes.intro = (root, done) => {
     const near = Math.random() < .42;
     return { x: Math.random() * (W + 160) - 20, y: initial ? Math.random() * H : -30 - Math.random() * 120, vy: (near ? 1150 : 800) * (.9 + Math.random() * .2), len: near ? 22 : 12, near, land: H * (.68 + Math.random() * .34) };
   }
-  function seedRain() { drops = []; const n = reduce ? 18 : 36; for (let i = 0; i < n; i++) drops.push(newDrop(true)); }
+  function seedRain() { drops = []; const n = 108; for (let i = 0; i < n; i++) drops.push(newDrop(true)); }
+  const actDrops = () => Math.min(drops.length, Math.round((reduce ? 18 : 36) * Seq.tweaks.get('rain')));
   const WIND = -.14;
   function rainStep(dt) {
-    for (const d of drops) {
-      d.y += d.vy * dt; d.x += WIND * d.vy * dt;
+    for (let i_ = 0, n_ = actDrops(); i_ < n_; i_++) {
+      const d = drops[i_]; d.y += d.vy * dt; d.x += WIND * d.vy * dt;
       if (d.y >= d.land) { if (splashes.length < 50) splashes.push({ x: d.x, y: d.land, a: 0, near: d.near }); Object.assign(d, newDrop(false), { x: Math.random() * (W + 160) - 20 }); }
     }
     for (let i = splashes.length - 1; i >= 0; i--) { splashes[i].a += dt * 3; if (splashes[i].a >= 1) splashes.splice(i, 1); }
   }
   function rainPixels(c, info) {
     const k = info.k;
-    for (const d of drops) {
-      const x = Math.floor(d.x / k), y = Math.floor(d.y / k), len = Math.max(2, Math.round(d.len / k));
+    for (let i_ = 0, n_ = actDrops(); i_ < n_; i_++) {
+      const d = drops[i_]; const x = Math.floor(d.x / k), y = Math.floor(d.y / k), len = Math.max(2, Math.round(d.len / k));
       c.fillStyle = d.near ? '#cdc9f0' : '#6c63b6';
       if (len >= 4) { c.fillRect(x, y, 1, len >> 1); c.fillRect(x - 1, y + (len >> 1), 1, len - (len >> 1)); } else c.fillRect(x, y, 1, len);
     }
