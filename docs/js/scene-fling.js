@@ -261,7 +261,7 @@ Seq.scenes.fling = (root, done) => {
     W = Math.max(1, r.width); H = Math.max(1, r.height); sf = W / 390;
     sv.setAttribute('viewBox', `0 0 ${W} ${H}`);
     yG = H * .88; yU = H * .62; fx = W * .2; tx = W * .5; rise = (yG - yU) / nSt; run = (tx - fx) / nSt;
-    gx = tx + 2 * sf; gw = 24 * sf; gH = 128 * sf; kMin = gx + gw + 30 * sf; kMax = W - 30 * sf; hx = W * .045; mx = W * .1; kStart = W * .8; G = 1250 * sf;
+    gx = tx + 2 * sf; gw = 24 * sf; gH = 128 * sf * Seq.tweaks.get('gateHeight'); kMin = gx + gw + 30 * sf; kMax = W - 30 * sf; hx = W * .045; mx = W * .1; kStart = W * .8; G = 1250 * sf;
     rails = [gH * RAILF[0], gH * RAILF[1], gH].map(v => yU - v);
     sv.innerHTML = bgMarkup();
     const q = s => sv.querySelector(s);
@@ -307,7 +307,7 @@ Seq.scenes.fling = (root, done) => {
 
   /* ---------- the letter ---------- */
   const LH = 9 * sf;
-  const handPos = () => { const sc = .75 * sf * M.s; return { x: M.x + M.face * -6 * sc, y: M.y + sc * (-50 - M.stand * 10) }; };
+  const handPos = () => { const sc = .75 * sf * M.s * Seq.tweaks.get('mouseSize'); return { x: M.x + M.face * -6 * sc, y: M.y + sc * (-50 - M.stand * 10) }; };
   function launch(x, y, vx, vy) {
     Object.assign(Lt, { mode: 'fly', x, y, vx, vy, vr: (vx >= 0 ? 1 : -1) * 6, rot: 0, bounced: false, restT: 0 });
     Lt.ghost = Lt.trail; Lt.trail = []; tries++; Lt.tries = tries; musicLevel(tries);
@@ -324,7 +324,7 @@ Seq.scenes.fling = (root, done) => {
     if (Lt.mode === 'drag') { Lt.rot = lerp(Lt.rot, 0, Math.min(1, dt * 8)); return; }
     if (Lt.mode === 'caught') { const c = kitCenter(); Lt.x = lerp(Lt.x, c.x, Math.min(1, dt * 14)); Lt.y = lerp(Lt.y, c.y + 8 * sf, Math.min(1, dt * 14)); Lt.rot = lerp(Lt.rot, 0, Math.min(1, dt * 8)); return; }
     if (Lt.mode === 'fly') {
-      const px_ = Lt.x; Lt.vy += G * dt; Lt.x += Lt.vx * dt; Lt.y += Lt.vy * dt; Lt.rot += Lt.vr * dt;
+      const px_ = Lt.x; Lt.vy += G * Seq.tweaks.get('gravity') * dt; Lt.x += Lt.vx * dt; Lt.y += Lt.vy * dt; Lt.rot += Lt.vr * dt;
       if (Lt.trail.length < 90 && (Lt.trail.length === 0 || Math.hypot(Lt.x - Lt.trail[Lt.trail.length - 1].x, Lt.y - Lt.trail[Lt.trail.length - 1].y) > 14 * sf)) Lt.trail.push({ x: Lt.x, y: Lt.y });
       // the landing's edge and the underside of the upper floor
       if (!Lt.bounced && Lt.x > tx - 2 && px_ <= tx - 2 && Lt.y > yU + 2 * sf) {
@@ -336,7 +336,7 @@ Seq.scenes.fling = (root, done) => {
         if (Lt.y > yU - gH - 6 * sf && Lt.y < yU + 4 * sf && rails.some(ry => Math.abs(Lt.y - ry) < 3.5 * sf + LH * .5 + 1 * sf)) bounceOff(-1);
       }
       // the kitty is quick: close enough while it is passing by and it snatches the letter
-      if (Lt.x > gx + gw * .5) { const c = kitCenter(); if (Math.hypot(Lt.x - c.x, Lt.y - c.y) < (K.h > 4 ? 52 : 42) * sf) { catchIt(); return; } }
+      if (Lt.x > gx + gw * .5) { const c = kitCenter(); if (Math.hypot(Lt.x - c.x, Lt.y - c.y) < (K.h > 4 ? 52 : 42) * sf * Seq.tweaks.get('kittyCatch')) { catchIt(); return; } }
       const sy = stairY(Lt.x);
       if (Lt.vy > 0 && Lt.y + LH > sy && !(Lt.x > tx && Lt.y > yU + 6 * sf)) {
         Lt.y = sy - LH; Lt.vy *= -.28; Lt.vx *= .55; Lt.vr *= .4; snd.thud();
@@ -345,7 +345,7 @@ Seq.scenes.fling = (root, done) => {
       if (Lt.x < -40 || Lt.x > W + 40 || Lt.y > H + 60) resetLetter();
     } else if (Lt.mode === 'rest') {
       Lt.restT -= dt; const c = kitCenter();
-      if (Lt.x > gx + gw && Math.abs(Lt.x - c.x) < 34 * sf && K.h < 40 * sf) { catchIt(); return; }
+      if (Lt.x > gx + gw && Math.abs(Lt.x - c.x) < 34 * sf * Seq.tweaks.get('kittyCatch') && K.h < 40 * sf) { catchIt(); return; }
       if (Lt.restT <= 0) resetLetter();
     }
   }
@@ -450,7 +450,7 @@ Seq.scenes.fling = (root, done) => {
 
   /* ---------- render ---------- */
   function renderMouse() {
-    const m = el.m, sc = .75 * sf * M.s, ph = M.phase, sy = M.sq, sx = 1 / Math.sqrt(sy), th = M.stand * 55;
+    const m = el.m, sc = .75 * sf * M.s * Seq.tweaks.get('mouseSize'), ph = M.phase, sy = M.sq, sx = 1 / Math.sqrt(sy), th = M.stand * 55;
     el.mouse.setAttribute('opacity', f2(M.vis));
     m.root.setAttribute('transform', `translate(${f2(M.x)} ${f2(M.y - M.hop)}) scale(${f2(M.face * sc)} ${f2(sc)})`);
     m.squash.setAttribute('transform', `scale(${f2(sx)} ${f2(sy)})`);
@@ -476,7 +476,7 @@ Seq.scenes.fling = (root, done) => {
     el.shO.setAttribute('cx', f2(O.x)); el.shO.setAttribute('cy', f2(O.y + 1)); el.shO.setAttribute('rx', f2(30 * sc)); el.shO.setAttribute('ry', f2(6 * sc)); el.shO.setAttribute('opacity', vis);
   }
   function renderKitty() {
-    const ks = (K.mode === 'held' ? .36 : .44) * sf, c = el.k, held = K.mode === 'held' || (K.mode === 'hop' && K.heldY != null), jump = K.h > 2;
+    const ks = (K.mode === 'held' ? .36 : .44) * sf * Seq.tweaks.get('kittySize'), c = el.k, held = K.mode === 'held' || (K.mode === 'hop' && K.heldY != null), jump = K.h > 2;
     const ky = held ? K.heldY : yU - K.h;
     const wob = K.mode === 'run' && !jump ? Math.sin(t * 22) * 2.2 : 0, bob = K.mode === 'run' && !jump ? Math.abs(Math.sin(t * 15)) * 3 * sf : 0;
     const kx = held ? K.x : K.x;
@@ -519,11 +519,12 @@ Seq.scenes.fling = (root, done) => {
 
   /* ---------- go ---------- */
   layout(); K.x = kStart; update(.016); render();
+  const offGate = Seq.tweaks.onChange(k => { if (k === 'gateHeight') layout(); });
   const ro = new ResizeObserver(() => { layout(); }); ro.observe(root);
   let last = performance.now();
   return {
     entry: { x: W * .1, y: yG - 20 },
-    frame(now) { const dt = clamp((now - last) / 1000, 0, 1 / 30); last = now; update(dt); render(); px.render(now); },
-    destroy() { ro.disconnect(); px.destroy(); musicStop(.05); out.close(); }
+    frame(now) { const dt = clamp((now - last) / 1000, 0, 1 / 30) * Seq.tweaks.get('gameSpeed'); last = now; update(dt); render(); px.render(now); },
+    destroy() { ro.disconnect(); offGate(); px.destroy(); musicStop(.05); out.close(); }
   };
 };

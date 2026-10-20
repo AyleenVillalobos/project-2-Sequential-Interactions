@@ -232,3 +232,13 @@ html, body {
 #tweaks footer { padding: 10px 14px 14px; border-top: 3px solid var(--px-ink); display: grid; gap: 8px; font-size: 11px; opacity: .85; }
 #tweaks footer button { justify-self: start; font: 800 13px var(--px-font); text-transform: uppercase; letter-spacing: .05em; padding: 8px 14px; border: 3px solid var(--px-ink); background: var(--px-paper); color: var(--px-accent); border-radius: 0; cursor: pointer; box-shadow: 3px 3px 0 var(--px-ink); }
 #tweaks button:focus-visible, #tweakBtn:focus-visible, #tweaks input:focus-visible { outline: 3px solid var(--px-accent); outline-offset: 2px; }
+
+#tweaks .tabs { display: flex; gap: 6px; padding: 10px 14px 0; border-bottom: 3px solid var(--px-ink); }
+#tweaks .tabs button { flex: 1; font: 800 12px var(--px-font); text-transform: uppercase; letter-spacing: .04em; padding: 8px 4px; border: 3px solid var(--px-ink); border-bottom: 0; background: #ddd8f3; color: var(--px-accent); border-radius: 0; cursor: pointer; }
+#tweaks .tabs button.on { background: var(--px-paper); position: relative; top: 3px; padding-bottom: 11px; }
+#tweaks section[hidden] { display: none; }
+#tweaks .crow { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 8px; padding: 6px 0; font-size: 13px; font-weight: 700; }
+#tweaks .crow label { min-width: 0; }
+#tweaks .crow input[type=color] { width: 44px; height: 32px; padding: 0; border: 3px solid var(--px-ink); background: var(--px-paper); border-radius: 0; cursor: pointer; }
+#tweaks .crow .cr { width: 32px; height: 32px; font: 800 16px/1 var(--px-font); border: 3px solid var(--px-ink); background: var(--px-paper); color: var(--px-accent); border-radius: 0; cursor: pointer; padding: 0; }
+#tweaks .crow .cr[hidden] { display: none; }

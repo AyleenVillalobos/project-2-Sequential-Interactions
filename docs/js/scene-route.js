@@ -86,8 +86,8 @@ Seq.scenes.route = (root, done) => {
       </g>
     </g>`;
   }
-  const DOG_A = { fur: '#a8643a', shade: '#8a4a30', belly: '#f7e3b0', ear: '#6b3a22', collar: '#e5475c' };
-  const DOG_B = { fur: '#5d5c8c', shade: '#4b4a78', belly: '#dedcf0', ear: '#3a3860', collar: '#f4d35e' };
+  const DOG_A = { fur: '#a9653b', shade: '#8b4b31', belly: '#f8e4b1', ear: '#6c3b23', collar: '#e5475c' };
+  const DOG_B = { fur: '#5e5c8d', shade: '#4c4a79', belly: '#dfddf1', ear: '#3b3861', collar: '#f4d35e' };
   const bangMarkup = `<g class="bang" opacity="0">
       <g transform="translate(-11 0) rotate(-8)"><path d="M-4 -26 h8 l-2 20 h-4Z" fill="#e5475c" stroke="${OL}" stroke-width="2.4" stroke-linejoin="round"/><circle cx="0" cy="1" r="3.8" fill="#e5475c" stroke="${OL}" stroke-width="2.4"/></g>
       <g transform="translate(11 -4) rotate(8) scale(1.2)"><path d="M-4 -26 h8 l-2 20 h-4Z" fill="#e5475c" stroke="${OL}" stroke-width="2.4" stroke-linejoin="round"/><circle cx="0" cy="1" r="3.8" fill="#e5475c" stroke="${OL}" stroke-width="2.4"/></g>
@@ -392,7 +392,7 @@ Seq.scenes.route = (root, done) => {
   /* ---------- tuning ---------- */
   const TW = k => Seq.tweaks.get(k);
   const MOUSE_V = () => W * .62 * TW('mouseSpeed'), DOG_V = () => W * .6 * TW('dogSpeed'), CHASE_V = () => W * .74 * TW('dogSpeed');
-  const SIGHT = () => W * .42 * TW('dogSight'), CATCH = () => 17 * sf, CONE = 38 * Math.PI / 180;
+  const SIGHT = () => W * .42 * TW('dogSight'), CATCH = () => 17 * sf * TW('dogCatch'), CONE = 38 * Math.PI / 180;
   const exitHit = () => Math.abs(M.X - EXIT.X) < .08 && M.Z < ROOMZ + .045 && M.Z > ROOMZ;
   // can dog d see the mouse? it has to be inside the cone it is facing, in range, with no furniture in between
   function sees(d, k = 1) {
@@ -545,7 +545,7 @@ Seq.scenes.route = (root, done) => {
 
   /* ---------- render ---------- */
   function renderMouse() {
-    const sc = zScale(M.Z) * sf * .8 * M.s, th = M.stand * 55, ph = M.phase, sw = Math.sin(ph) * 30 * M.walkAmt;
+    const sc = zScale(M.Z) * sf * .8 * M.s * TW('mouseSize'), th = M.stand * 55, ph = M.phase, sw = Math.sin(ph) * 30 * M.walkAmt;
     const sy = M.sq, sx = 1 / Math.sqrt(sy), bob = -Math.abs(Math.sin(ph)) * 2.4 * M.walkAmt, m = el.m;
     el.mouse.setAttribute('opacity', f2(M.vis));
     m.root.setAttribute('transform', `translate(${f2(M.x)} ${f2(M.y - M.hop + bob * sc)}) scale(${f2(M.face * sc)} ${f2(sc)})`);
@@ -573,7 +573,7 @@ Seq.scenes.route = (root, done) => {
   function renderDog(d, i) {
     const cn = d.el.cone, alarmed = d.st === 'alert' || d.st === 'chase';
     cn.setAttribute('points', coneMarkup(d)); cn.setAttribute('fill', alarmed ? 'rgba(229,71,92,.3)' : 'rgba(255,233,140,.2)');
-    const sc = zScale(d.Z) * sf * .95, e = d.el, walk = clamp(d.v / (W * .3), 0, 1), sw = Math.sin(d.phase) * 36 * walk, bob = Math.abs(Math.sin(d.phase)) * 3 * walk;
+    const sc = zScale(d.Z) * sf * .95 * TW('dogSize'), e = d.el, walk = clamp(d.v / (W * .3), 0, 1), sw = Math.sin(d.phase) * 36 * walk, bob = Math.abs(Math.sin(d.phase)) * 3 * walk;
     const barking = d.st === 'alert' || (d.st === 'chase' && d.mouth), sniff = d.st === 'sniff';
     e.root.setAttribute('transform', `translate(${f2(d.x)} ${f2(d.y - bob * sc)}) scale(${f2(d.dir * sc)} ${f2(sc)})`);
     e.bn.setAttribute('transform', `translate(-21 -16) rotate(${f2(sw)})`); e.bf.setAttribute('transform', `translate(-12 -16) rotate(${f2(-sw)})`);
@@ -652,7 +652,7 @@ Seq.scenes.route = (root, done) => {
   let last = performance.now();
   return {
     entry: { x: W * .5, y: H * .5 },
-    frame(now) { const dt = clamp((now - last) / 1000, 0, 1 / 30); last = now; update(dt); render(); px.render(now); },
+    frame(now) { const dt = clamp((now - last) / 1000, 0, 1 / 30) * TW('gameSpeed'); last = now; update(dt); render(); px.render(now); },
     destroy() { ro.disconnect(); px.destroy(); if (rainNodes) { try { rainNodes.stop(); } catch (e) {} } out.close(); }
   };
 };
