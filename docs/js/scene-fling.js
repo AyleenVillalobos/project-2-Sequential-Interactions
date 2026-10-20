@@ -520,7 +520,7 @@ Seq.scenes.fling = (root, done) => {
 
   /* ---------- go ---------- */
   layout(); K.x = kStart; update(.016); render();
-  const offGate = Seq.tweaks.onChange(k => { if (k === 'gateHeight') layout(); });
+  const offGate = Seq.tweaks.onChange(k => { if (k === undefined || k === 'gateHeight') layout(); });
   const ro = new ResizeObserver(() => { layout(); }); ro.observe(root);
   let last = performance.now();
   return {
