@@ -537,6 +537,7 @@ Seq.scenes.route = (root, done) => {
     else if (st === 'home') M.walkAmt = 1;
     if (M.sp > 6) { M.phase += dt * M.sp / Math.max(1, W * .5) * 13; const si = Math.floor(M.phase / Math.PI); if (si !== lastStep) { lastStep = si; snd.patter(); } }
     place(M);
+    if (M.vis > .5 && M.sp > 30) Seq.fx.emit(M.x, M.y - 8 * sf);
     M.stand = lerp(M.stand, standT, Math.min(1, dt * 7)); M.look = lerp(M.look, lookT, Math.min(1, dt * 8)); M.ear = lerp(M.ear, earT, Math.min(1, dt * 10));
     M.sq = lerp(M.sq, sqT, Math.min(1, dt * 14));
     stepRain(winDrops, WIN, dt, sf);
