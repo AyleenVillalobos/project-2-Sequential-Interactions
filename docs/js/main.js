@@ -51,7 +51,16 @@
   const setPanel = open => { tPanel.classList.toggle('open', open); tPanel.setAttribute('aria-hidden', open ? 'false' : 'true'); tBtn.setAttribute('aria-expanded', open ? 'true' : 'false'); if (open) tTabs.querySelector('.on').focus({ preventScroll: true }); };
   tBtn.addEventListener('click', () => { Seq.audioInit(); setPanel(!tPanel.classList.contains('open')); });
   document.getElementById('tweakClose').addEventListener('click', () => { setPanel(false); tBtn.focus({ preventScroll: true }); });
-  document.getElementById('tweakReset').addEventListener('click', () => Seq.tweaks.reset());
+  document.getElementById('tweakReset').addEventListener('click', () => { Seq.tweaks.reset(); say('Back to the starting settings.'); });
+  const msg = document.getElementById('tweakMsg'), codeRow = document.getElementById('tweakCodeRow'), codeIn = document.getElementById('tweakCode'), baseMsg = msg.textContent;
+  const say = t => { msg.textContent = t; clearTimeout(say.t); say.t = setTimeout(() => { msg.textContent = baseMsg; }, 4500); };
+  document.getElementById('tweakShare').addEventListener('click', async () => {
+    const code = Seq.tweaks.exportCode(), link = location.origin + location.pathname + '?s=' + code;
+    try { await navigator.clipboard.writeText(link); say('Link copied. Open it on any device to get these settings.'); }
+    catch (e) { codeRow.hidden = false; codeIn.value = link; codeIn.focus(); codeIn.select(); say('Copy this link and open it on another device.'); }
+  });
+  document.getElementById('tweakPaste').addEventListener('click', () => { codeRow.hidden = !codeRow.hidden; if (!codeRow.hidden) { codeIn.value = ''; codeIn.focus(); } });
+  document.getElementById('tweakApply').addEventListener('click', () => { if (Seq.tweaks.importCode(codeIn.value)) { say('Settings applied.'); codeRow.hidden = true; } else say('That code did not work. Try copying it again.'); });
   addEventListener('keydown', e => { if (e.key === 'Escape') setPanel(false); });
   for (const b of [tBtn, tPanel]) b.addEventListener('pointerdown', e => e.stopPropagation());
 

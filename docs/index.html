@@ -49,18 +49,23 @@
       <header><span>Tool panel</span><button id="tweakClose" type="button" aria-label="Close the tool panel">&times;</button></header>
       <div class="tabs" role="tablist"></div>
       <div class="rows"></div>
-      <footer><button id="tweakReset" type="button">Reset all</button><span>Changes apply right away and stay on this device.</span></footer>
+      <footer>
+        <div class="frow"><button id="tweakReset" type="button">Reset all</button><button id="tweakShare" type="button">Copy share link</button><button id="tweakPaste" type="button">Paste code</button></div>
+        <div class="frow" id="tweakCodeRow" hidden><input id="tweakCode" type="text" autocomplete="off" spellcheck="false" placeholder="Paste a settings code or link"><button id="tweakApply" type="button">Apply</button></div>
+        <span id="tweakMsg">Changes apply right away and are saved on this device. The share link carries them to any other device.</span>
+      </footer>
     </aside>
     <div id="iris"></div>
   </main>
 
-  <script src="js/core.js?v=17"></script>
-  <script src="js/fx.js?v=17"></script>
-  <script src="js/pixel.js?v=17"></script>
-  <script src="js/art.js?v=17"></script>
-  <script src="js/scene-intro.js?v=17"></script>
-  <script src="js/scene-route.js?v=17"></script>
-  <script src="js/scene-fling.js?v=17"></script>
-  <script src="js/main.js?v=17"></script>
+  <script src="js/defaults.js?v=18"></script>
+  <script src="js/core.js?v=18"></script>
+  <script src="js/fx.js?v=18"></script>
+  <script src="js/pixel.js?v=18"></script>
+  <script src="js/art.js?v=18"></script>
+  <script src="js/scene-intro.js?v=18"></script>
+  <script src="js/scene-route.js?v=18"></script>
+  <script src="js/scene-fling.js?v=18"></script>
+  <script src="js/main.js?v=18"></script>
 </body>
 </html>

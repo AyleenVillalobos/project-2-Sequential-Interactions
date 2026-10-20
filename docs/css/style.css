@@ -230,7 +230,7 @@ html, body {
 #tweaks .trow output { font-variant-numeric: tabular-nums; color: var(--px-accent); }
 #tweaks .trow input[type=range] { grid-column: 1 / -1; width: 100%; height: 28px; margin: 0; accent-color: var(--px-accent); touch-action: pan-y; }
 #tweaks footer { padding: 10px 14px 14px; border-top: 3px solid var(--px-ink); display: grid; gap: 8px; font-size: 11px; opacity: .85; }
-#tweaks footer button { justify-self: start; font: 800 13px var(--px-font); text-transform: uppercase; letter-spacing: .05em; padding: 8px 14px; border: 3px solid var(--px-ink); background: var(--px-paper); color: var(--px-accent); border-radius: 0; cursor: pointer; box-shadow: 3px 3px 0 var(--px-ink); }
+#tweaks footer button { font: 800 13px var(--px-font); text-transform: uppercase; letter-spacing: .05em; padding: 8px 14px; border: 3px solid var(--px-ink); background: var(--px-paper); color: var(--px-accent); border-radius: 0; cursor: pointer; box-shadow: 3px 3px 0 var(--px-ink); }
 #tweaks button:focus-visible, #tweakBtn:focus-visible, #tweaks input:focus-visible { outline: 3px solid var(--px-accent); outline-offset: 2px; }
 
 #tweaks .tabs { display: flex; gap: 6px; padding: 10px 14px 0; border-bottom: 3px solid var(--px-ink); }
@@ -247,3 +247,7 @@ html, body {
 #tweaks .chrow { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 0 4px; }
 #tweaks .chrow button { font: 800 12px var(--px-font); padding: 7px 9px; border: 3px solid var(--px-ink); background: var(--px-paper); color: var(--px-accent); border-radius: 0; cursor: pointer; text-transform: uppercase; letter-spacing: .03em; }
 #tweaks .chrow button.on { background: var(--px-accent); color: var(--px-paper); }
+#tweaks footer .frow { display: flex; flex-wrap: wrap; gap: 8px; }
+#tweaks footer .frow button { font: 800 12px var(--px-font); text-transform: uppercase; letter-spacing: .04em; padding: 8px 10px; border: 3px solid var(--px-ink); background: var(--px-paper); color: var(--px-accent); border-radius: 0; cursor: pointer; box-shadow: 3px 3px 0 var(--px-ink); }
+#tweaks footer .frow input { flex: 1; min-width: 0; font: 600 12px var(--px-font); padding: 8px; border: 3px solid var(--px-ink); background: #fff; color: var(--px-ink); border-radius: 0; }
+#tweaks footer .frow[hidden] { display: none; }
