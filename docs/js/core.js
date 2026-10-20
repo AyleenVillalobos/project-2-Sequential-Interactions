@@ -80,30 +80,80 @@ window.Seq = (() => {
     one(ac.currentTime + delay, 1); one(ac.currentTime + delay + .19, .85);
   };
 
-  /* Tweaks: values the tool panel changes live. Saved on this device. */
+  /* Tweaks: values the tool panel changes live (numbers and colours). Saved on this device. */
+  const recolor = Seq.recolor = { map: new Map(), list: [], sync: null };
   Seq.tweaks = (() => {
     const defs = [
-      { k: 'vol', g: 'Sound', label: 'Master volume', min: 0, max: 1.5, step: .05, def: 1 },
-      { k: 'music', g: 'Sound', label: 'Throw-game music', min: 0, max: 1.5, step: .05, def: 1 },
-      { k: 'rain', g: 'Opening', label: 'Rain amount', min: 0, max: 3, step: .1, def: 1 },
-      { k: 'dogSpeed', g: 'Dogs', label: 'Dog speed', min: .3, max: 2, step: .05, def: 1 },
-      { k: 'dogSight', g: 'Dogs', label: 'Dog sight range', min: .5, max: 1.6, step: .05, def: 1 },
-      { k: 'dogBark', g: 'Dogs', label: 'Bark volume', min: 0, max: 2, step: .05, def: 1 },
-      { k: 'mouseSpeed', g: 'Mouse', label: 'Mouse speed', min: .5, max: 1.6, step: .05, def: 1 },
-      { k: 'kitty', g: 'Kitty', label: 'Kitty speed and jumps', min: .3, max: 2, step: .05, def: 1 },
-      { k: 'power', g: 'Kitty', label: 'Throw power', min: .6, max: 1.5, step: .05, def: 1 }
+      // tab: game
+      { t: 'game', k: 'gameSpeed', g: 'Game', label: 'Game speed', min: .4, max: 1.6, step: .05, def: 1 },
+      { t: 'game', k: 'mouseSpeed', g: 'Mouse', label: 'Mouse speed', min: .5, max: 1.6, step: .05, def: 1 },
+      { t: 'game', k: 'mouseSize', g: 'Mouse', label: 'Mouse size', min: .6, max: 1.8, step: .05, def: 1 },
+      { t: 'game', k: 'dogSpeed', g: 'Dogs', label: 'Dog speed', min: .3, max: 2, step: .05, def: 1 },
+      { t: 'game', k: 'dogSight', g: 'Dogs', label: 'Dog sight range', min: .5, max: 1.6, step: .05, def: 1 },
+      { t: 'game', k: 'dogCatch', g: 'Dogs', label: 'Dog catch reach', min: .5, max: 2, step: .05, def: 1 },
+      { t: 'game', k: 'dogSize', g: 'Dogs', label: 'Dog size', min: .6, max: 1.8, step: .05, def: 1 },
+      { t: 'game', k: 'kitty', g: 'Kitty and throw', label: 'Kitty speed and jumps', min: .3, max: 2, step: .05, def: 1 },
+      { t: 'game', k: 'kittySize', g: 'Kitty and throw', label: 'Kitty size', min: .6, max: 1.8, step: .05, def: 1 },
+      { t: 'game', k: 'kittyCatch', g: 'Kitty and throw', label: 'Kitty catch reach', min: .6, max: 2, step: .05, def: 1 },
+      { t: 'game', k: 'power', g: 'Kitty and throw', label: 'Throw power', min: .6, max: 1.5, step: .05, def: 1 },
+      { t: 'game', k: 'gravity', g: 'Kitty and throw', label: 'Throw gravity', min: .6, max: 1.6, step: .05, def: 1 },
+      { t: 'game', k: 'gateHeight', g: 'Kitty and throw', label: 'Baby gate height', min: .3, max: 1.4, step: .05, def: 1 },
+      // tab: sound and look
+      { t: 'look', k: 'vol', g: 'Sound', label: 'Master volume', min: 0, max: 1.5, step: .05, def: 1 },
+      { t: 'look', k: 'music', g: 'Sound', label: 'Throw-game music', min: 0, max: 1.5, step: .05, def: 1 },
+      { t: 'look', k: 'dogBark', g: 'Sound', label: 'Bark volume', min: 0, max: 2, step: .05, def: 1 },
+      { t: 'look', k: 'rain', g: 'Opening', label: 'Rain amount', min: 0, max: 3, step: .1, def: 1 },
+      { t: 'look', k: 'pixel', g: 'Pixel look', label: 'Pixel size', min: .5, max: 2.5, step: .05, def: 1 },
+      { t: 'look', k: 'dither', g: 'Pixel look', label: 'Shading grain', min: 0, max: 30, step: 1, def: 11 }
     ];
-    const KEY = 'mouse-messenger-tweaks'; let vals = {}; const subs = [];
-    try { vals = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { vals = {}; }
+    // colour groups: every member is a colour used in the art; picking a new base colour recolours the whole group, keeping the light/dark shading
+    const colorDefs = [
+      { k: 'mouse', label: 'Mouse fur', base: '#b6adcf', members: ['#b6adcf', '#c9c0df', '#9a90b8', '#dcd5ee', '#ece7f8'] },
+      { k: 'mouseEar', label: 'Mouse ears and nose', base: '#f4a6bd', members: ['#f4a6bd', '#f48fae', '#ffd0de', '#ff8fae'] },
+      { k: 'red', label: 'Red (scarf, heart seal, alerts)', base: '#e5475c', members: ['#e5475c', '#b92a44'] },
+      { k: 'tabby', label: 'Tabby fur', base: '#f0954a', members: ['#f0954a', '#ffbb62'] },
+      { k: 'tabbyEyes', label: 'Tabby eyes', base: '#45b98d', members: ['#45b98d', '#1d7c63'] },
+      { k: 'dogA', label: 'Brown dog', base: '#a9653b', members: ['#a9653b', '#8b4b31', '#6c3b23', '#f8e4b1'] },
+      { k: 'dogB', label: 'Blue dog', base: '#5e5c8d', members: ['#5e5c8d', '#4c4a79', '#3b3861', '#dfddf1'] },
+      { k: 'pink', label: 'Pink (her shirt, hearts, blush)', base: '#ff7fa3', members: ['#ff7fa3', '#e0608a'] },
+      { k: 'hair', label: 'Her hair', base: '#15101c', members: ['#15101c', '#4b4466'] },
+      { k: 'skin', label: 'Her skin', base: '#c98f5e', members: ['#c98f5e', '#a8703f'] },
+      { k: 'pants', label: 'Her sweatpants', base: '#1c1a26', members: ['#1c1a26'] },
+      { k: 'walls', label: 'Walls, roof and night', base: '#322a6b', members: ['#14102e', '#1c1740', '#261f55', '#2b2260', '#322a6b', '#3a3178', '#413883', '#5638a6', '#6c63b6', '#8981cd'] },
+      { k: 'wood', label: 'Wood floors and boxes', base: '#a8643a', members: ['#6b3a22', '#8a4a30', '#9a5632', '#a35f37', '#a8643a', '#b06a3c', '#d9965a', '#e8c08a'] },
+      { k: 'rug', label: 'Rug, gate and banister', base: '#c4577f', members: ['#8c2447', '#c4577f', '#ee86ab', '#ffc4d6'] },
+      { k: 'plant', label: 'Plants', base: '#4f9a6a', members: ['#2f5d4a', '#4f9a6a'] }
+    ];
+    const KEY = 'mouse-messenger-tweaks'; let vals = {}, cols = {}; const subs = [];
+    try { const o = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; cols = o.__colors || {}; delete o.__colors; vals = o; } catch (e) { vals = {}; cols = {}; }
+    const save = () => { try { const o = Object.assign({}, vals); if (Object.keys(cols).length) o.__colors = cols; localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} };
     const def = k => defs.find(d => d.k === k);
-    const api = {
-      defs,
-      get: k => { const v = vals[k]; return typeof v === 'number' ? v : (def(k) ? def(k).def : 1); },
-      set(k, v) { vals[k] = v; try { localStorage.setItem(KEY, JSON.stringify(vals)); } catch (e) {} api.apply(); subs.forEach(f => f(k, v)); },
-      reset() { vals = {}; try { localStorage.removeItem(KEY); } catch (e) {} api.apply(); subs.forEach(f => f()); },
-      apply() { if (audio.master) { try { audio.master.gain.value = api.get('vol'); } catch (e) {} } },
-      onChange(f) { subs.push(f); }
+    const rgb = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+    const hsl = ([r, g, b]) => { r /= 255; g /= 255; b /= 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2; let h = 0, s = 0; if (mx !== mn) { const d = mx - mn; s = l > .5 ? d / (2 - mx - mn) : d / (mx + mn); h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h /= 6; } return [h, s, l]; };
+    const fromHsl = ([h, s, l]) => { const f = (p, q, t) => { t = (t + 1) % 1; return t < 1 / 6 ? p + (q - p) * 6 * t : t < .5 ? q : t < 2 / 3 ? p + (q - p) * (2 / 3 - t) * 6 : p; }; if (s === 0) return [l, l, l].map(v => Math.round(v * 255)); const q = l < .5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q; return [f(p, q, h + 1 / 3), f(p, q, h), f(p, q, h - 1 / 3)].map(v => Math.round(v * 255)); };
+    const shade = (target, base, member) => {         // the member's light/dark offset from the base, applied to the new colour
+      const B = hsl(rgb(base)), M = hsl(rgb(member)), T = hsl(rgb(target));
+      const l = Math.min(.97, Math.max(.03, T[2] + (M[2] - B[2]))), s = Math.min(1, T[1] * (B[1] > .02 ? Math.min(1.6, M[1] / B[1]) : 1));
+      return fromHsl([T[0], s, l]);
     };
+    const rebuild = () => {
+      recolor.map.clear(); recolor.list = [];
+      for (const g of colorDefs) { const v = cols[g.k]; if (!v) continue; for (const m of g.members) { const t = m === g.base ? rgb(v) : shade(v, g.base, m); recolor.map.set(rgb(m).join(','), t); recolor.list.push(t); } }
+      if (recolor.sync) recolor.sync();
+    };
+    const api = {
+      defs, colorDefs,
+      get: k => { const v = vals[k]; return typeof v === 'number' ? v : (def(k) ? def(k).def : 1); },
+      set(k, v) { vals[k] = v; save(); api.apply(); subs.forEach(f => f(k, v)); },
+      getColor: k => cols[k] || colorDefs.find(g => g.k === k).base,
+      isCustom: k => !!cols[k],
+      setColor(k, hex) { const g = colorDefs.find(x => x.k === k); if (hex.toLowerCase() === g.base.toLowerCase()) delete cols[k]; else cols[k] = hex.toLowerCase(); save(); rebuild(); subs.forEach(f => f('color:' + k, hex)); },
+      resetColor(k) { delete cols[k]; save(); rebuild(); subs.forEach(f => f('color:' + k)); },
+      reset() { vals = {}; cols = {}; try { localStorage.removeItem(KEY); } catch (e) {} rebuild(); api.apply(); subs.forEach(f => f()); },
+      apply() { if (audio.master) { try { audio.master.gain.value = api.get('vol'); } catch (e) {} } },
+      onChange(f) { subs.push(f); return () => { const i = subs.indexOf(f); if (i >= 0) subs.splice(i, 1); }; }
+    };
+    rebuild();
     return api;
   })();
 
