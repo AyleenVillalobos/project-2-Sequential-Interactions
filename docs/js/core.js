@@ -137,7 +137,9 @@ window.Seq = (() => {
       { k: 'plant', label: 'Plants', base: '#4f9a6a', members: ['#2f5d4a', '#4f9a6a'] }
     ];
     const KEY = 'mouse-messenger-tweaks'; let vals = {}, cols = {}; const subs = [];
-    try { const o = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; cols = o.__colors || {}; delete o.__colors; vals = o; } catch (e) { vals = {}; cols = {}; }
+    const SITE = (typeof window !== 'undefined' && window.MM_DEFAULTS) || {};
+    const fromObj = o => { o = Object.assign({}, o || {}); const c = Object.assign({}, o.__colors || {}); delete o.__colors; return [o, c]; };
+    try { const raw = localStorage.getItem(KEY); [vals, cols] = fromObj(raw ? JSON.parse(raw) : SITE); } catch (e) { [vals, cols] = fromObj(SITE); }
     const save = () => { try { const o = Object.assign({}, vals); if (Object.keys(cols).length) o.__colors = cols; localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} };
     const def = k => defs.find(d => d.k === k);
     const rgb = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
@@ -161,11 +163,21 @@ window.Seq = (() => {
       isCustom: k => !!cols[k],
       setColor(k, hex) { const g = colorDefs.find(x => x.k === k); if (hex.toLowerCase() === g.base.toLowerCase()) delete cols[k]; else cols[k] = hex.toLowerCase(); save(); rebuild(); subs.forEach(f => f('color:' + k, hex)); },
       resetColor(k) { delete cols[k]; save(); rebuild(); subs.forEach(f => f('color:' + k)); },
-      reset() { vals = {}; cols = {}; try { localStorage.removeItem(KEY); } catch (e) {} rebuild(); api.apply(); subs.forEach(f => f()); },
+      reset() { [vals, cols] = fromObj(SITE); try { localStorage.removeItem(KEY); } catch (e) {} rebuild(); api.apply(); subs.forEach(f => f()); },
+      // a settings code carries every change in one short string (the share link is the page address plus ?s=code)
+      exportCode() { const o = Object.assign({}, vals); if (Object.keys(cols).length) o.__colors = cols; return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); },
+      importCode(code) {
+        try {
+          const j = decodeURIComponent(escape(atob(String(code).trim().replace(/^.*[?&]s=/, '').replace(/-/g, '+').replace(/_/g, '/'))));
+          const o = JSON.parse(j); if (!o || typeof o !== 'object') return false;
+          [vals, cols] = fromObj(o); save(); rebuild(); api.apply(); subs.forEach(f => f()); return true;
+        } catch (e) { return false; }
+      },
       apply() { if (audio.master) { try { audio.master.gain.value = api.get('vol'); } catch (e) {} } },
       onChange(f) { subs.push(f); return () => { const i = subs.indexOf(f); if (i >= 0) subs.splice(i, 1); }; }
     };
     rebuild();
+    try { const q = new URLSearchParams(location.search).get('s'); if (q && api.importCode(q)) { const u = new URL(location.href); u.searchParams.delete('s'); history.replaceState(null, '', u.pathname + (u.search || '') + u.hash); } } catch (e) {}
     return api;
   })();
 
