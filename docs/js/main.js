@@ -13,7 +13,7 @@
   /* ---------- tool panel: live tweaks (numbers and colours), saved on this device ---------- */
   const tBtn = document.getElementById('tweakBtn'), tPanel = document.getElementById('tweaks'), tRows = tPanel.querySelector('.rows'), tTabs = tPanel.querySelector('.tabs');
   const fmt = v => '×' + Number(v).toFixed(2).replace(/\.?0+$/, '');
-  const TABS = [{ id: 'game', label: 'Game' }, { id: 'colors', label: 'Colors' }, { id: 'look', label: 'Sound & look' }];
+  const TABS = [{ id: 'game', label: 'Game' }, { id: 'colors', label: 'Colors' }, { id: 'fx', label: 'Effects' }, { id: 'audio', label: 'Audio' }];
   const sections = {};
   for (const t of TABS) { const sec = document.createElement('section'); sec.dataset.tab = t.id; sec.hidden = true; tRows.appendChild(sec); sections[t.id] = sec;
     const b = document.createElement('button'); b.type = 'button'; b.textContent = t.label; b.dataset.tab = t.id; b.setAttribute('role', 'tab'); tTabs.appendChild(b); }
@@ -23,10 +23,17 @@
   for (const d of Seq.tweaks.defs) {
     const sec = sections[d.t];
     if (lastGroup[d.t] !== d.g) { lastGroup[d.t] = d.g; const h = document.createElement('div'); h.className = 'grp'; h.textContent = d.g; sec.appendChild(h); }
+    if (d.type === 'choice') {
+      const row = document.createElement('div'); row.className = 'chrow'; row.setAttribute('role', 'group'); row.setAttribute('aria-label', d.label);
+      row.innerHTML = d.options.map(([v, l]) => `<button type="button" data-v="${v}">${l}</button>`).join('');
+      const show = () => { for (const b of row.children) b.classList.toggle('on', b.dataset.v === String(Seq.tweaks.get(d.k))); };
+      row.addEventListener('click', e => { const b = e.target.closest('button'); if (b) { Seq.tweaks.set(d.k, b.dataset.v); show(); } });
+      Seq.tweaks.onChange(show); show(); sec.appendChild(row); continue;
+    }
     const row = document.createElement('label'); row.className = 'trow'; row.htmlFor = 'tw-' + d.k;
     row.innerHTML = `<span>${d.label}</span><output></output><input id="tw-${d.k}" type="range" min="${d.min}" max="${d.max}" step="${d.step}">`;
     const inp = row.querySelector('input'), out = row.querySelector('output');
-    const show = () => { inp.value = Seq.tweaks.get(d.k); out.textContent = d.def === 1 || d.k === 'dither' ? (d.k === 'dither' ? inp.value : fmt(inp.value)) : fmt(inp.value); };
+    const show = () => { inp.value = Seq.tweaks.get(d.k); out.textContent = d.plain ? inp.value : fmt(inp.value); };
     inp.addEventListener('input', () => { Seq.tweaks.set(d.k, parseFloat(inp.value)); show(); });
     Seq.tweaks.onChange(show); show(); sec.appendChild(row);
   }
@@ -47,6 +54,15 @@
   document.getElementById('tweakReset').addEventListener('click', () => Seq.tweaks.reset());
   addEventListener('keydown', e => { if (e.key === 'Escape') setPanel(false); });
   for (const b of [tBtn, tPanel]) b.addEventListener('pointerdown', e => e.stopPropagation());
+
+  /* colour look: CSS filter on the pixel canvas */
+  const LOOKS = { normal: '', warm: 'sepia(.35) saturate(1.2) hue-rotate(-10deg)', cool: 'hue-rotate(25deg) saturate(1.1) brightness(1.03)', sepia: 'sepia(1)', mono: 'grayscale(1) contrast(1.1)', gameboy: 'grayscale(1) sepia(1) hue-rotate(35deg) saturate(2.2) contrast(1.15)', neon: 'saturate(1.9) contrast(1.2) brightness(1.05)' };
+  const applyFilter = () => {
+    const T = Seq.tweaks.get, parts = [LOOKS[T('look')] || ''];
+    if (T('hue')) parts.push(`hue-rotate(${T('hue')}deg)`); if (T('sat') !== 1) parts.push(`saturate(${T('sat')})`); if (T('contrast') !== 1) parts.push(`contrast(${T('contrast')})`); if (T('bright') !== 1) parts.push(`brightness(${T('bright')})`);
+    const f = parts.filter(Boolean).join(' '); stage.style.setProperty('--fx-filter', f || 'none');
+  };
+  Seq.tweaks.onChange(applyFilter); applyFilter();
 
   const ORDER = ['intro', 'route', 'fling'];
   const TITLES = {

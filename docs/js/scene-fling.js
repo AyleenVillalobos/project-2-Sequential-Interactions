@@ -316,7 +316,7 @@ Seq.scenes.fling = (root, done) => {
   function resetLetter() { Lt.mode = 'hand'; Lt.rot = 0; Lt.vx = Lt.vy = 0; Lt.bounced = false; M.joy = 0; }
   function bounceOff(dir) { Lt.vx = dir * Math.abs(Lt.vx) * .4 + dir * 60 * sf; Lt.vy = Math.abs(Lt.vy) * .15; Lt.vr = dir * 9; Lt.bounced = true; snd.clank(); shake = .35; }
   function catchIt() {
-    Lt.mode = 'caught'; K.mode = 'catch'; K.vh = 380 * sf; setState('win'); musicStop(.15); happySong(); snd.catchS(); snd.mewBig(); Seq.vib([20, 40, 20]);
+    Lt.mode = 'caught'; K.mode = 'catch'; K.vh = 380 * sf; setState('win'); musicStop(.15); happySong(); Seq.fx.burst(K.x, yU - 60 * sf); snd.catchS(); snd.mewBig(); Seq.vib([20, 40, 20]);
     for (let i = 0; i < 16; i++) hearts.push({ x: K.x + (Math.random() - .5) * 40 * sf, y: yU - 60 * sf, vx: (Math.random() - .5) * 220 * sf, vy: -(120 + Math.random() * 220) * sf, a: 0, s: .8 + Math.random() * .8, life: 1.6 + Math.random() });
   }
   function updateLetter(dt) {
@@ -324,6 +324,7 @@ Seq.scenes.fling = (root, done) => {
     if (Lt.mode === 'drag') { Lt.rot = lerp(Lt.rot, 0, Math.min(1, dt * 8)); return; }
     if (Lt.mode === 'caught') { const c = kitCenter(); Lt.x = lerp(Lt.x, c.x, Math.min(1, dt * 14)); Lt.y = lerp(Lt.y, c.y + 8 * sf, Math.min(1, dt * 14)); Lt.rot = lerp(Lt.rot, 0, Math.min(1, dt * 8)); return; }
     if (Lt.mode === 'fly') {
+      Seq.fx.emit(Lt.x, Lt.y);
       const px_ = Lt.x; Lt.vy += G * Seq.tweaks.get('gravity') * dt; Lt.x += Lt.vx * dt; Lt.y += Lt.vy * dt; Lt.rot += Lt.vr * dt;
       if (Lt.trail.length < 90 && (Lt.trail.length === 0 || Math.hypot(Lt.x - Lt.trail[Lt.trail.length - 1].x, Lt.y - Lt.trail[Lt.trail.length - 1].y) > 14 * sf)) Lt.trail.push({ x: Lt.x, y: Lt.y });
       // the landing's edge and the underside of the upper floor

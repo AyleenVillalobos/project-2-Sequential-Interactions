@@ -242,3 +242,8 @@ html, body {
 #tweaks .crow input[type=color] { width: 44px; height: 32px; padding: 0; border: 3px solid var(--px-ink); background: var(--px-paper); border-radius: 0; cursor: pointer; }
 #tweaks .crow .cr { width: 32px; height: 32px; font: 800 16px/1 var(--px-font); border: 3px solid var(--px-ink); background: var(--px-paper); color: var(--px-accent); border-radius: 0; cursor: pointer; padding: 0; }
 #tweaks .crow .cr[hidden] { display: none; }
+
+.pxcanvas { filter: var(--fx-filter, none); }
+#tweaks .chrow { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 0 4px; }
+#tweaks .chrow button { font: 800 12px var(--px-font); padding: 7px 9px; border: 3px solid var(--px-ink); background: var(--px-paper); color: var(--px-accent); border-radius: 0; cursor: pointer; text-transform: uppercase; letter-spacing: .03em; }
+#tweaks .chrow button.on { background: var(--px-accent); color: var(--px-paper); }

@@ -98,13 +98,25 @@ window.Seq = (() => {
       { t: 'game', k: 'power', g: 'Kitty and throw', label: 'Throw power', min: .6, max: 1.5, step: .05, def: 1 },
       { t: 'game', k: 'gravity', g: 'Kitty and throw', label: 'Throw gravity', min: .6, max: 1.6, step: .05, def: 1 },
       { t: 'game', k: 'gateHeight', g: 'Kitty and throw', label: 'Baby gate height', min: .3, max: 1.4, step: .05, def: 1 },
-      // tab: sound and look
-      { t: 'look', k: 'vol', g: 'Sound', label: 'Master volume', min: 0, max: 1.5, step: .05, def: 1 },
-      { t: 'look', k: 'music', g: 'Sound', label: 'Throw-game music', min: 0, max: 1.5, step: .05, def: 1 },
-      { t: 'look', k: 'dogBark', g: 'Sound', label: 'Bark volume', min: 0, max: 2, step: .05, def: 1 },
-      { t: 'look', k: 'rain', g: 'Opening', label: 'Rain amount', min: 0, max: 3, step: .1, def: 1 },
-      { t: 'look', k: 'pixel', g: 'Pixel look', label: 'Pixel size', min: .5, max: 2.5, step: .05, def: 1 },
-      { t: 'look', k: 'dither', g: 'Pixel look', label: 'Shading grain', min: 0, max: 30, step: 1, def: 11 }
+      // tab: audio
+      { t: 'audio', k: 'vol', g: 'Volume', label: 'Master volume', min: 0, max: 1.5, step: .05, def: 1 },
+      { t: 'audio', k: 'music', g: 'Volume', label: 'Throw-game music', min: 0, max: 1.5, step: .05, def: 1 },
+      { t: 'audio', k: 'dogBark', g: 'Volume', label: 'Bark volume', min: 0, max: 2, step: .05, def: 1 },
+      // tab: effects (visual)
+      { t: 'fx', k: 'look', g: 'Colour look', type: 'choice', label: 'Look', options: [['normal', 'Normal'], ['warm', 'Warm'], ['cool', 'Cool'], ['sepia', 'Sepia'], ['mono', 'Black & white'], ['gameboy', 'Game Boy'], ['neon', 'Neon']], def: 'normal' },
+      { t: 'fx', k: 'hue', g: 'Colour look', label: 'Hue shift', min: -180, max: 180, step: 5, def: 0, plain: 1 },
+      { t: 'fx', k: 'sat', g: 'Colour look', label: 'Saturation', min: 0, max: 2, step: .05, def: 1 },
+      { t: 'fx', k: 'contrast', g: 'Colour look', label: 'Contrast', min: .6, max: 1.6, step: .05, def: 1 },
+      { t: 'fx', k: 'bright', g: 'Colour look', label: 'Brightness', min: .6, max: 1.4, step: .05, def: 1 },
+      { t: 'fx', k: 'scan', g: 'Screen', label: 'Scanlines', min: 0, max: 1, step: .05, def: 0 },
+      { t: 'fx', k: 'vig', g: 'Screen', label: 'Dark corners', min: 0, max: 1, step: .05, def: 0 },
+      { t: 'fx', k: 'pixel', g: 'Screen', label: 'Pixel size', min: .5, max: 2.5, step: .05, def: 1 },
+      { t: 'fx', k: 'dither', g: 'Screen', label: 'Shading grain', min: 0, max: 30, step: 1, def: 11, plain: 1 },
+      { t: 'fx', k: 'ambient', g: 'Floating things', type: 'choice', label: 'Floating', options: [['none', 'None'], ['snow', 'Snow'], ['hearts', 'Hearts'], ['stars', 'Stars'], ['fireflies', 'Fireflies'], ['confetti', 'Confetti']], def: 'none' },
+      { t: 'fx', k: 'ambientAmt', g: 'Floating things', label: 'How many', min: .2, max: 3, step: .1, def: 1 },
+      { t: 'fx', k: 'trail', g: 'Sparkles', label: 'Sparkle trail', min: 0, max: 2, step: .1, def: 0 },
+      { t: 'fx', k: 'confetti', g: 'Sparkles', label: 'Confetti burst on a catch', min: 0, max: 2, step: .1, def: 1 },
+      { t: 'fx', k: 'rain', g: 'Opening scene', label: 'Rain amount', min: 0, max: 3, step: .1, def: 1 }
     ];
     // colour groups: every member is a colour used in the art; picking a new base colour recolours the whole group, keeping the light/dark shading
     const colorDefs = [
@@ -143,7 +155,7 @@ window.Seq = (() => {
     };
     const api = {
       defs, colorDefs,
-      get: k => { const v = vals[k]; return typeof v === 'number' ? v : (def(k) ? def(k).def : 1); },
+      get: k => { const v = vals[k]; return v !== undefined && v !== null ? v : (def(k) ? def(k).def : 1); },
       set(k, v) { vals[k] = v; save(); api.apply(); subs.forEach(f => f(k, v)); },
       getColor: k => cols[k] || colorDefs.find(g => g.k === k).base,
       isCustom: k => !!cols[k],

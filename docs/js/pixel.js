@@ -229,7 +229,7 @@
   function Pixel(root, opts) {
     this.root = root;
     this.opts = Object.assign({ target: 170, fps: 30, dither: 11, bg: null }, opts || {});
-    this.overlays = []; this.last = 0; this.gradCache = new Map();
+    this.overlays = (window.Seq && Seq.fx) ? [Seq.fx.draw] : []; this.last = 0; this.gradCache = new Map();
     // move the scene art into a hidden wrapper (still laid out and animating, just not visible)
     this.wrap = document.createElement('div'); this.wrap.className = 'pxwrap';
     [...root.children].forEach(c => { if (!c.hasAttribute('data-px-ui')) this.wrap.appendChild(c); });
