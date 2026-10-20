@@ -36,6 +36,58 @@ Seq.scenes.fling = (root, done) => {
     const g = ac.createGain(); g.gain.setValueAtTime(.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + .008); g.gain.exponentialRampToValueAtTime(.0001, t0 + dur);
     src.connect(fl).connect(g).connect(out.get()); src.start(t0, Math.random() * .5, dur + .05);
   }
+  /* ---------- music: a loop that builds with every throw, then a happy tune when the kitty catches the letter ---------- */
+  const MU = { on: false, timer: 0, next: 0, step: 0, level: 0, bus: null };
+  const CH = [{ r: 110, t: [220, 261.6, 329.6] }, { r: 87.3, t: [174.6, 220, 261.6] }, { r: 130.8, t: [261.6, 329.6, 392] }, { r: 98, t: [196, 246.9, 293.7] }];
+  function mtone(type, f, t0, dur, vol, f2) {
+    const ac = AU.ac, o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(f, t0); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t0 + dur);
+    g.gain.setValueAtTime(.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + .012); g.gain.exponentialRampToValueAtTime(.0001, t0 + dur);
+    o.connect(g); g.connect(MU.bus); o.start(t0); o.stop(t0 + dur + .03);
+  }
+  function mhat(t0, vol) {
+    const ac = AU.ac, n = ac.createBufferSource(); n.buffer = AU.nbuf; const f = ac.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 7000;
+    const g = ac.createGain(); g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(.0001, t0 + .04); n.connect(f).connect(g).connect(MU.bus); n.start(t0, Math.random(), .06);
+  }
+  Seq.tweaks.onChange(() => { if (MU.on) musicLevel(MU.level); });
+  function musicTick() {
+    const ac = AU.ac; if (!ac || !MU.on) return;
+    const lv = MU.level, bpm = 96 + 8 * Math.min(lv, 8), sd = 60 / bpm / 2;
+    while (MU.next < ac.currentTime + .18) {
+      const i = MU.step, bar = (i >> 4) & 3, j = i & 15, c = CH[bar], t0 = MU.next;
+      if (j % 4 === 0) { mtone('triangle', c.r, t0, sd * 3.4, .5); if (lv >= 2) mtone('sine', 120, t0, .12, .5, 45); }
+      if (lv >= 1 || j % 2 === 0) { const nt = c.t[[0, 1, 2, 1, 0, 1, 2, 1][j % 8]] * (lv >= 4 && j % 8 > 3 ? 2 : 1); mtone('square', nt, t0, sd * .8, lv >= 1 ? .09 : .05); }
+      if (lv >= 3 && j % 2 === 1) mhat(t0, .12);
+      if (lv >= 5 && j % 8 === 0) { mtone('sawtooth', c.t[2] * 2, t0, sd * 7, .07); mtone('sawtooth', c.t[0] * 4, t0, sd * 7, .04); }
+      if (lv >= 7 && j % 2 === 0) mtone('triangle', c.t[(j >> 1) % 3] * 4, t0, sd * .6, .06);
+      MU.next += sd; MU.step++;
+    }
+  }
+  function musicLevel(n) {
+    MU.level = n; if (!MU.bus) return; const ac = AU.ac;
+    MU.bus.gain.cancelScheduledValues(ac.currentTime); MU.bus.gain.linearRampToValueAtTime((.16 + .05 * Math.min(n, 8)) * Seq.tweaks.get('music'), ac.currentTime + .5);
+  }
+  function musicStart() {
+    if (!ok() || MU.on) return; const ac = AU.ac;
+    MU.bus = ac.createGain(); MU.bus.gain.value = .0001; MU.bus.connect(out.get()); MU.on = true; MU.next = ac.currentTime + .05; MU.step = 0;
+    musicLevel(Lt.tries || 0); MU.timer = setInterval(musicTick, 40);
+  }
+  function musicStop(fade = .25) {
+    clearInterval(MU.timer); MU.on = false; if (!MU.bus || !AU.ac) return; const b = MU.bus; MU.bus = null;
+    try { b.gain.cancelScheduledValues(AU.ac.currentTime); b.gain.linearRampToValueAtTime(.0001, AU.ac.currentTime + fade); } catch (e) {}
+    setTimeout(() => { try { b.disconnect(); } catch (e) {} }, 600);
+  }
+  // the happy tune (C major, bouncy): melody, bass and a sparkle on top
+  function happySong() {
+    if (!ok()) return; const ac = AU.ac, t0 = ac.currentTime + .05, B = .15;
+    const mel = [[523, 1], [659, 1], [784, 1], [1047, 2], [988, 1], [1047, 1], [1175, 2], [1319, 2], [1175, 1], [1047, 1], [988, 1], [784, 1], [880, 2], [1047, 1], [1319, 1], [1568, 4]];
+    let at = 0; const bus = ac.createGain(); bus.gain.value = .9 * Seq.tweaks.get('music'); bus.connect(out.get());
+    const mt = (type, f, w, d, v) => { const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(.0001, t0 + w); g.gain.exponentialRampToValueAtTime(v, t0 + w + .015); g.gain.exponentialRampToValueAtTime(.0001, t0 + w + d); o.connect(g); g.connect(bus); o.start(t0 + w); o.stop(t0 + w + d + .03); };
+    for (const [f, n] of mel) { mt('triangle', f, at * B, n * B * .95, .16); mt('sine', f * 2, at * B, n * B * .6, .05); at += n; }
+    [[130.8, 0], [196, 4], [174.6, 8], [196, 12], [130.8, 16]].forEach(([f, st_]) => { mt('triangle', f, st_ * B, 4 * B, .22); mt('sine', f * 2, st_ * B + B, 3 * B, .06); });
+    [[261.6, 329.6, 392, 0], [220, 261.6, 349.2, 8], [261.6, 329.6, 392, 16]].forEach(([a, b2, c, st_]) => [a, b2, c].forEach(f => mt('square', f, st_ * B, 7 * B, .035)));
+    for (let k = 0; k < 10; k++) mt('sine', 2093 + (k % 3) * 523, (14 + k * .55) * B, .1, .035);
+    setTimeout(() => { try { bus.disconnect(); } catch (e) {} }, (at * B + 1.5) * 1000);
+  }
   const snd = {
     mew(p = 1) { Seq.meow(out.get(), 600 * p, .4, .2); },
     mewBig() { Seq.meow(out.get(), 680, .6, .26); Seq.meow(out.get(), 740, .4, .2, .7); },
@@ -209,7 +261,7 @@ Seq.scenes.fling = (root, done) => {
     W = Math.max(1, r.width); H = Math.max(1, r.height); sf = W / 390;
     sv.setAttribute('viewBox', `0 0 ${W} ${H}`);
     yG = H * .88; yU = H * .62; fx = W * .2; tx = W * .5; rise = (yG - yU) / nSt; run = (tx - fx) / nSt;
-    gx = tx + 2 * sf; gw = 24 * sf; gH = 128 * sf; kMin = gx + gw + 30 * sf; kMax = W - 30 * sf; hx = W * .045; mx = W * .1; kStart = W * .8; G = 1250 * sf;
+    gx = tx + 2 * sf; gw = 24 * sf; gH = 128 * sf * Seq.tweaks.get('gateHeight'); kMin = gx + gw + 30 * sf; kMax = W - 30 * sf; hx = W * .045; mx = W * .1; kStart = W * .8; G = 1250 * sf;
     rails = [gH * RAILF[0], gH * RAILF[1], gH].map(v => yU - v);
     sv.innerHTML = bgMarkup();
     const q = s => sv.querySelector(s);
@@ -230,9 +282,9 @@ Seq.scenes.fling = (root, done) => {
   function pickRun() {
     let nx = lerp(kMin, kMax, Math.random());
     for (let i = 0; i < 12 && Math.abs(nx - K.x) < 50 * sf; i++) nx = lerp(kMin, kMax, Math.random());
-    K.tx = nx; K.speed = (240 + Math.random() * 140) * sf; K.mode = 'run'; K.jt = Math.min(K.jt, .25 + Math.random() * .6);
+    K.tx = nx; K.speed = (240 + Math.random() * 140) * sf * Seq.tweaks.get('kitty'); K.mode = 'run'; K.jt = Math.min(K.jt, (.25 + Math.random() * .6) / Seq.tweaks.get('kitty'));
   }
-  function startJump(big) { if (K.h > 1) return; K.vh = (big ? 560 : 380 + Math.random() * 140) * sf; K.jt = .4 + Math.random() * .8; K.sqy = 1.18; }
+  function startJump(big) { if (K.h > 1) return; K.vh = (big ? 560 : 380 + Math.random() * 140) * sf; K.jt = (.4 + Math.random() * .8) / Seq.tweaks.get('kitty'); K.sqy = 1.18; }
   function updateKitty(dt) {
     if (K.mode === 'held' || K.mode === 'hop') return;
     K.mewT -= dt; if (K.mewT < 0) { K.mewT = 1.5 + Math.random() * 1.5; if (st === 'game' && K.mode !== 'catch') snd.mew(.95 + Math.random() * .25); }
@@ -255,16 +307,16 @@ Seq.scenes.fling = (root, done) => {
 
   /* ---------- the letter ---------- */
   const LH = 9 * sf;
-  const handPos = () => { const sc = .75 * sf * M.s; return { x: M.x + M.face * -6 * sc, y: M.y + sc * (-50 - M.stand * 10) }; };
+  const handPos = () => { const sc = .75 * sf * M.s * Seq.tweaks.get('mouseSize'); return { x: M.x + M.face * -6 * sc, y: M.y + sc * (-50 - M.stand * 10) }; };
   function launch(x, y, vx, vy) {
     Object.assign(Lt, { mode: 'fly', x, y, vx, vy, vr: (vx >= 0 ? 1 : -1) * 6, rot: 0, bounced: false, restT: 0 });
-    Lt.ghost = Lt.trail; Lt.trail = []; tries++;
+    Lt.ghost = Lt.trail; Lt.trail = []; tries++; Lt.tries = tries; musicLevel(tries);
     snd.whoosh(); M.stand = .3; M.hop = 10 * sf;
   }
   function resetLetter() { Lt.mode = 'hand'; Lt.rot = 0; Lt.vx = Lt.vy = 0; Lt.bounced = false; M.joy = 0; }
   function bounceOff(dir) { Lt.vx = dir * Math.abs(Lt.vx) * .4 + dir * 60 * sf; Lt.vy = Math.abs(Lt.vy) * .15; Lt.vr = dir * 9; Lt.bounced = true; snd.clank(); shake = .35; }
   function catchIt() {
-    Lt.mode = 'caught'; K.mode = 'catch'; K.vh = 380 * sf; setState('win'); snd.catchS(); snd.mewBig(); Seq.vib([20, 40, 20]);
+    Lt.mode = 'caught'; K.mode = 'catch'; K.vh = 380 * sf; setState('win'); musicStop(.15); happySong(); Seq.fx.burst(K.x, yU - 60 * sf); snd.catchS(); snd.mewBig(); Seq.vib([20, 40, 20]);
     for (let i = 0; i < 16; i++) hearts.push({ x: K.x + (Math.random() - .5) * 40 * sf, y: yU - 60 * sf, vx: (Math.random() - .5) * 220 * sf, vy: -(120 + Math.random() * 220) * sf, a: 0, s: .8 + Math.random() * .8, life: 1.6 + Math.random() });
   }
   function updateLetter(dt) {
@@ -272,7 +324,8 @@ Seq.scenes.fling = (root, done) => {
     if (Lt.mode === 'drag') { Lt.rot = lerp(Lt.rot, 0, Math.min(1, dt * 8)); return; }
     if (Lt.mode === 'caught') { const c = kitCenter(); Lt.x = lerp(Lt.x, c.x, Math.min(1, dt * 14)); Lt.y = lerp(Lt.y, c.y + 8 * sf, Math.min(1, dt * 14)); Lt.rot = lerp(Lt.rot, 0, Math.min(1, dt * 8)); return; }
     if (Lt.mode === 'fly') {
-      const px_ = Lt.x; Lt.vy += G * dt; Lt.x += Lt.vx * dt; Lt.y += Lt.vy * dt; Lt.rot += Lt.vr * dt;
+      Seq.fx.emit(Lt.x, Lt.y);
+      const px_ = Lt.x; Lt.vy += G * Seq.tweaks.get('gravity') * dt; Lt.x += Lt.vx * dt; Lt.y += Lt.vy * dt; Lt.rot += Lt.vr * dt;
       if (Lt.trail.length < 90 && (Lt.trail.length === 0 || Math.hypot(Lt.x - Lt.trail[Lt.trail.length - 1].x, Lt.y - Lt.trail[Lt.trail.length - 1].y) > 14 * sf)) Lt.trail.push({ x: Lt.x, y: Lt.y });
       // the landing's edge and the underside of the upper floor
       if (!Lt.bounced && Lt.x > tx - 2 && px_ <= tx - 2 && Lt.y > yU + 2 * sf) {
@@ -284,7 +337,7 @@ Seq.scenes.fling = (root, done) => {
         if (Lt.y > yU - gH - 6 * sf && Lt.y < yU + 4 * sf && rails.some(ry => Math.abs(Lt.y - ry) < 3.5 * sf + LH * .5 + 1 * sf)) bounceOff(-1);
       }
       // the kitty is quick: close enough while it is passing by and it snatches the letter
-      if (Lt.x > gx + gw * .5) { const c = kitCenter(); if (Math.hypot(Lt.x - c.x, Lt.y - c.y) < (K.h > 4 ? 52 : 42) * sf) { catchIt(); return; } }
+      if (Lt.x > gx + gw * .5) { const c = kitCenter(); if (Math.hypot(Lt.x - c.x, Lt.y - c.y) < (K.h > 4 ? 52 : 42) * sf * Seq.tweaks.get('kittyCatch')) { catchIt(); return; } }
       const sy = stairY(Lt.x);
       if (Lt.vy > 0 && Lt.y + LH > sy && !(Lt.x > tx && Lt.y > yU + 6 * sf)) {
         Lt.y = sy - LH; Lt.vy *= -.28; Lt.vx *= .55; Lt.vr *= .4; snd.thud();
@@ -293,7 +346,7 @@ Seq.scenes.fling = (root, done) => {
       if (Lt.x < -40 || Lt.x > W + 40 || Lt.y > H + 60) resetLetter();
     } else if (Lt.mode === 'rest') {
       Lt.restT -= dt; const c = kitCenter();
-      if (Lt.x > gx + gw && Math.abs(Lt.x - c.x) < 34 * sf && K.h < 40 * sf) { catchIt(); return; }
+      if (Lt.x > gx + gw && Math.abs(Lt.x - c.x) < 34 * sf * Seq.tweaks.get('kittyCatch') && K.h < 40 * sf) { catchIt(); return; }
       if (Lt.restT <= 0) resetLetter();
     }
   }
@@ -328,7 +381,7 @@ Seq.scenes.fling = (root, done) => {
     }
     M.stand = 0;
     if (sp > 240 && vy < -70 && dtm > .015) {
-      const k = clamp(sp * .62, 480 * sf, 1500 * sf) / sp;
+      const k = clamp(sp * .62 * Seq.tweaks.get('power'), 480 * sf, 1500 * sf) / sp;
       // a bit of aim-assist: a mostly upward swipe keeps its sideways part but never flips backwards
       if (vx < -60) { vx = -60; }
       launch(last.x, last.y, vx * k, vy * k);
@@ -342,7 +395,7 @@ Seq.scenes.fling = (root, done) => {
 
   function skipIntro() { O.vis = 0; K.mode = 'hop'; K.x = kStart; K.h = 0; K.hopT = 9; gateOpen = 1; startGame(); }
   function startGame() {
-    setState('game'); M.vis = 1; M.x = mx; M.face = 1; resetLetter(); pickRun(); K.mode = 'run'; K.x = clamp(K.x || kStart, kMin, kMax);
+    setState('game'); musicStart(); M.vis = 1; M.x = mx; M.face = 1; resetLetter(); pickRun(); K.mode = 'run'; K.x = clamp(K.x || kStart, kMin, kMax);
     hint.classList.add('on'); hintOn = true; snd.pop();
   }
 
@@ -398,7 +451,7 @@ Seq.scenes.fling = (root, done) => {
 
   /* ---------- render ---------- */
   function renderMouse() {
-    const m = el.m, sc = .75 * sf * M.s, ph = M.phase, sy = M.sq, sx = 1 / Math.sqrt(sy), th = M.stand * 55;
+    const m = el.m, sc = .75 * sf * M.s * Seq.tweaks.get('mouseSize'), ph = M.phase, sy = M.sq, sx = 1 / Math.sqrt(sy), th = M.stand * 55;
     el.mouse.setAttribute('opacity', f2(M.vis));
     m.root.setAttribute('transform', `translate(${f2(M.x)} ${f2(M.y - M.hop)}) scale(${f2(M.face * sc)} ${f2(sc)})`);
     m.squash.setAttribute('transform', `scale(${f2(sx)} ${f2(sy)})`);
@@ -424,7 +477,7 @@ Seq.scenes.fling = (root, done) => {
     el.shO.setAttribute('cx', f2(O.x)); el.shO.setAttribute('cy', f2(O.y + 1)); el.shO.setAttribute('rx', f2(30 * sc)); el.shO.setAttribute('ry', f2(6 * sc)); el.shO.setAttribute('opacity', vis);
   }
   function renderKitty() {
-    const ks = (K.mode === 'held' ? .36 : .44) * sf, c = el.k, held = K.mode === 'held' || (K.mode === 'hop' && K.heldY != null), jump = K.h > 2;
+    const ks = (K.mode === 'held' ? .36 : .44) * sf * Seq.tweaks.get('kittySize'), c = el.k, held = K.mode === 'held' || (K.mode === 'hop' && K.heldY != null), jump = K.h > 2;
     const ky = held ? K.heldY : yU - K.h;
     const wob = K.mode === 'run' && !jump ? Math.sin(t * 22) * 2.2 : 0, bob = K.mode === 'run' && !jump ? Math.abs(Math.sin(t * 15)) * 3 * sf : 0;
     const kx = held ? K.x : K.x;
@@ -467,11 +520,12 @@ Seq.scenes.fling = (root, done) => {
 
   /* ---------- go ---------- */
   layout(); K.x = kStart; update(.016); render();
+  const offGate = Seq.tweaks.onChange(k => { if (k === 'gateHeight') layout(); });
   const ro = new ResizeObserver(() => { layout(); }); ro.observe(root);
   let last = performance.now();
   return {
     entry: { x: W * .1, y: yG - 20 },
-    frame(now) { const dt = clamp((now - last) / 1000, 0, 1 / 30); last = now; update(dt); render(); px.render(now); },
-    destroy() { ro.disconnect(); px.destroy(); out.close(); }
+    frame(now) { const dt = clamp((now - last) / 1000, 0, 1 / 30) * Seq.tweaks.get('gameSpeed'); last = now; update(dt); render(); px.render(now); },
+    destroy() { ro.disconnect(); offGate(); px.destroy(); musicStop(.05); out.close(); }
   };
 };

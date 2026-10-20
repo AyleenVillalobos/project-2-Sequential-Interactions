@@ -21,6 +21,16 @@
   ];
   const PAL = HEX.map(h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]);
   const lut = new Int16Array(32768).fill(-1);
+  // colours picked in the tool panel: remap the source colour before it is drawn, and teach the palette the new colours
+  const RC = (window.Seq && Seq.recolor) || { map: new Map(), list: [] };
+  RC.sync = () => { for (const t of RC.list) if (!PAL.some(p => p[0] === t[0] && p[1] === t[1] && p[2] === t[2])) PAL.push(t); lut.fill(-1); };
+  const RGBA = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/;
+  function rc(c) {
+    if (!RC.map.size || !c) return c;
+    const r = RGBA.exec(c); if (!r) return c;
+    const t = RC.map.get(r[1] + ',' + r[2] + ',' + r[3]); if (!t) return c;
+    return r[4] !== undefined ? `rgba(${t[0]},${t[1]},${t[2]},${r[4]})` : `rgb(${t[0]},${t[1]},${t[2]})`;
+  }
   function snap(r, g, b) {
     const k = ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3);
     let i = lut[k];
@@ -152,14 +162,14 @@
     if (fill && fill !== 'none') {
       ctx.globalAlpha = a * num(cs.fillOpacity, 1);
       if (fill.startsWith('url(')) fillGradient(ctx, fill, c.path, c, n, P, rule);
-      else { ctx.fillStyle = fill; ctx.fill(c.path, rule); }
+      else { ctx.fillStyle = rc(fill); ctx.fill(c.path, rule); }
     }
     const stroke = cs.stroke;
     if (stroke && stroke !== 'none' && !stroke.startsWith('url(')) {
       const w = num(cs.strokeWidth); if (!(w > 0)) return;
       const t = ctx.getTransform(), sc = Math.hypot(t.a, t.b) || 1;
       ctx.globalAlpha = a * num(cs.strokeOpacity, 1);
-      ctx.strokeStyle = stroke; ctx.lineWidth = Math.max(w, 1 / sc);       // never thinner than one art pixel
+      ctx.strokeStyle = rc(stroke); ctx.lineWidth = Math.max(w, 1 / sc);       // never thinner than one art pixel
       ctx.lineJoin = cs.strokeLinejoin === 'miter' ? 'miter' : (cs.strokeLinejoin || 'miter'); ctx.lineCap = cs.strokeLinecap || 'butt';
       const da = cs.strokeDasharray; ctx.setLineDash(da && da !== 'none' ? da.split(/[\s,]+/).map(parseFloat).filter(v => v >= 0) : []);
       ctx.stroke(c.path); ctx.setLineDash([]);
@@ -170,8 +180,8 @@
     const x = num(n.getAttribute('x')), y = num(n.getAttribute('y')), txt = n.textContent;
     ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`; ctx.textAlign = cs.textAnchor === 'middle' ? 'center' : cs.textAnchor === 'end' ? 'right' : 'left';
     const sw = num(cs.strokeWidth);
-    if (cs.stroke !== 'none' && sw > 0) { ctx.globalAlpha = a; ctx.strokeStyle = cs.stroke; ctx.lineWidth = sw; ctx.lineJoin = 'round'; ctx.strokeText(txt, x, y); }
-    if (cs.fill !== 'none') { ctx.globalAlpha = a * num(cs.fillOpacity, 1); ctx.fillStyle = cs.fill; ctx.fillText(txt, x, y); }
+    if (cs.stroke !== 'none' && sw > 0) { ctx.globalAlpha = a; ctx.strokeStyle = rc(cs.stroke); ctx.lineWidth = sw; ctx.lineJoin = 'round'; ctx.strokeText(txt, x, y); }
+    if (cs.fill !== 'none') { ctx.globalAlpha = a * num(cs.fillOpacity, 1); ctx.fillStyle = rc(cs.fill); ctx.fillText(txt, x, y); }
   }
 
   function drawNode(ctx, n, alpha, P) {
@@ -219,7 +229,7 @@
   function Pixel(root, opts) {
     this.root = root;
     this.opts = Object.assign({ target: 170, fps: 30, dither: 11, bg: null }, opts || {});
-    this.overlays = []; this.last = 0; this.gradCache = new Map();
+    this.overlays = (window.Seq && Seq.fx) ? [Seq.fx.draw] : []; this.last = 0; this.gradCache = new Map();
     // move the scene art into a hidden wrapper (still laid out and animating, just not visible)
     this.wrap = document.createElement('div'); this.wrap.className = 'pxwrap';
     [...root.children].forEach(c => { if (!c.hasAttribute('data-px-ui')) this.wrap.appendChild(c); });
@@ -229,10 +239,11 @@
     this.octx = this.out.getContext('2d'); this.wctx = this.work.getContext('2d', { willReadFrequently: true });
     this.fit();
     this.ro = new ResizeObserver(() => this.fit()); this.ro.observe(root);
+    this.unsub = window.Seq && Seq.tweaks ? Seq.tweaks.onChange(k => { if (!k || k === 'pixel') this.fit(); }) : null;
   }
   Pixel.prototype.fit = function () {
     const W = this.root.clientWidth, H = this.root.clientHeight; if (!W || !H) return;
-    const dpr = Math.min(window.devicePixelRatio || 1, 3), k = Math.max(2, Math.round(W * dpr / this.opts.target));
+    const dpr = Math.min(window.devicePixelRatio || 1, 3), k = Math.max(2, Math.round(W * dpr / (this.opts.target / ((window.Seq && Seq.tweaks && Seq.tweaks.get('pixel')) || 1))));
     this.k = k / dpr;                                            // CSS px per art pixel (k device pixels)
     this.bw = Math.ceil(W / this.k); this.bh = Math.ceil(H / this.k);
     this.out.width = this.bw; this.out.height = this.bh; this.work.width = this.bw * 2; this.work.height = this.bh * 2;
@@ -260,7 +271,7 @@
     for (const c of this.wrap.children) drawNode(ctx, c, 1, this);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     // sample one sub-pixel per art pixel (keeps edges crisp), dither, snap to the palette
-    const src = ctx.getImageData(0, 0, w2, h2).data, dst = this.img.data, bw = this.bw, bh = this.bh, dith = this.opts.dither;
+    const src = ctx.getImageData(0, 0, w2, h2).data, dst = this.img.data, bw = this.bw, bh = this.bh, dith = (window.Seq && Seq.tweaks) ? Seq.tweaks.get('dither') : this.opts.dither;
     let o = 0;
     for (let y = 0; y < bh; y++) {
       const row = (y * 2 + 1) * w2;
@@ -277,7 +288,7 @@
     for (const f of this.overlays) f(this.octx, info);
     const dur = performance.now() - tStart; this.cost = this.cost ? this.cost * .85 + dur * .15 : dur;
   };
-  Pixel.prototype.destroy = function () { this.ro.disconnect(); };
+  Pixel.prototype.destroy = function () { this.ro.disconnect(); if (this.unsub) this.unsub(); };
 
   Seq.Pixel = Pixel;
 })();

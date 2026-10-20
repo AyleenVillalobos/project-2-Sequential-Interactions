@@ -42,15 +42,25 @@
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4v4.5h4.5"/></svg>
     </button>
     <button id="replay" type="button">Play again</button>
+    <button id="tweakBtn" type="button" aria-label="Open the tool panel" aria-expanded="false">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M4 12h4M12 12h8"/><rect x="14" y="5" width="4" height="4"/><rect x="6" y="15" width="4" height="4"/><rect x="8" y="10" width="4" height="4"/></svg>
+    </button>
+    <aside id="tweaks" class="" aria-label="Tool panel" aria-hidden="true">
+      <header><span>Tool panel</span><button id="tweakClose" type="button" aria-label="Close the tool panel">&times;</button></header>
+      <div class="tabs" role="tablist"></div>
+      <div class="rows"></div>
+      <footer><button id="tweakReset" type="button">Reset all</button><span>Changes apply right away and stay on this device.</span></footer>
+    </aside>
     <div id="iris"></div>
   </main>
 
-  <script src="js/core.js?v=14"></script>
-  <script src="js/pixel.js?v=14"></script>
-  <script src="js/art.js?v=14"></script>
-  <script src="js/scene-intro.js?v=14"></script>
-  <script src="js/scene-route.js?v=14"></script>
-  <script src="js/scene-fling.js?v=14"></script>
-  <script src="js/main.js?v=14"></script>
+  <script src="js/core.js?v=18"></script>
+  <script src="js/fx.js?v=18"></script>
+  <script src="js/pixel.js?v=18"></script>
+  <script src="js/art.js?v=18"></script>
+  <script src="js/scene-intro.js?v=18"></script>
+  <script src="js/scene-route.js?v=18"></script>
+  <script src="js/scene-fling.js?v=18"></script>
+  <script src="js/main.js?v=18"></script>
 </body>
 </html>
